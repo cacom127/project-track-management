@@ -9,25 +9,21 @@
 
 ## 1. Bối cảnh dự án
 
-- **Tên dự án**: <tên hệ thống>
-- **Khách hàng**: <tên khách hàng>
+- **Tên dự án**: 実績管理システム
+- **Khách hàng**: VNEXT JAPAN
 - **Stack chính**: <Flutter / Web / AWS / ...>
-- **Repo**: <đường dẫn repo>
-- **Ngôn ngữ giao tiếp với khách hàng**: 日本語 (tài liệu 提案書/見積書/テスト仕様書 viết tiếng Nhật)
+- **Repo**: https://github.com/cacom127/project-track-management
 - **Ngôn ngữ code/comment**: <English/Tiếng Việt>
 
 ## 2. Nguyên tắc kỹ thuật bất biến
 
-<!-- Ví dụ mẫu, thay bằng nguyên tắc thật của dự án -->
-
-- The system shall use <ngôn ngữ/framework> version <X> or higher.
 - The system shall not introduce a runtime dependency that has not been
   updated in the last 12 months.
 - The system shall enforce lint/format rules defined in `<config file>`
   before merge.
 - The system shall not lower existing test coverage on any pull request.
 - The system shall log all external API calls with request/response status
-  for traceability (yêu cầu audit của khách hàng Nhật).
+  for traceability.
 
 ## 3. Design system (UI)
 
@@ -53,13 +49,13 @@
 
 - The system's specification lives in `specs/` (current truth — trạng thái
   đã chốt, đã merge) and `changes/` (đề xuất/thay đổi đang thực hiện).
-- Every change shall be tracked using the ticket ID from Backlog
-  (vd: `changes/TICKET-123-add-2fa/`) để trace ngược lại ticket gốc.
-- Every `changes/<ticket-id>/` folder shall contain at minimum
+- Every change shall be tracked using the change ID
+  (vd: `changes/CHANGE-123-add-2fa/`) để trace ngược lại ticket gốc.
+- Every `changes/<change-id>/` folder shall contain at minimum
   `delta-spec.md` and `tasks.md`. `proposal.md` and `plan.md` are optional,
   required only for Medium/Large changes (xem mục 6).
 - When a change is merged, its `delta-spec.md` shall be folded into the
-  corresponding file under `specs/`, and the `changes/<ticket-id>/` folder
+  corresponding file under `specs/`, and the `changes/<change-id>/` folder
   shall be moved to `changes/_archive/`.
 
 ## 5. Quy ước tổ chức UI feature spec
@@ -97,11 +93,10 @@
   `changes/_archive/`.
 - The AI agent shall NOT modify `DESIGN.md` casually while implementing a
   feature — thay đổi design token là quyết định riêng, cần được ghi trong
-  `changes/<ticket-id>/delta-spec.md` như mọi thay đổi khác nếu ảnh hưởng
+  `changes/<change-id>/delta-spec.md` như mọi thay đổi khác nếu ảnh hưởng
   nhiều màn hình.
 
 ## 9. Liên hệ / người chốt quyết định
 
-- **Product/Business owner**: <tên/role>
-- **Technical owner**: <tên/role>
-- **Khách hàng phía Nhật (liên hệ nếu cần confirm requirement)**: <tên/role>
+- **Product/Business owner**: namlp
+- **Technical owner**: namlp

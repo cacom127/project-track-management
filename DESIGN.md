@@ -1,6 +1,6 @@
 ---
 version: alpha
-name: <Tên design system>
+name: 実績管理システムのデザイン
 description: Design system dùng chung cho các màn hình admin/mobile của dự án <tên dự án>
 colors:
   primary: "#1A56DB"
