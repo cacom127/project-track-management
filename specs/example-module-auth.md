@@ -27,10 +27,46 @@ Quản lý xác thực người dùng và phân quyền truy cập cho toàn h�
 - Token: JWT, ký bằng <thuật toán>, secret rotate mỗi <X> ngày.
 - Không lưu password dạng plaintext hoặc hash yếu (MD5/SHA1).
 
-## 4. Lịch sử thay đổi module này
+## 4. Data Model (field-level — module này SỞ HỮU entity User, Session)
+
+> Xem `specs/data-model.md` mục 2 để biết entity nào thuộc module nào.
+> Đây là nơi DUY NHẤT định nghĩa field chi tiết của User/Session — không
+> lặp lại ở `specs/data-model.md`.
+
+### User
+| Field    | Type   | Constraint                     |
+|----------|--------|----------------------------------|
+| id       | uuid   | PK                                |
+| email    | string | unique, not null                 |
+| password | string | hashed (bcrypt), not null         |
+| role     | enum   | admin / store_staff / viewer      |
+
+### Session
+| Field       | Type     | Constraint                        |
+|-------------|----------|--------------------------------------|
+| id          | uuid     | PK                                    |
+| user_id     | uuid     | FK → User.id, cascade delete          |
+| expires_at  | datetime | not null                              |
+
+### Ràng buộc dữ liệu (EARS notation)
+
+- **[DM-AUTH-01]** The `User.email` field shall be unique across the
+  system.
+- **[DM-AUTH-02]** When a `User` is deleted, the system shall
+  cascade-delete all associated `Session` records.
+- **[DM-AUTH-03]** The system shall not allow `Session.expires_at` to be
+  set in the past at creation time.
+
+## 5. UI (tuỳ chọn — nếu module đơn giản, không cần tách file *-ui.md riêng)
+
+- Xem `DESIGN.md` cho token màu/font/component dùng chung.
+- Layout, state, hành vi tương tác chi tiết của từng màn hình auth: xem
+  file riêng `specs/auth-ui.md` nếu module có nhiều màn hình.
+
+## 6. Lịch sử thay đổi module này
 
 | Ngày       | Ticket ID    | Thay đổi                                    |
 |------------|--------------|-----------------------------------------------|
-| YYYY-MM-DD | SIC_DEV-XXX  | Thêm AUTH-04 (role-based access control)      |
+| YYYY-MM-DD | CHANGE-XXX  | Thêm AUTH-04 (role-based access control)      |
 
-<!-- Trỏ về changes/_archive/SIC_DEV-XXX/ để xem đầy đủ proposal/plan gốc -->
+<!-- Trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ proposal/plan gốc -->

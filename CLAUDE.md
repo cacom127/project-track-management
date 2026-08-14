@@ -51,12 +51,27 @@
 
 - The system's specification lives in `specs/` (current truth — trạng thái
   đã chốt, đã merge) and `changes/` (đề xuất/thay đổi đang thực hiện).
-- `specs/` gồm: `vision.md`, `architecture.md`, `data-model.md` (nền tảng —
-  ít đổi), `cross-cutting/` (chính sách áp dụng mọi module — vd
-  error-handling, logging), và `<module>.md` cho từng domain nghiệp vụ.
-- Every change shall be tracked using the change ID
-  (vd: `changes/CHANGE-123-add-2fa/`) để trace ngược lại ticket gốc.
-- Every `changes/<change-id>/` folder shall contain at minimum
+- `specs/` gồm: `vision.md`, `architecture.md` (nền tảng — ít đổi),
+  `data-model.md` (**CHỈ** ER tổng quan + quy ước chung — ít đổi, KHÔNG
+  chứa field-level chi tiết), `cross-cutting/` (chính sách áp dụng mọi
+  module — vd error-handling, logging), và `<module>.md` cho từng domain
+  nghiệp vụ.
+- **Quy tắc ownership entity**: mỗi entity/bảng dữ liệu shall có ĐÚNG 1
+  module sở hữu. Field/type/constraint chi tiết của entity đó được viết
+  trong `specs/<module-sở-hữu>.md` (mục `## Data Model`), KHÔNG viết trong
+  `specs/data-model.md`. `specs/data-model.md` chỉ ghi tên bảng, quan hệ,
+  và bảng mapping entity → module sở hữu. Module khác nếu chỉ tham chiếu
+  (FK) tới entity đó thì KHÔNG lặp lại field, chỉ ghi chú tham chiếu.
+- Khi 1 thay đổi chỉ thêm/sửa field của 1 entity đã tồn tại → chỉ động vào
+  `specs/<module-sở-hữu>.md`, KHÔNG động vào `specs/data-model.md`. Chỉ
+  khi THÊM/XOÁ hẳn 1 bảng, hoặc thay đổi quan hệ giữa các bảng, mới cần
+  cập nhật thêm `specs/data-model.md`.
+- Every change shall be tracked using a change ID (vd:
+  `changes/CHANGE-123-add-2fa/`). Nếu có ticket Backlog thật tương ứng,
+  ghi số ticket đó trong `proposal.md`/`delta-spec.md` để trace ngược
+  lại — nhưng tên thư mục `changes/` luôn dùng format `CHANGE-XXX`
+  (không phụ thuộc dự án đã có Backlog hay chưa).
+- Every `changes/<ticket-id>/` folder shall contain at minimum
   `delta-spec.md` and `tasks.md`. `proposal.md` and `plan.md` are optional,
   required only for Medium/Large changes (xem mục 6).
 - When a change is merged, its `delta-spec.md` shall be folded into the
