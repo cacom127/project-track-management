@@ -2,9 +2,8 @@
 
 > Tài liệu này đóng vai trò 要件定義書 tối thiểu cho dự án — vì hiện chưa có
 > tài liệu yêu cầu chính thức nào khác. Nội dung dựa trên trao đổi trực tiếp
-> giữa AI agent và Product/Business owner (namlp).
->
-> Nguồn gốc: `changes/CHANGE-001-init-requirement/vision.md`.
+> giữa AI agent và Product/Business owner (namlp), chưa qua ticket Backlog
+> chính thức (tạm dùng `CHANGE-001-init-requirement`).
 
 ## 1. Bối cảnh & vấn đề
 
@@ -90,9 +89,3 @@
 - Format cụ thể của export PowerPoint (khi ưu tiên làm tới).
 - Danh sách đầy đủ `project_type` (hiện đề xuất: offshore, ses, lab,
   new_dev, maintenance) — cần xác nhận đủ chưa khi viết `delta-spec.md`.
-
-## Lịch sử thay đổi
-
-| Ngày       | Ticket ID                    | Thay đổi                    |
-|------------|-------------------------------|------------------------------|
-| 2026-08-14 | CHANGE-001-init-requirement  | Tạo vision.md khởi tạo dự án |
