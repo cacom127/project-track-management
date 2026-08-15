@@ -107,3 +107,41 @@ này bổ sung cho nhau, không thay thế nhau.
   — đây là cách chống "spec chỉ để đọc, không ai enforce".
 - Không để `DESIGN.md` trôi lệch khỏi code thật — coi nó như 1 nguồn chân
   lý, không phải tài liệu tham khảo (xem mục "Cách dùng DESIGN.md" ở trên).
+
+## Chạy local (development)
+
+Cấu trúc code: `backend/` (Python/FastAPI, quản lý bằng `uv`), `frontend/`
+(React/Vite, quản lý bằng `npm`), `infra/` (AWS CDK Python) — ngang cấp
+`specs/`/`changes/` ở root.
+
+1. Chạy Postgres local:
+   ```bash
+   docker compose up -d db
+   ```
+2. Backend:
+   ```bash
+   cd backend
+   cp .env.example .env
+   uv sync
+   uv run alembic upgrade head
+   uv run uvicorn app.main:app --reload
+   ```
+3. Frontend (terminal khác):
+   ```bash
+   cd frontend
+   cp .env.example .env
+   npm install
+   npm run dev
+   ```
+4. Mở `http://localhost:5173` — thấy `Status: ok`, `DB: ok` là chạy đúng
+   toàn bộ pipeline (FE → BE → DB).
+
+**Infra (CDK, chỉ để kiểm tra cấu trúc — chưa deploy thật):**
+```bash
+cd infra
+npm install
+uv sync
+npx cdk synth
+```
+
+Kiến trúc chi tiết: xem `specs/architecture.md`, `specs/data-model.md`.

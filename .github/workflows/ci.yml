@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Install deps
+        working-directory: backend
+        run: uv sync
+      - name: Lint
+        working-directory: backend
+        run: uv run ruff check .
+      - name: Test
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://app:app@localhost:5432/app
+        run: uv run pytest -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint -- --max-warnings=0
+      - name: Format check
+        working-directory: frontend
+        run: npx prettier --check .
+      - name: Test
+        working-directory: frontend
+        run: npx vitest run
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install deps
+        working-directory: infra
+        run: |
+          npm ci
+          uv sync
+      - name: cdk synth
+        working-directory: infra
+        run: npx cdk synth

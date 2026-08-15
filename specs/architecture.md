@@ -32,6 +32,11 @@
 - **File đính kèm**: S3 bucket riêng, upload qua presigned URL do backend
   cấp (tránh giới hạn payload của Lambda/API Gateway).
 - **IaC**: AWS CDK (Python), 1 stack.
+- **Cấu trúc source code**: `backend` (Python/FastAPI), `frontend`
+  (React/Vite), `infra` (AWS CDK, Python) — nằm ngay tại repo root, ngang
+  cấp `specs/`/`changes/`. 
+- **Package manager**: `uv` cho `backend`/`infra` (Python), `npm` cho
+  `frontend`.
 
 ## 2. Danh sách module/domain
 
@@ -55,8 +60,9 @@
   Aurora sau thời gian dài idle, đổi lại chi phí gần $0 lúc rảnh.
 - **Data residency**: chưa xác định region cụ thể — cần chọn region AWS
   phù hợp (dự kiến `ap-northeast-1` — Tokyo) khi triển khai thật.
-- **CI/CD**: chưa quyết định — đề xuất GitHub Actions, chưa chốt (xem
-  mục "Việc chưa quyết định" trong `changes/_archive/CHANGE-002-architecture/proposal.md`).
+- **CI/CD**: **GitHub Actions** — chạy lint + test riêng cho `backend`,
+  `frontend`, và `infra` (`cdk synth`) trên mọi pull request và mọi push
+  vào branch mặc định.
 
 ## 4. Nguyên tắc kỹ thuật xuyên suốt
 
@@ -73,11 +79,20 @@
   `code` cố định để FE tự dịch, không lộ chi tiết lỗi hệ thống ra client.
   Catalog đầy đủ error code → `specs/cross-cutting/error-handling.md`
   (chưa làm — ticket riêng).
+- **Health-check**: endpoint `GET /health` trả `200` với body
+  `{"status": "ok", "db": "<ok|error>"}` — không bao giờ trả `5xx` chỉ vì
+  DB gián đoạn tạm thời; sự cố DB thể hiện qua field `db`, không qua mã
+  trạng thái HTTP.
+- **Cô lập truy cập DB**: mọi truy cập DB của backend đi qua 1 module
+  duy nhất (`app.core.db`) — để khi deploy production đổi sang RDS Data
+  API, chỉ cần thay implementation trong module này, không phải sửa
+  code gọi DB rải rác nhiều nơi.
 
 ## 5. Lịch sử thay đổi kiến trúc lớn
 
 | Ngày       | Ticket ID              | Thay đổi                                                   |
 |------------|--------------------------|--------------------------------------------------------------|
 | 2026-08-14 | CHANGE-002-architecture | Chốt kiến trúc khởi tạo: Serverless (Lambda+FastAPI, Aurora Serverless v2, Cognito, S3+CloudFront, CDK Python) |
+| 2026-08-15 | CHANGE-003-init-codebase | Chốt cấu trúc source code (`backend`/`frontend`/`infra` ở root), package manager (`uv`/`npm`), CI (GitHub Actions), hành vi `/health`, nguyên tắc cô lập DB access |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->
