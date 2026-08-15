@@ -44,13 +44,14 @@
       - Ghi chú: template Vite tự sinh sẵn **oxlint** thay vì eslint —
         đã so sánh nhanh 2 tool, quyết định giữ oxlint (nhanh, đủ dùng
         cho quy mô dự án), thêm prettier riêng cho format
-- [ ] **T10** — CDK (Python) skeleton, `cdk synth` chạy được
+- [x] **T10** — CDK (Python) skeleton, `cdk synth` chạy được
       - Liên quan: ARCH-07, ARCH-10, ARCH-11
       - File dự kiến: `infra/app.py`, `infra/stacks/main_stack.py`, `infra/package.json`
-- [ ] **T11** — CI (GitHub Actions): job backend/frontend/infra
+- [x] **T11** — CI (GitHub Actions): job backend/frontend/infra
       - Liên quan: ARCH-12, CLAUDE.md mục 2 (không giảm test coverage trên PR)
       - File dự kiến: `.github/workflows/ci.yml`
-- [ ] **T12** — Cập nhật README hướng dẫn chạy local
+      - Ghi chú: frontend job dùng `npm run lint` (oxlint) thay vì eslint
+- [x] **T12** — Cập nhật README hướng dẫn chạy local
       - Liên quan: ARCH-08, ARCH-10
       - File dự kiến: `README.md`
 - [ ] **T13** — Review chéo (Product/Technical owner: namlp) trước khi
@@ -64,4 +65,4 @@
 
 | Trạng thái   | Ngày cập nhật | Ghi chú                     |
 |--------------|----------------|--------------------------------|
-| Đang làm     | 2026-08-15     | T1-T9 xong; đang làm T10 (CDK skeleton) |
+| Đang làm     | 2026-08-15     | T1-T12 xong; chờ push branch để xác nhận CI thật (T11 step verify), sau đó review chéo T13 |
