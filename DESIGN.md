@@ -1,107 +1,261 @@
 ---
-version: alpha
-name: 実績管理システムのデザイン
-description: Design system dùng chung cho các màn hình admin/mobile của dự án <tên dự án>
+name: Structure & Clarity
+description: Design system cho 実績管理システム — phong cách Corporate Minimalism, phù hợp quản lý dự án outsource B2B với khách hàng Nhật.
 colors:
-  primary: "#1A56DB"
-  secondary: "#6C7278"
-  tertiary: "#B8422E"
-  neutral: "#F7F5F2"
-  success: "#1F9254"
-  warning: "#B7791F"
-  error: "#C81E1E"
-  on-primary: "#FFFFFF"
+  surface: '#f9f9ff'
+  surface-dim: '#d0daf0'
+  surface-bright: '#f9f9ff'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f0f3ff'
+  surface-container: '#e7eeff'
+  surface-container-high: '#dee8ff'
+  surface-container-highest: '#d9e3f9'
+  on-surface: '#121c2c'
+  on-surface-variant: '#43474e'
+  inverse-surface: '#273141'
+  inverse-on-surface: '#ebf1ff'
+  outline: '#74777f'
+  outline-variant: '#c4c6cf'
+  surface-tint: '#455f88'
+  primary: '#002045'
+  on-primary: '#ffffff'
+  primary-container: '#1a365d'
+  on-primary-container: '#86a0cd'
+  inverse-primary: '#adc7f7'
+  secondary: '#1960a3'
+  on-secondary: '#ffffff'
+  secondary-container: '#7db6ff'
+  on-secondary-container: '#00477f'
+  tertiary: '#002715'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#003f25'
+  on-tertiary-container: '#5caf81'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#d6e3ff'
+  primary-fixed-dim: '#adc7f7'
+  on-primary-fixed: '#001b3c'
+  on-primary-fixed-variant: '#2d476f'
+  secondary-fixed: '#d3e4ff'
+  secondary-fixed-dim: '#a2c9ff'
+  on-secondary-fixed: '#001c38'
+  on-secondary-fixed-variant: '#004881'
+  tertiary-fixed: '#9ff5c1'
+  tertiary-fixed-dim: '#83d8a6'
+  on-tertiary-fixed: '#002111'
+  on-tertiary-fixed-variant: '#005231'
+  background: '#f9f9ff'
+  on-background: '#121c2c'
+  surface-variant: '#d9e3f9'
 typography:
-  h1:
-    fontFamily: Noto Sans JP
-    fontSize: 2rem
-    fontWeight: 700
-  h2:
-    fontFamily: Noto Sans JP
-    fontSize: 1.5rem
-    fontWeight: 600
+  headline-lg:
+    fontFamily: Noto Sans
+    fontSize: 32px
+    fontWeight: '700'
+    lineHeight: 40px
+    letterSpacing: -0.02em
+  headline-md:
+    fontFamily: Noto Sans
+    fontSize: 24px
+    fontWeight: '700'
+    lineHeight: 32px
+    letterSpacing: -0.01em
+  headline-sm:
+    fontFamily: Noto Sans
+    fontSize: 18px
+    fontWeight: '700'
+    lineHeight: 24px
+  body-lg:
+    fontFamily: Noto Sans
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
   body-md:
-    fontFamily: Noto Sans JP
-    fontSize: 1rem
-    fontWeight: 400
-  label-caps:
-    fontFamily: Noto Sans JP
-    fontSize: 0.75rem
-    fontWeight: 500
+    fontFamily: Noto Sans
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 20px
+  body-sm:
+    fontFamily: Noto Sans
+    fontSize: 13px
+    fontWeight: '400'
+    lineHeight: 18px
+  label-md:
+    fontFamily: Noto Sans
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: 16px
+    letterSpacing: 0.05em
+  label-sm:
+    fontFamily: Noto Sans
+    fontSize: 11px
+    fontWeight: '700'
+    lineHeight: 14px
+    letterSpacing: 0.05em
+  headline-lg-mobile:
+    fontFamily: Noto Sans
+    fontSize: 24px
+    fontWeight: '700'
+    lineHeight: 32px
 rounded:
-  sm: 4px
-  md: 8px
-  lg: 16px
+  sm: 0.125rem
+  DEFAULT: 0.25rem
+  md: 0.375rem
+  lg: 0.5rem
+  xl: 0.75rem
+  full: 9999px
 spacing:
+  base: 8px
   xs: 4px
   sm: 8px
   md: 16px
   lg: 24px
   xl: 32px
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.sm}"
-    padding: 12px
-  button-primary-hover:
-    backgroundColor: "#164FC7"
-  button-primary-disabled:
-    backgroundColor: "{colors.neutral}"
-    textColor: "{colors.secondary}"
-  input-field:
-    backgroundColor: "#FFFFFF"
-    textColor: "{colors.primary}"
-    rounded: "{rounded.sm}"
-    padding: 8px
-  input-field-error:
-    backgroundColor: "#FFFFFF"
-    textColor: "{colors.error}"
-  card:
-    backgroundColor: "#FFFFFF"
-    rounded: "{rounded.md}"
-    padding: 16px
+  gutter: 16px
+  margin-page: 32px
 ---
 
-## Overview
+## Thương hiệu & Phong cách
 
-<Mô tả ngắn phong cách thiết kế: nghiêm túc/enterprise (phù hợp app quản lý
-kho, dashboard B2B cho khách hàng Nhật), ưu tiên rõ ràng - dễ đọc - mật độ
-thông tin cao hơn là màu mè. Ví dụ: "Phong cách Enterprise Clean — ưu tiên
-độ tương phản cao, ít trang trí, phù hợp người dùng thao tác nhanh trên
-kho/cửa hàng.">
+Design system này được xây dựng cho môi trường yêu cầu độ chính xác cao
+của quản lý dự án IT outsource B2B tại Nhật Bản. Cá tính thương hiệu bắt
+nguồn từ **sự chính xác, tinh thần trách nhiệm, và hiệu quả có hệ
+thống**. Thiết kế tránh các chi tiết trang trí rườm rà, ưu tiên triết lý
+"công cụ là trên hết" — giao diện không bao giờ được cạnh tranh sự chú ý
+với dữ liệu dự án quan trọng mà nó hiển thị.
+
+Phong cách thiết kế là **Corporate Minimalism** (Tối giản doanh nghiệp)
+đã được tinh chỉnh. Sử dụng ngôn ngữ thiết kế phẳng (flat design) với
+đường viền tương phản cao để hỗ trợ quét thông tin nhanh trong dữ liệu
+dày đặc. Bằng cách ưu tiên tính toàn vẹn cấu trúc và phân cấp thị giác rõ
+ràng, hệ thống gợi lên cảm giác đáng tin cậy và kỷ luật chuyên nghiệp —
+điều cần thiết cho hoạt động outsource ở quy mô doanh nghiệp.
 
 ## Colors
 
-- **Primary (#1A56DB):** Màu chính cho action/button quan trọng nhất, link.
-- **Secondary (#6C7278):** Text phụ, border, placeholder.
-- **Tertiary (#B8422E):** Dùng cho cảnh báo cần chú ý nhẹ (không phải error).
-- **Neutral (#F7F5F2):** Nền phụ, trạng thái disabled.
-- **Success/Warning/Error:** Dùng cho trạng thái hệ thống (toast, badge, validation) — không dùng cho mục đích trang trí khác.
+Bảng màu mang tính chức năng nghiêm ngặt, dùng "Navy đậm" (Deep Corporate
+Navy) để thể hiện sự uy tín, và "Xanh dương chuyên nghiệp" cho các thành
+phần tương tác.
+
+- **Primary (#002045):** Dùng cho điều hướng cố định (sidebar/header),
+  tiêu đề cấp cao, và nhận diện thương hiệu ở tầng cấu trúc.
+- **Secondary — Action (#1960a3):** Dành riêng cho button, link, trạng
+  thái active — dẫn hướng mắt người dùng tới hành động cần hoàn thành.
+- **Tertiary — Success (#002715, container `#003f25`, on-container
+  `#5caf81`):** Dùng cho chỉ báo trạng thái dự án tích cực và các mốc
+  hoàn thành.
+- **Neutral/Surface:** Cách tiếp cận phân lớp dùng `surface` (`#f9f9ff`)
+  làm nền canvas và `surface-container-lowest` (`#ffffff`) cho các khối
+  nội dung (card, modal) — tạo khác biệt tinh tế nhưng rõ ràng giữa vùng
+  làm việc và vùng dữ liệu.
+- **Text tương phản cao:** `on-surface` (`#121c2c`) đảm bảo độ dễ đọc tối
+  đa trên nền sáng, đáp ứng chuẩn accessibility cho người dùng thao tác
+  trong thời gian dài.
+- **Error (`#ba1a1a`, container `#ffdad6`):** Dùng cho lỗi/validation
+  fail — không dùng cho mục đích nhấn mạnh thông thường.
 
 ## Typography
 
-- **H1 (2rem, 700):** Tiêu đề màn hình chính.
-- **H2 (1.5rem, 600):** Tiêu đề section trong 1 màn hình.
-- **Body MD (1rem, 400):** Nội dung chính, label form.
-- **Label Caps (0.75rem, 500):** Label nhỏ, tag, timestamp.
-- Font `Noto Sans JP` được chọn vì hỗ trợ tốt hiển thị tiếng Nhật lẫn tiếng Việt trong cùng 1 màn hình (báo cáo, tên sản phẩm song ngữ).
+Hệ thống dùng duy nhất **Noto Sans** (đảm bảo hiển thị tốt ký tự tiếng
+Nhật song song với chuỗi kỹ thuật Latin/số).
 
-## Layout
+- **Phân cấp:** dùng `headline-sm` (18px) cho tiêu đề card và section,
+  giữ mật độ thông tin cao.
+- **Nội dung chính:** `body-md` (14px) là cỡ chữ chủ lực cho dữ liệu
+  bảng và mô tả.
+- **Label:** `label-md`/`label-sm` dùng weight semi-bold + letter-
+  spacing nhẹ để phân biệt metadata với nội dung chính.
+- **Mật độ dữ liệu cao:** trong bảng phức tạp, cho phép dùng `body-sm`
+  (13px) để tối đa hoá khả năng nhìn lướt qua (at-a-glance) tập dữ liệu
+  lớn.
 
-- Base spacing unit: 8px (`spacing.sm`). Mọi khoảng cách nên là bội số của 8px.
-- Grid: 12 cột cho web admin, single-column cho mobile (Flutter).
-- Khoảng cách giữa các section trong 1 màn hình: `spacing.lg` (24px) trở lên.
+## Layout & Spacing
+
+Hệ thống tuân theo lưới tuyến tính **8px** nghiêm ngặt để đảm bảo tính
+nhất quán xuyên suốt mọi module.
+
+- **Mô hình layout:** lưới hybrid 12 cột fixed-fluid. Sidebar cố định
+  240px, vùng nội dung chính dùng lưới fluid với max-width 1440px để
+  tránh dòng text quá dài trên màn hình siêu rộng.
+- **Mật độ:** dùng khoảng cách dọc "chặt" (tight). Gutter giữa các card
+  là `md` (16px), padding nội bộ cho component nhiều dữ liệu (bảng) dùng
+  `sm` (8px) để giảm thiểu việc cuộn trang.
+- **Breakpoint:**
+  - Mobile (<768px): 1 cột, margin giảm còn 16px.
+  - Tablet (768px–1024px): lưới 8 cột, sidebar thu gọn còn icon.
+  - Desktop (>1024px): lưới 12 cột, sidebar đầy đủ.
+
+## Elevation & Depth
+
+Để giữ đúng tinh thần "Enterprise Clean", hệ thống tránh drop-shadow
+truyền thống và hiệu ứng neomorphic.
+
+- **Phân lớp theo tông màu (Tonal Layering):** độ sâu được thể hiện qua
+  thay đổi màu nền — nền trang chính dùng `surface` (`#f9f9ff`), container
+  tương tác (card, modal) dùng `surface-container-lowest` (`#ffffff`).
+- **Viền phẳng:** thay vì đổ bóng, dùng border 1px solid màu
+  `outline-variant` (`#c4c6cf`) để xác định ranh giới element.
+- **Elevation khi active:** khi hover, element có thể dùng border-bottom
+  2px hoặc shadow rất nhẹ, mờ (`0 2px 4px rgba(0,0,0,0.05)`) chỉ để gợi ý
+  tính tương tác, không phải để trang trí.
+- **Modal:** overlay cấp cao dùng backdrop bán trong suốt (`primary`
+  `#002045` ở độ mờ 40%) để giữ tập trung vào tác vụ đang làm.
+
+## Shapes
+
+Ngôn ngữ hình khối mang tính bảo thủ và hình học.
+
+- **Component tiêu chuẩn:** góc bo "mềm" (`rounded.DEFAULT`, 4px /
+  0.25rem) áp dụng cho button, input field, card nhỏ — giảm cảm giác
+  "brutalist" mà vẫn giữ tính chuyên nghiệp.
+- **Badge trạng thái & filter chip:** dùng `rounded.lg` (8px) để phân
+  biệt với button có thể click.
+- **Container lớn:** vùng nội dung chính và container trang lớn dùng góc
+  vuông (0px) hoặc bo rất nhẹ (4px) để củng cố cảm giác cấu trúc, kiến
+  trúc của hệ thống.
 
 ## Components
 
-- **button-primary**: dùng cho action chính duy nhất trên 1 màn hình (submit, lưu, xác nhận). Không dùng quá 1 button-primary cùng lúc trên 1 màn hình.
-- **input-field**: border 1px `{colors.secondary}` mặc định, chuyển sang `input-field-error` khi validate fail.
-- **card**: dùng để nhóm thông tin liên quan (vd 1 sản phẩm trong danh sách RFID).
+### Bảng dữ liệu mật độ cao (Data Table)
+- **Style:** border-bottom 1px màu `outline-variant` (`#c4c6cf`) cho mỗi
+  row. Nền header dùng `surface-container-low` (`#f0f3ff`) với text
+  `label-sm`.
+- **Tương tác:** hover row dùng nền `surface-container-low` (`#f0f3ff`).
+  Không dùng shadow.
+
+### Filter Chip & Status Badge
+- **Chip:** nền xám nhạt, border 1px, có icon "X" để xoá.
+- **Status Badge:** dùng cách phối "nền tinted" (vd Success = nền xanh
+  lá nhạt + text xanh lá đậm) để đảm bảo dễ đọc mà không quá nặng nề như
+  khối màu đặc.
+
+### Action Button
+- **Primary:** nền đặc `secondary` (`#1960a3`), text trắng, bo góc 4px.
+- **Secondary/Ghost:** border 1px `secondary` (`#1960a3`), text cùng
+  màu.
+- **Kích thước:** chiều cao chuẩn 32px cho layout mật độ cao; 40px cho
+  action chính của trang.
+
+### Input Field
+- **Mặc định:** border 1px `outline-variant` (`#c4c6cf`). Khi focus,
+  border đổi sang `secondary` (`#1960a3`) kèm viền glow mờ bên trong 1px.
+- **Label:** căn trên (top-aligned), dùng `label-md` để tối ưu không
+  gian trong form.
+
+### Stat Card
+- **Cấu trúc:** border 1px, padding nội bộ 16px.
+- **Nội dung:** giá trị số lớn dùng `headline-md` màu `primary`, mô tả
+  phụ dùng `label-sm` màu neutral.
 
 ## Do's and Don'ts
 
-- ✅ Dùng `button-primary` cho đúng 1 hành động quan trọng nhất/màn hình.
-- ✅ Dùng `error` color CHỈ cho thông báo lỗi thật, không dùng cho nhấn mạnh thông thường.
-- ❌ Không tự ý thêm màu mới ngoài palette đã định nghĩa — nếu thiếu, cập nhật file này trước, không hardcode trong code.
-- ❌ Không dùng font khác ngoài `Noto Sans JP` cho nội dung chính (đảm bảo hiển thị đúng ký tự Nhật).
+- ✅ Dùng đúng token trong `colors`/`typography`/`rounded`/`spacing` ở
+  trên — không tự ý thêm giá trị mới ngoài palette đã định nghĩa.
+- ✅ Chỉ dùng `error` cho thông báo lỗi thật, không dùng cho nhấn mạnh
+  thông thường.
+- ❌ Không dùng font khác ngoài `Noto Sans` cho nội dung chính (đảm bảo
+  hiển thị đúng ký tự Nhật).
+- ❌ Không thêm drop-shadow/gradient trang trí — mọi độ sâu thể hiện qua
+  tông màu nền (Tonal Layering) hoặc border phẳng (xem mục Elevation & Depth).
