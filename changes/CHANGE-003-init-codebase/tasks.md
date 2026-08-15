@@ -25,21 +25,25 @@
       - File dự kiến: `docker-compose.yml`, `backend/.env.example`
       - Ghi chú: cổng host đổi từ 5432 → **5433** để tránh xung đột với
         container Postgres khác (`iask_postgres`) đã chiếm 5432 trên máy
-- [ ] **T5** — Alembic setup (baseline migration rỗng)
+- [x] **T5** — Alembic setup (baseline migration rỗng)
       - Liên quan: DM-G01, DM-G02 (migration tool)
       - File dự kiến: `backend/alembic.ini`, `backend/migrations/`
-- [ ] **T6** — Lambda handler stub (Mangum, chưa deploy)
+      - Ghi chú: `alembic upgrade head` chạy OK trên Postgres thật (port 5433)
+- [x] **T6** — Lambda handler stub (Mangum, chưa deploy)
       - Liên quan: ARCH-02, ARCH-07 (chưa deploy)
       - File dự kiến: `backend/app/lambda_handler.py`
-- [ ] **T7** — Backend lint (ruff) + full test run
+- [x] **T7** — Backend lint (ruff) + full test run
       - Liên quan: CLAUDE.md mục 2 (lint/format bắt buộc)
       - File dự kiến: `backend/ruff.toml`
-- [ ] **T8** — Frontend project skeleton (Vite+React+TS), gọi `GET /health`
+- [x] **T8** — Frontend project skeleton (Vite+React+TS), gọi `GET /health`
       - Liên quan: ARCH-01, ARCH-11
       - File dự kiến: `frontend/src/App.tsx`, `frontend/src/App.test.tsx`
-- [ ] **T9** — Frontend lint (eslint + prettier)
+- [x] **T9** — Frontend lint (oxlint) + format (prettier)
       - Liên quan: CLAUDE.md mục 2 (lint/format bắt buộc)
       - File dự kiến: `frontend/.prettierrc`
+      - Ghi chú: template Vite tự sinh sẵn **oxlint** thay vì eslint —
+        đã so sánh nhanh 2 tool, quyết định giữ oxlint (nhanh, đủ dùng
+        cho quy mô dự án), thêm prettier riêng cho format
 - [ ] **T10** — CDK (Python) skeleton, `cdk synth` chạy được
       - Liên quan: ARCH-07, ARCH-10, ARCH-11
       - File dự kiến: `infra/app.py`, `infra/stacks/main_stack.py`, `infra/package.json`
@@ -60,4 +64,4 @@
 
 | Trạng thái   | Ngày cập nhật | Ghi chú                     |
 |--------------|----------------|--------------------------------|
-| Đang làm     | 2026-08-15     | T1-T4 xong (verify `/health` end-to-end với Postgres thật OK); đang làm T5 |
+| Đang làm     | 2026-08-15     | T1-T9 xong; đang làm T10 (CDK skeleton) |
