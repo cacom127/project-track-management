@@ -1,0 +1,12 @@
+[project]
+name = "project-track-infra"
+version = "0.1.0"
+description = "AWS CDK (Python) cho 実績管理システム"
+requires-python = ">=3.12"
+dependencies = [
+    "aws-cdk-lib>=2.265.0",
+    "constructs>=10.8.1",
+]
+
+[tool.uv]
+package = false
