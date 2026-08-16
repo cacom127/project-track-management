@@ -53,13 +53,13 @@
 
       - Liên quan: DM-G01, DM-G02
       - Ghi chú: chạy trực tiếp qua Data API (boto3 execute_statement) từ local — KHÔNG dùng Lambda invoke (Lambda chưa gắn VPC, không cần thiết vì Data API không cần VPC networking). Tạo bảng alembic_version + insert revision 66d20e7ae749 thủ công, đúng effect của `alembic upgrade head`.
-- [ ] **T10** — Frontend: build production trỏ `VITE_API_BASE_URL` vào
+- [x] **T10** — Frontend: build production trỏ `VITE_API_BASE_URL` vào
       URL API Gateway thật; CDK `BucketDeployment` đẩy build lên S3 +
       invalidate CloudFront
       
       - Liên quan: ARCH-01
       - File dự kiến: `infra/stacks/main_stack.py`, `frontend/.env.production`
-- [ ] **T11** — Verify end-to-end: mở URL CloudFront thật, gọi
+- [x] **T11** — Verify end-to-end: mở URL CloudFront thật, gọi
       `/health` qua API Gateway thật, xác nhận `{"status":"ok","db":"ok"}`
 - [ ] **T12** — Fold `ARCH-15..20` vào `specs/architecture.md`, archive
       ticket vào `changes/_archive/`
