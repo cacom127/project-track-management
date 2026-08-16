@@ -1,7 +1,10 @@
-from aws_cdk import Stack
+from aws_cdk import RemovalPolicy, Stack
+from aws_cdk import aws_cloudfront as cloudfront
+from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_rds as rds
+from aws_cdk import aws_s3 as s3
 from constructs import Construct
 
 
@@ -15,6 +18,10 @@ class MainStack(Stack):
 
         self.vpc = self._create_vpc()
         self.db_cluster = self._create_aurora_cluster()
+
+        self.attachments_bucket = self._create_attachments_bucket()
+        self.frontend_bucket = self._create_frontend_bucket()
+        self.distribution = self._create_cloudfront_distribution()
 
     def _create_user_pool(self) -> cognito.UserPool:
         return cognito.UserPool(
@@ -82,4 +89,52 @@ class MainStack(Stack):
             serverless_v2_max_capacity=1,
             writer=rds.ClusterInstance.serverless_v2("Writer"),
             enable_data_api=True,
+        )
+
+    def _create_attachments_bucket(self) -> s3.Bucket:
+        # Private hoàn toàn — không qua CloudFront, backend cấp
+        # presigned URL để đọc/ghi (theo ARCH-06).
+        return s3.Bucket(
+            self,
+            "AttachmentsBucket",
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy=RemovalPolicy.RETAIN,
+        )
+
+    def _create_frontend_bucket(self) -> s3.Bucket:
+        # Private — chỉ CloudFront (qua Origin Access Control) đọc được,
+        # không public trực tiếp.
+        return s3.Bucket(
+            self,
+            "FrontendBucket",
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
+
+    def _create_cloudfront_distribution(self) -> cloudfront.Distribution:
+        return cloudfront.Distribution(
+            self,
+            "FrontendDistribution",
+            default_root_object="index.html",
+            default_behavior=cloudfront.BehaviorOptions(
+                origin=origins.S3BucketOrigin.with_origin_access_control(
+                    self.frontend_bucket
+                ),
+                viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            ),
+            # SPA: route không tồn tại (client-side routing) vẫn trả về
+            # index.html thay vì lỗi 403/404 từ S3.
+            error_responses=[
+                cloudfront.ErrorResponse(
+                    http_status=403,
+                    response_http_status=200,
+                    response_page_path="/index.html",
+                ),
+                cloudfront.ErrorResponse(
+                    http_status=404,
+                    response_http_status=200,
+                    response_page_path="/index.html",
+                ),
+            ],
         )
