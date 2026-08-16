@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "AWS CDK (Python) cho 実績管理システム"
 requires-python = ">=3.12"
 dependencies = [
+    "aws-cdk-aws-lambda-python-alpha>=2.265.0a0",
     "aws-cdk-lib>=2.265.0",
     "constructs>=10.8.1",
 ]

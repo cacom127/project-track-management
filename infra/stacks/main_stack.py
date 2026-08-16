@@ -1,11 +1,73 @@
-from aws_cdk import RemovalPolicy, Stack
+import jsii
+from aws_cdk import Duration, RemovalPolicy, Stack
 from aws_cdk import aws_cloudfront as cloudfront
 from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk.aws_lambda_python_alpha import BundlingOptions, ICommandHooks, PythonFunction
 from constructs import Construct
+
+# (1) Đã có sẵn trong Lambda Python runtime — không cần bundle vào gói
+# deploy (giảm size, xem ghi chú tại _create_backend_function).
+_RUNTIME_PROVIDED_PACKAGE_GLOBS = [
+    "boto3",
+    "boto3-*",
+    "botocore",
+    "botocore-*",
+    "s3transfer",
+    "s3transfer-*",
+    "jmespath",
+    "jmespath-*",
+    "dateutil",
+    "python_dateutil-*",
+    "urllib3",
+    "urllib3-*",
+    "six.py",
+    "six-*",
+]
+
+# (2) Chỉ cần cho `uvicorn` chạy server local (uvicorn[standard] extras)
+# — trên Lambda, Mangum gọi thẳng FastAPI app, KHÔNG bao giờ chạy
+# uvicorn thật (không có import uvicorn ở đâu trong app/), nên toàn bộ
+# nhóm này là dead weight trên production.
+_LOCAL_DEV_ONLY_SERVER_PACKAGE_GLOBS = [
+    "uvicorn",
+    "uvicorn-*",
+    "uvloop",
+    "uvloop.libs",
+    "uvloop-*",
+    "httptools",
+    "httptools-*",
+    "watchfiles",
+    "watchfiles-*",
+    "websockets",
+    "websockets-*",
+    "yaml",
+    "_yaml",
+    "pyyaml-*",
+]
+
+
+@jsii.implements(ICommandHooks)
+class _StripLambdaUnnecessaryPackages:
+    """Xoá 2 nhóm package không cần thiết khỏi gói Lambda sau khi `uv
+    sync` cài xong (`asset_excludes` không dùng được ở đây vì nó chỉ lọc
+    lúc COPY SOURCE vào container, không lọc package MỚI CÀI bên trong):
+    (1) package đã có sẵn trong Lambda runtime (boto3...), (2) package
+    chỉ phục vụ chạy `uvicorn` server local, không dùng trên Lambda."""
+
+    def before_bundling(self, input_dir: str, output_dir: str) -> list[str]:
+        return []
+
+    def after_bundling(self, input_dir: str, output_dir: str) -> list[str]:
+        # KHÔNG quote path — pattern có "*" cần shell glob-expand, quote
+        # sẽ vô hiệu hoá wildcard (rm -rf tìm đúng tên file "boto3-*").
+        all_globs = _RUNTIME_PROVIDED_PACKAGE_GLOBS + _LOCAL_DEV_ONLY_SERVER_PACKAGE_GLOBS
+        targets = " ".join(f"{output_dir}/{p}" for p in all_globs)
+        return [f"rm -rf {targets}"]
 
 
 class MainStack(Stack):
@@ -22,6 +84,8 @@ class MainStack(Stack):
         self.attachments_bucket = self._create_attachments_bucket()
         self.frontend_bucket = self._create_frontend_bucket()
         self.distribution = self._create_cloudfront_distribution()
+
+        self.backend_function = self._create_backend_function()
 
     def _create_user_pool(self) -> cognito.UserPool:
         return cognito.UserPool(
@@ -138,3 +202,38 @@ class MainStack(Stack):
                 ),
             ],
         )
+
+    def _create_backend_function(self) -> PythonFunction:
+        fn = PythonFunction(
+            self,
+            "BackendFunction",
+            entry="../backend",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            index="app/lambda_handler.py",
+            handler="handler",
+            timeout=Duration.seconds(29),
+            memory_size=512,
+            # `.venv` là bản build tạm của bước cài dependency (uv sync)
+            # — sau khi công cụ copy phần cần dùng ra dạng "phẳng" đúng
+            # chuẩn Lambda, `.venv` gốc không còn cần nữa (copy thừa,
+            # ~126MB, suýt chạm giới hạn 250MB unzipped của Lambda).
+            # `boto3`/`botocore` (+ dependency riêng: s3transfer, jmespath,
+            # python-dateutil, urllib3, six) đã có sẵn trong Lambda Python
+            # runtime — xoá khỏi gói sau khi bundle (command_hooks) để
+            # giảm thêm ~28MB. Đánh đổi: dùng đúng version boto3 mà AWS
+            # cài sẵn trong runtime (không tự pin được) — chấp nhận vì
+            # chỉ dùng API ổn định (execute_statement).
+            bundling=BundlingOptions(
+                asset_excludes=[".venv", ".pytest_cache", ".ruff_cache", "tests"],
+                command_hooks=_StripLambdaUnnecessaryPackages(),
+            ),
+            environment={
+                "DB_BACKEND": "data-api",
+                "DB_CLUSTER_ARN": self.db_cluster.cluster_arn,
+                "DB_SECRET_ARN": self.db_cluster.secret.secret_arn,
+                "DB_NAME": "app",
+            },
+        )
+        self.db_cluster.grant_data_api_access(fn)
+        self.attachments_bucket.grant_read_write(fn)
+        return fn
