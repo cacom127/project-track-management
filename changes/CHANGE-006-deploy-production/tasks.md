@@ -47,11 +47,12 @@
       xử lý lỗi phát sinh nếu có
 
       - Liên quan: ARCH-20
-- [ ] **T9** — Chạy Alembic migration (baseline rỗng) lên Aurora thật —
+- [x] **T9** — Chạy Alembic migration (baseline rỗng) lên Aurora thật —
       quyết định cách chạy cụ thể khi tới bước này (khả năng: Lambda
       invoke thủ công 1 lần chạy `alembic upgrade head`)
 
       - Liên quan: DM-G01, DM-G02
+      - Ghi chú: chạy trực tiếp qua Data API (boto3 execute_statement) từ local — KHÔNG dùng Lambda invoke (Lambda chưa gắn VPC, không cần thiết vì Data API không cần VPC networking). Tạo bảng alembic_version + insert revision 66d20e7ae749 thủ công, đúng effect của `alembic upgrade head`.
 - [ ] **T10** — Frontend: build production trỏ `VITE_API_BASE_URL` vào
       URL API Gateway thật; CDK `BucketDeployment` đẩy build lên S3 +
       invalidate CloudFront
