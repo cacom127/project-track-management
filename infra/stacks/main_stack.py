@@ -1,5 +1,8 @@
 import jsii
-from aws_cdk import Duration, RemovalPolicy, Stack
+from aws_cdk import CfnOutput, Duration, RemovalPolicy, Stack
+from aws_cdk import aws_apigatewayv2 as apigwv2
+from aws_cdk import aws_apigatewayv2_authorizers as apigwv2_authorizers
+from aws_cdk import aws_apigatewayv2_integrations as apigwv2_integrations
 from aws_cdk import aws_cloudfront as cloudfront
 from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_cognito as cognito
@@ -86,6 +89,10 @@ class MainStack(Stack):
         self.distribution = self._create_cloudfront_distribution()
 
         self.backend_function = self._create_backend_function()
+        self.jwt_authorizer = self._create_jwt_authorizer()
+        self.http_api = self._create_http_api()
+
+        self._create_outputs()
 
     def _create_user_pool(self) -> cognito.UserPool:
         return cognito.UserPool(
@@ -237,3 +244,35 @@ class MainStack(Stack):
         self.db_cluster.grant_data_api_access(fn)
         self.attachments_bucket.grant_read_write(fn)
         return fn
+
+    def _create_jwt_authorizer(self) -> apigwv2_authorizers.HttpJwtAuthorizer:
+        # Sẵn sàng cho các route nghiệp vụ sau này (vd /projects) — route
+        # nào cần đăng nhập thì gắn authorizer này. `/health` (mục
+        # _create_http_api) KHÔNG dùng authorizer — health-check cần
+        # public để công cụ giám sát gọi được mà không cần token.
+        return apigwv2_authorizers.HttpJwtAuthorizer(
+            "CognitoAuthorizer",
+            jwt_issuer=(
+                f"https://cognito-idp.{self.region}.amazonaws.com/{self.user_pool.user_pool_id}"
+            ),
+            jwt_audience=[self.user_pool_client.user_pool_client_id],
+        )
+
+    def _create_http_api(self) -> apigwv2.HttpApi:
+        # Route mặc định ($default) forward MỌI request sang Lambda,
+        # KHÔNG gắn authorizer ở tầng API Gateway — FastAPI/Mangum tự lo
+        # routing bên trong 1 Lambda-lith (đúng ARCH-02). `/health` nhờ
+        # vậy public, không cần JWT.
+        return apigwv2.HttpApi(
+            self,
+            "HttpApi",
+            default_integration=apigwv2_integrations.HttpLambdaIntegration(
+                "BackendIntegration", self.backend_function
+            ),
+        )
+
+    def _create_outputs(self) -> None:
+        CfnOutput(self, "ApiUrl", value=self.http_api.api_endpoint)
+        CfnOutput(self, "FrontendUrl", value=f"https://{self.distribution.domain_name}")
+        CfnOutput(self, "UserPoolId", value=self.user_pool.user_pool_id)
+        CfnOutput(self, "UserPoolClientId", value=self.user_pool_client.user_pool_client_id)
