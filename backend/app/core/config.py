@@ -12,5 +12,8 @@ class Settings(BaseSettings):
     db_secret_arn: str = ""
     db_name: str = "app"
 
+    # Danh sách origin cho phép CORS, phân cách bởi dấu phẩy.
+    cors_origins: str = "http://localhost:5173"
+
 
 settings = Settings()

@@ -10,6 +10,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_rds as rds
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_s3_deployment as s3_deployment
 from aws_cdk.aws_lambda_python_alpha import BundlingOptions, ICommandHooks, PythonFunction
 from constructs import Construct
 
@@ -92,6 +93,7 @@ class MainStack(Stack):
         self.jwt_authorizer = self._create_jwt_authorizer()
         self.http_api = self._create_http_api()
 
+        self._deploy_frontend()
         self._create_outputs()
 
     def _create_user_pool(self) -> cognito.UserPool:
@@ -239,6 +241,7 @@ class MainStack(Stack):
                 "DB_CLUSTER_ARN": self.db_cluster.cluster_arn,
                 "DB_SECRET_ARN": self.db_cluster.secret.secret_arn,
                 "DB_NAME": "app",
+                "CORS_ORIGINS": f"https://{self.distribution.domain_name}",
             },
         )
         self.db_cluster.grant_data_api_access(fn)
@@ -269,6 +272,19 @@ class MainStack(Stack):
             default_integration=apigwv2_integrations.HttpLambdaIntegration(
                 "BackendIntegration", self.backend_function
             ),
+        )
+
+    def _deploy_frontend(self) -> None:
+        # `frontend/dist` phải build sẵn trước khi `cdk deploy` (npm run
+        # build) — CDK chỉ copy file có sẵn lên S3 + invalidate CloudFront,
+        # không tự build.
+        s3_deployment.BucketDeployment(
+            self,
+            "DeployFrontend",
+            sources=[s3_deployment.Source.asset("../frontend/dist")],
+            destination_bucket=self.frontend_bucket,
+            distribution=self.distribution,
+            distribution_paths=["/*"],
         )
 
     def _create_outputs(self) -> None:
