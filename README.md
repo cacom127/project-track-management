@@ -145,3 +145,29 @@ npx cdk synth
 ```
 
 Kiến trúc chi tiết: xem `specs/architecture.md`, `specs/data-model.md`.
+
+## Deploy production
+
+Đã deploy thật lên AWS (`ap-northeast-1`, account riêng của dự án).
+`cdk deploy` chạy **thủ công** từ máy dev, chưa tự động qua CI/CD.
+
+1. Đăng nhập AWS qua SSO (làm 1 lần, xem hướng dẫn setup trong lịch sử
+   `changes/_archive/CHANGE-006-deploy-production/`):
+   ```bash
+   aws sso login --profile project-track
+   ```
+2. Build frontend production (BẮT BUỘC trước khi deploy — CDK chỉ copy
+   file có sẵn, không tự build):
+   ```bash
+   cd frontend && npm run build
+   ```
+3. Deploy:
+   ```bash
+   cd infra
+   export AWS_PROFILE=project-track   # PowerShell: $env:AWS_PROFILE = "project-track"
+   npx cdk deploy
+   ```
+4. Sau khi deploy xong, CDK in ra `Outputs` gồm `ApiUrl` (API Gateway),
+   `FrontendUrl` (CloudFront), `UserPoolId`, `UserPoolClientId` — dùng
+   `aws rds-data` (không cần VPC) để xem/sửa dữ liệu Aurora trực tiếp
+   nếu cần, hoặc dùng RDS Query Editor trên AWS Console.

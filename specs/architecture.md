@@ -58,11 +58,23 @@
   về 0 ACU khi không dùng, Lambda/API Gateway/S3/CloudFront chỉ tính
   tiền theo lượng dùng thực tế. Chấp nhận độ trễ vài giây "wake up" của
   Aurora sau thời gian dài idle, đổi lại chi phí gần $0 lúc rảnh.
-- **Data residency**: chưa xác định region cụ thể — cần chọn region AWS
-  phù hợp (dự kiến `ap-northeast-1` — Tokyo) khi triển khai thật.
+- **Data residency**: region `ap-northeast-1` (Tokyo) — đã deploy thật.
 - **CI/CD**: **GitHub Actions** — chạy lint + test riêng cho `backend`,
   `frontend`, và `infra` (`cdk synth`) trên mọi pull request và mọi push
-  vào branch mặc định.
+  vào branch mặc định. `cdk deploy` production hiện chạy **thủ công** từ
+  máy dev (qua AWS IAM Identity Center/SSO) — chưa tự động hoá CI/CD deploy.
+- **Aurora Serverless v2**: capacity **0–1 ACU**. Truy cập Data API ở
+  production qua **`boto3` `rds-data` client trực tiếp** (KHÔNG dùng
+  package `sqlalchemy-aurora-data-api` — bản mới nhất phát hành
+  2023-12-30, quá 12 tháng, vi phạm `CLAUDE.md` mục 2).
+- **Lambda packaging**: `aws_lambda_python_alpha.PythonFunction` (bundle
+  qua Docker, dựa trên `uv.lock`). Loại bỏ khỏi gói deploy: package đã
+  có sẵn trong Lambda runtime (`boto3`, `botocore`...) và package chỉ
+  phục vụ chạy `uvicorn` server local (`uvicorn`, `uvloop`, `httptools`,
+  `watchfiles`, `websockets`, `PyYAML`) — Lambda dùng Mangum gọi thẳng
+  FastAPI app, không bao giờ chạy uvicorn thật.
+- **Domain**: dùng domain mặc định AWS cho cả frontend (CloudFront) và
+  API (API Gateway) — chưa có custom domain.
 
 ## 4. Nguyên tắc kỹ thuật xuyên suốt
 
@@ -94,5 +106,6 @@
 |------------|--------------------------|--------------------------------------------------------------|
 | 2026-08-14 | CHANGE-002-architecture | Chốt kiến trúc khởi tạo: Serverless (Lambda+FastAPI, Aurora Serverless v2, Cognito, S3+CloudFront, CDK Python) |
 | 2026-08-15 | CHANGE-003-init-codebase | Chốt cấu trúc source code (`backend`/`frontend`/`infra` ở root), package manager (`uv`/`npm`), CI (GitHub Actions), hành vi `/health`, nguyên tắc cô lập DB access |
+| 2026-08-17 | CHANGE-006-deploy-production | Deploy thật lần đầu lên AWS (`ap-northeast-1`): Cognito, Aurora Serverless v2 (0-1 ACU), Lambda, API Gateway, S3+CloudFront. Xác nhận `/health` chạy đúng end-to-end trên production thật |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

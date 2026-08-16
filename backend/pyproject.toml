@@ -5,6 +5,7 @@ description = "Backend API cho 実績管理システム"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.19.1",
+    "boto3>=1.43.72",
     "fastapi>=0.141.1",
     "mangum>=0.21.0",
     "psycopg[binary]>=3.3.4",

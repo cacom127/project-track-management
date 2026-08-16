@@ -73,6 +73,12 @@ jobs:
         run: |
           npm ci
           uv sync
+      - name: Ensure frontend/dist exists (placeholder for synth)
+        # `cdk synth` chỉ kiểm tra cấu trúc CDK hợp lệ, không cần nội
+        # dung dist thật — BucketDeployment chỉ cần thư mục tồn tại và
+        # có ít nhất 1 file. Không build lại frontend ở đây để tránh
+        # trùng lặp với job `frontend` (đã build/test riêng).
+        run: mkdir -p frontend/dist && echo "placeholder" > frontend/dist/index.html
       - name: cdk synth
         working-directory: infra
         run: npx cdk synth
