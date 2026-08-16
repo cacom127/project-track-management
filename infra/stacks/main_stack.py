@@ -150,7 +150,7 @@ class MainStack(Stack):
             self,
             "AuroraCluster",
             engine=rds.DatabaseClusterEngine.aurora_postgres(
-                version=rds.AuroraPostgresEngineVersion.VER_16_4
+                version=rds.AuroraPostgresEngineVersion.VER_16_13
             ),
             vpc=self.vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_ISOLATED),
