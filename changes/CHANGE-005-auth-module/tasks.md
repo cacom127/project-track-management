@@ -21,7 +21,7 @@
 
       - Liên quan: AUTH-04, AUTH-05, AUTH-12
       - File dự kiến: `infra/stacks/main_stack.py`
-- [ ] **T3** — Backend: `main.py` — chỉ `add_middleware(CORSMiddleware)`
+- [x] **T3** — Backend: `main.py` — chỉ `add_middleware(CORSMiddleware)`
       khi KHÔNG có biến môi trường `AWS_LAMBDA_FUNCTION_NAME` (viết test
       trước: mock `os.environ` 2 trường hợp, assert middleware có/không
       được add)
