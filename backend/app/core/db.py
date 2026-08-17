@@ -10,9 +10,21 @@ from app.core.config import settings
 class DBSession(Protocol):
     """Interface chung cho cả 2 nhánh truy vấn DB — router chỉ cần biết
     interface này, không cần biết đang chạy SQLAlchemy (local) hay Data
-    API (production). Xem ARCH-14."""
+    API (production). Xem ARCH-14.
 
-    def execute(self, sql: str, params: dict[str, Any] | None = None) -> Any: ...
+    `execute()` luôn trả `list[dict[str, Any]]` ở CẢ 2 nhánh (rỗng nếu
+    câu lệnh không trả row, vd INSERT/UPDATE không có RETURNING) — trước
+    `CHANGE-007` chỉ nhánh Data API trả đúng dạng này, nhánh SQLAlchemy
+    trả thẳng `CursorResult` (không ai phát hiện vì `health` chỉ chạy
+    SELECT rồi bỏ qua kết quả). Chuẩn hoá lại khi `projects` module lần
+    đầu thực sự dùng kết quả INSERT/SELECT từ router.
+    `commit()` cần gọi tường minh sau khi ghi dữ liệu — nhánh Data API
+    tự commit từng câu lệnh (no-op ở đây), nhánh SQLAlchemy cần
+    `session.commit()` thật."""
+
+    def execute(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]: ...
+
+    def commit(self) -> None: ...
 
 
 class SqlAlchemySessionAdapter:
@@ -22,8 +34,14 @@ class SqlAlchemySessionAdapter:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def execute(self, sql: str, params: dict[str, Any] | None = None) -> Any:
-        return self._session.execute(text(sql), params or {})
+    def execute(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        result = self._session.execute(text(sql), params or {})
+        if result.returns_rows:
+            return [dict(row) for row in result.mappings().all()]
+        return []
+
+    def commit(self) -> None:
+        self._session.commit()
 
 
 engine = create_engine(settings.database_url, pool_pre_ping=True)
@@ -59,6 +77,11 @@ class DataApiSession:
             includeResultMetadata=True,
         )
         return _parse_data_api_records(response)
+
+    def commit(self) -> None:
+        """No-op: mỗi `execute_statement` (không truyền `transactionId`)
+        tự commit ngay khi Data API xử lý xong, không có khái niệm
+        session cần commit riêng như SQLAlchemy."""
 
 
 def _to_data_api_parameters(params: dict[str, Any]) -> list[dict[str, Any]]:
