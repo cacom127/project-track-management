@@ -43,6 +43,7 @@
 | Nới `password_policy` của `UserPool` trong CDK: chỉ bắt buộc hoa/thường/số, min 8 ký tự — bỏ yêu cầu ký tự đặc biệt (mặc định CDK có bật) | Message hiển thị lỗi policy ở FE đơn giản hơn (không cần giải thích "ký tự đặc biệt" mơ hồ với người dùng không rành). Đánh đổi: giảm nhẹ độ mạnh mật khẩu — chấp nhận được cho hệ thống nội bộ ít user. |
 | Không phân quyền admin/member ở route backend nào | Chưa có route nghiệp vụ nào cần phân biệt (đúng Non-goals ở `proposal.md`) — để dành cho module `projects` sau này. |
 | Tạo user mới: thủ công qua **AWS Console** (không dùng CLI, không làm UI) | Ngoài phạm vi ticket (Non-goals) — tránh phình to ticket auth cho 1 tác vụ hiếm khi làm. Console đơn giản hơn CLI cho thao tác 1-lần, không cần cài/config AWS CLI riêng cho việc này. |
+| Thêm `react-router` (v8.3.0, quyết định phát sinh ở T8) để route guard điều hướng theo URL thật (`/login`) | Dự án chưa có URL routing (`App.tsx` chỉ render 1 màn) — cần thiết cho `UI-AUTH-03-1` (redirect theo route) và các module sau (`projects`, `reporting`) cũng sẽ cần nhiều route. Đã kiểm tra freshness trước khi cài (đúng `CLAUDE.md` mục 2): bản `8.3.0` publish 2026-07-22. |
 
 ## 3. Rủi ro / đánh đổi (trade-off)
 

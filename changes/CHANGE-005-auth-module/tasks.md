@@ -52,7 +52,7 @@
 
       - Liên quan: UI-AUTH-02-1..2
       - File dự kiến: `frontend/src/pages/ChangePassword.tsx`, `frontend/src/pages/ChangePassword.test.tsx`
-- [ ] **T8** — Frontend: route guard (redirect `/login` nếu chưa có
+- [x] **T8** — Frontend: route guard (redirect `/login` nếu chưa có
       token hợp lệ) + header hiển thị email/role (từ claim
       `cognito:groups`) + nút Đăng xuất
 
