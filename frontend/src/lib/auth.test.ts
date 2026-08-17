@@ -27,10 +27,7 @@ import {
 } from "./auth";
 
 function base64Url(value: object): string {
-  return btoa(JSON.stringify(value))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 function makeIdToken(payload: Record<string, unknown>): string {

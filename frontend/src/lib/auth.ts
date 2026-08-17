@@ -80,14 +80,18 @@ export function completeNewPassword(
   newPassword: string,
 ): Promise<Tokens> {
   return new Promise((resolve, reject) => {
-    cognitoUser.completeNewPasswordChallenge(newPassword, {}, {
-      onSuccess: (session) => {
-        const tokens = extractTokens(session);
-        storeTokens(tokens);
-        resolve(tokens);
+    cognitoUser.completeNewPasswordChallenge(
+      newPassword,
+      {},
+      {
+        onSuccess: (session) => {
+          const tokens = extractTokens(session);
+          storeTokens(tokens);
+          resolve(tokens);
+        },
+        onFailure: (err) => reject(err),
       },
-      onFailure: (err) => reject(err),
-    });
+    );
   });
 }
 

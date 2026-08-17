@@ -11,9 +11,7 @@ vi.mock("../lib/auth", () => ({
 function renderLogin() {
   const onLoginSuccess = vi.fn();
   const onNewPasswordRequired = vi.fn();
-  render(
-    <Login onLoginSuccess={onLoginSuccess} onNewPasswordRequired={onNewPasswordRequired} />,
-  );
+  render(<Login onLoginSuccess={onLoginSuccess} onNewPasswordRequired={onNewPasswordRequired} />);
   return { onLoginSuccess, onNewPasswordRequired };
 }
 

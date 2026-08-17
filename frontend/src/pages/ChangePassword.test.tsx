@@ -55,7 +55,11 @@ describe("ChangePassword", () => {
   });
 
   it("completes the challenge and calls onSuccess (UI-AUTH-02-1)", async () => {
-    completeNewPasswordMock.mockResolvedValue({ idToken: "x", accessToken: "y", refreshToken: "z" });
+    completeNewPasswordMock.mockResolvedValue({
+      idToken: "x",
+      accessToken: "y",
+      refreshToken: "z",
+    });
     const { onSuccess } = renderScreen();
 
     fillForm("Passw0rd1", "Passw0rd1");
@@ -77,7 +81,9 @@ describe("ChangePassword", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("パスワードの条件を満たしていません（8文字以上、大文字・小文字・数字を含む）"),
+        screen.getByText(
+          "パスワードの条件を満たしていません（8文字以上、大文字・小文字・数字を含む）",
+        ),
       ).toBeInTheDocument();
     });
     expect(onSuccess).not.toHaveBeenCalled();
