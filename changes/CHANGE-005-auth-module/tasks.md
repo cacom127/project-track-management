@@ -42,7 +42,7 @@
 
       - Liên quan: AUTH-01, AUTH-02, AUTH-06, AUTH-07, AUTH-09, AUTH-11
       - File dự kiến: `frontend/src/lib/auth.ts`, `frontend/src/lib/auth.test.ts`
-- [ ] **T6** — Frontend: màn hình Login (`/login`) — layout, state
+- [x] **T6** — Frontend: màn hình Login (`/login`) — layout, state
       matrix, message tiếng Nhật theo `delta-spec.md` mục 1c
 
       - Liên quan: UI-AUTH-01-1..4
