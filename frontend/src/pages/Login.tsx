@@ -47,35 +47,49 @@ export function Login({ onLoginSuccess, onNewPasswordRequired }: Props) {
   }
 
   return (
-    <main>
-      <h1>実績管理システム</h1>
-      {error?.kind === "toast" && <p role="alert">{error.message}</p>}
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="login-email">メールアドレス</label>
-        <input
-          id="login-email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          disabled={submitting}
-          required
-        />
+    <main className="auth-page">
+      <div className="auth-card">
+        <h1>実績管理システム</h1>
+        {error?.kind === "toast" && (
+          <p className="toast-error" role="alert">
+            {error.message}
+          </p>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="input-field">
+            <label htmlFor="login-email">メールアドレス</label>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              disabled={submitting}
+              required
+            />
+          </div>
 
-        <label htmlFor="login-password">パスワード</label>
-        <input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          disabled={submitting}
-          required
-        />
-        {error?.kind === "field" && <p role="alert">{error.message}</p>}
+          <div className={`input-field${error?.kind === "field" ? " input-field-error" : ""}`}>
+            <label htmlFor="login-password">パスワード</label>
+            <input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              disabled={submitting}
+              required
+            />
+            {error?.kind === "field" && (
+              <p className="field-error-message" role="alert">
+                {error.message}
+              </p>
+            )}
+          </div>
 
-        <button type="submit" disabled={submitting}>
-          ログイン
-        </button>
-      </form>
+          <button type="submit" className="button-primary" disabled={submitting}>
+            ログイン
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

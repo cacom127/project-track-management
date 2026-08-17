@@ -53,35 +53,49 @@ export function ChangePassword({ cognitoUser, onSuccess }: Props) {
   }
 
   return (
-    <main>
-      <h1>新しいパスワードを設定してください</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="new-password">新しいパスワード</label>
-        <input
-          id="new-password"
-          type="password"
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
-          disabled={submitting}
-          required
-        />
+    <main className="auth-page">
+      <div className="auth-card">
+        <h1>新しいパスワードを設定してください</h1>
+        {serverError && (
+          <p className="toast-error" role="alert">
+            {serverError}
+          </p>
+        )}
+        <form onSubmit={handleSubmit}>
+          <div className="input-field">
+            <label htmlFor="new-password">新しいパスワード</label>
+            <input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              disabled={submitting}
+              required
+            />
+          </div>
 
-        <label htmlFor="confirm-password">確認用パスワード</label>
-        <input
-          id="confirm-password"
-          type="password"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          disabled={submitting}
-          required
-        />
-        {mismatch && <p role="alert">{MISMATCH_ERROR_MESSAGE}</p>}
-        {serverError && <p role="alert">{serverError}</p>}
+          <div className={`input-field${mismatch ? " input-field-error" : ""}`}>
+            <label htmlFor="confirm-password">確認用パスワード</label>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              disabled={submitting}
+              required
+            />
+            {mismatch && (
+              <p className="field-error-message" role="alert">
+                {MISMATCH_ERROR_MESSAGE}
+              </p>
+            )}
+          </div>
 
-        <button type="submit" disabled={submitting || !canSubmit}>
-          設定する
-        </button>
-      </form>
+          <button type="submit" className="button-primary" disabled={submitting || !canSubmit}>
+            設定する
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

@@ -23,7 +23,7 @@ function Home() {
   return (
     <>
       <Header />
-      <main>
+      <main className="app-page">
         <h1>実績管理システム</h1>
         <p>Status: {health?.status ?? "loading..."}</p>
         <p>DB: {health?.db ?? "loading..."}</p>

@@ -12,14 +12,14 @@ export function Header() {
   }
 
   return (
-    <header>
+    <header className="app-header">
       {user && (
         <>
-          <span>{user.email}</span>
-          <span>{user.role}</span>
+          <span className="user-email">{user.email}</span>
+          <span className="user-role">{user.role}</span>
         </>
       )}
-      <button type="button" onClick={handleLogout}>
+      <button type="button" className="button-primary" onClick={handleLogout}>
         ログアウト
       </button>
     </header>
