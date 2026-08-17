@@ -28,10 +28,12 @@
 
       - Liên quan: AUTH-13
       - File dự kiến: `backend/app/main.py`, `backend/tests/test_main.py`
-- [ ] **T4** — Kiểm tra freshness `amazon-cognito-identity-js` (npm,
+- [x] **T4** — Kiểm tra freshness `amazon-cognito-identity-js` (npm,
       ngày publish bản mới nhất) trước khi cài — đúng `CLAUDE.md` mục 2
 
       - Liên quan: (điều kiện tiên quyết cho T5)
+      - Ghi chú: bản `latest` = `6.3.20`, publish 2026-07-04 (~1.5
+        tháng trước) — đạt yêu cầu freshness.
 - [ ] **T5** — Frontend: `src/lib/auth.ts` — wrapper SRP login,
       `completeNewPasswordChallenge`, đọc/ghi token `localStorage`,
       decode payload `idToken`, `logout()` (chỉ xoá local, không gọi
