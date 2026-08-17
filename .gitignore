@@ -19,3 +19,6 @@ cdk.out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code — cấu hình/skill local, không chia sẻ qua git
+.claude/
