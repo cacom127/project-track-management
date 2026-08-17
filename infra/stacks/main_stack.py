@@ -304,7 +304,20 @@ class MainStack(Stack):
         )
         api.add_routes(
             path="/{proxy+}",
-            methods=[apigwv2.HttpMethod.ANY],
+            # KHÔNG dùng HttpMethod.ANY — nó bao gồm cả OPTIONS, khiến
+            # route tường minh (có authorizer) chiếm quyền xử lý OPTIONS
+            # thay vì để API Gateway tự trả lời preflight qua
+            # cors_preflight ở trên. Hậu quả: mọi preflight bị 401 vì
+            # trình duyệt không gửi Authorization kèm OPTIONS (phát
+            # hiện qua curl thật sau khi deploy — xem CHANGE-005 T10).
+            methods=[
+                apigwv2.HttpMethod.GET,
+                apigwv2.HttpMethod.POST,
+                apigwv2.HttpMethod.PUT,
+                apigwv2.HttpMethod.PATCH,
+                apigwv2.HttpMethod.DELETE,
+                apigwv2.HttpMethod.HEAD,
+            ],
             integration=integration,
             authorizer=self.jwt_authorizer,
         )

@@ -219,6 +219,14 @@
   `cors_preflight=apigwv2.CorsPreflightOptions(...)` với origin =
   `f"https://{self.distribution.domain_name}"` — KHÔNG được để trống,
   nếu không preflight OPTIONS sẽ bị JWT Authorizer chặn (xem AUTH-12).
+- **Quan trọng**: route `/{proxy+}` có authorizer KHÔNG được dùng
+  `methods=[apigwv2.HttpMethod.ANY]` — `ANY` bao gồm cả `OPTIONS`, khiến
+  route tường minh (có authorizer) chiếm quyền xử lý OPTIONS thay vì để
+  `cors_preflight` tự trả lời, gây lại đúng bug AUTH-12 dù đã cấu hình
+  `cors_preflight`. Phải liệt kê tường minh từng method thật (GET, POST,
+  PUT, PATCH, DELETE, HEAD) — phát hiện qua `curl` thật trên production
+  ở T10 (không phát hiện được qua `cdk synth`/unit test, chỉ thấy khi
+  gọi API thật).
 - `backend/app/main.py`: bọc `app.add_middleware(CORSMiddleware, ...)`
   trong `if not os.environ.get("AWS_LAMBDA_FUNCTION_NAME")` — chỉ thêm
   ở local dev, KHÔNG thêm khi chạy trên Lambda (xem AUTH-13). Có thể bỏ
