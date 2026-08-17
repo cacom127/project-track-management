@@ -14,8 +14,8 @@
 
       - Liên quan: AUTH-03, AUTH-14
       - File dự kiến: `infra/stacks/main_stack.py`
-- [ ] **T2** — CDK: `_create_http_api` — bỏ `default_integration`, thêm
-      `cors_configuration` (origin = domain CloudFront), khai báo route
+- [x] **T2** — CDK: `_create_http_api` — bỏ `default_integration`, thêm
+      `cors_preflight` (origin = domain CloudFront), khai báo route
       tường minh: `GET /health` (không authorizer) + `ANY /{proxy+}`
       (gắn `self.jwt_authorizer`)
 

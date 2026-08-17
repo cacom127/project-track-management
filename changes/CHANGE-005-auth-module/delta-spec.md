@@ -45,7 +45,7 @@
   the token server-side.
 - **[AUTH-12] (MỚI)** The system's API Gateway (`HttpApi`) shall handle
   CORS preflight (`OPTIONS`) requests via its built-in
-  `cors_configuration` — preflight requests shall NOT require a JWT and
+  `cors_preflight` — preflight requests shall NOT require a JWT and
   shall NOT reach the JWT Authorizer or the Lambda function.
 - **[AUTH-13] (MỚI)** When running on Lambda (detected via the
   `AWS_LAMBDA_FUNCTION_NAME` environment variable), the backend shall
@@ -216,7 +216,7 @@
 - Không thêm endpoint `GET /auth/me` hay bất kỳ route `/auth/*` nào ở
   backend — module này thuần frontend + hạ tầng CDK.
 - `infra/stacks/main_stack.py`: `_create_http_api` phải thêm
-  `cors_configuration=apigwv2.CorsPreflightOptions(...)` với origin =
+  `cors_preflight=apigwv2.CorsPreflightOptions(...)` với origin =
   `f"https://{self.distribution.domain_name}"` — KHÔNG được để trống,
   nếu không preflight OPTIONS sẽ bị JWT Authorizer chặn (xem AUTH-12).
 - `backend/app/main.py`: bọc `app.add_middleware(CORSMiddleware, ...)`

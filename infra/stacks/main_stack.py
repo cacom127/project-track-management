@@ -276,17 +276,39 @@ class MainStack(Stack):
         )
 
     def _create_http_api(self) -> apigwv2.HttpApi:
-        # Route mặc định ($default) forward MỌI request sang Lambda,
-        # KHÔNG gắn authorizer ở tầng API Gateway — FastAPI/Mangum tự lo
-        # routing bên trong 1 Lambda-lith (đúng ARCH-02). `/health` nhờ
-        # vậy public, không cần JWT.
-        return apigwv2.HttpApi(
+        # KHÔNG dùng default_integration ($default) nữa (CHANGE-005) —
+        # HttpApi không áp được authorizer chọn lọc lên $default, nên
+        # phải khai báo route tường minh: /health public, các route còn
+        # lại bắt buộc JWT (AUTH-04, AUTH-05).
+        #
+        # cors_preflight: để API Gateway tự trả lời OPTIONS (preflight)
+        # KHÔNG qua authorizer/Lambda — nếu không, trình duyệt gửi
+        # OPTIONS (không kèm Authorization) sẽ bị JWT Authorizer chặn
+        # 401, làm hỏng CORS cho mọi API cần login (AUTH-12).
+        api = apigwv2.HttpApi(
             self,
             "HttpApi",
-            default_integration=apigwv2_integrations.HttpLambdaIntegration(
-                "BackendIntegration", self.backend_function
+            cors_preflight=apigwv2.CorsPreflightOptions(
+                allow_origins=[f"https://{self.distribution.domain_name}"],
+                allow_methods=[apigwv2.CorsHttpMethod.ANY],
+                allow_headers=["Authorization", "Content-Type"],
             ),
         )
+        integration = apigwv2_integrations.HttpLambdaIntegration(
+            "BackendIntegration", self.backend_function
+        )
+        api.add_routes(
+            path="/health",
+            methods=[apigwv2.HttpMethod.GET],
+            integration=integration,
+        )
+        api.add_routes(
+            path="/{proxy+}",
+            methods=[apigwv2.HttpMethod.ANY],
+            integration=integration,
+            authorizer=self.jwt_authorizer,
+        )
+        return api
 
     def _deploy_frontend(self) -> None:
         # `frontend/dist` phải build sẵn trước khi `cdk deploy` (npm run
