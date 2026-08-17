@@ -147,3 +147,8 @@ mới).
   header `Authorization` KHÔNG verify chữ ký (không có ranh giới bảo mật
   thật ở local, cùng cách tiếp cận với `decodeIdToken()` phía frontend).
   Dùng chung cho MỌI route cần biết "ai đang gọi", không riêng `projects`.
+- **`infra/stacks/main_stack.py`**: thêm `CfnOutput` `DbClusterArn`/
+  `DbSecretArn` — cần cho `backend/scripts/apply_migration_via_data_api.py`
+  chạy từ máy dev (trước đây 2 giá trị này chỉ set qua Lambda env var,
+  không lấy ra ngoài dễ dàng). Verify bằng `cdk synth`, không đổi resource
+  nào — chỉ thêm output.
