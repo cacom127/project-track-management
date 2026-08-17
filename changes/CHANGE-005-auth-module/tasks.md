@@ -64,11 +64,26 @@
 
       - Liên quan: AUTH-06, AUTH-08
       - File dự kiến: `frontend/src/lib/apiClient.ts`
-- [ ] **T10** — `cdk deploy` lại (profile SSO `project-track`) — verify
+- [x] **T10** — `cdk deploy` lại (profile SSO `project-track`) — verify
       preflight OPTIONS không bị 401 (`TC-AUTH-12`), response thật chỉ
       có đúng 1 header `Access-Control-Allow-Origin` (`TC-AUTH-13`)
 
       - Liên quan: AUTH-12, AUTH-13
+      - Ghi chú: phát hiện + fix bug thật khi deploy (xem commit
+        `4346dd9`) — `HttpMethod.ANY` trên route `/{proxy+}` chặn cả
+        OPTIONS, gây 401 dù đã cấu hình `cors_preflight`. Sau fix,
+        `curl -X OPTIONS /health` → `204` (đã verify thật qua curl với
+        origin CloudFront thật, header CORS không trùng lặp).
+      - Ghi chú thêm: phát hiện 2 bug khác qua kiểm tra thật trên trình
+        duyệt (không phát hiện được qua build/test local) — (1)
+        `Uncaught ReferenceError: global is not defined` do
+        `amazon-cognito-identity-js` dùng biến Node `global`, fix bằng
+        `vite.config.ts` `define: { global: "globalThis" }` (commit
+        `b6b4b5f`); (2) UI chưa áp token `DESIGN.md` (chỉ HTML thô,
+        không đúng CLAUDE.md mục 3), fix bằng cách viết lại `index.css`
+        theo đúng token + áp class vào Login/ChangePassword/Header
+        (commit `8cb2b79`). Đã xác nhận với user: giao diện production
+        hiển thị đúng, đẹp.
 - [ ] **T11** — Tạo 1 user test qua AWS Console (theo hướng dẫn mục 3),
       verify E2E thật trên URL CloudFront: login → bị bắt đổi mật khẩu
       → đổi thành công → vào app → thấy email/role ở header → logout →
