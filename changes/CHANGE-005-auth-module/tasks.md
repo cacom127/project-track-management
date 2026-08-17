@@ -34,7 +34,7 @@
       - Liên quan: (điều kiện tiên quyết cho T5)
       - Ghi chú: bản `latest` = `6.3.20`, publish 2026-07-04 (~1.5
         tháng trước) — đạt yêu cầu freshness.
-- [ ] **T5** — Frontend: `src/lib/auth.ts` — wrapper SRP login,
+- [x] **T5** — Frontend: `src/lib/auth.ts` — wrapper SRP login,
       `completeNewPasswordChallenge`, đọc/ghi token `localStorage`,
       decode payload `idToken`, `logout()` (chỉ xoá local, không gọi
       Cognito) — viết unit test trước cho phần decode token + logic
