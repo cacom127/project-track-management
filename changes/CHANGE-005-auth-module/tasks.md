@@ -47,7 +47,7 @@
 
       - Liên quan: UI-AUTH-01-1..4
       - File dự kiến: `frontend/src/pages/Login.tsx`, `frontend/src/pages/Login.test.tsx`
-- [ ] **T7** — Frontend: màn hình Đổi mật khẩu lần đầu — layout, state
+- [x] **T7** — Frontend: màn hình Đổi mật khẩu lần đầu — layout, state
       matrix, message tiếng Nhật theo `delta-spec.md` mục 1c
 
       - Liên quan: UI-AUTH-02-1..2
