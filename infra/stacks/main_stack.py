@@ -106,6 +106,16 @@ class MainStack(Stack):
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True, mutable=True),
             ),
+            # Không bắt ký tự đặc biệt (khác mặc định CDK) — message lỗi
+            # tiếng Nhật ở FE (CHANGE-005, AUTH-14) chỉ giải thích
+            # hoa/thường/số để dễ hiểu cho người dùng không rành kỹ thuật.
+            password_policy=cognito.PasswordPolicy(
+                min_length=8,
+                require_uppercase=True,
+                require_lowercase=True,
+                require_digits=True,
+                require_symbols=False,
+            ),
         )
 
     def _create_user_pool_client(self) -> cognito.UserPoolClient:
@@ -118,6 +128,10 @@ class MainStack(Stack):
                 user_srp=True,
                 user_password=False,
             ),
+            # 4 giờ thay vì mặc định 1 giờ (CHANGE-005, AUTH-03) — giảm
+            # tần suất phải đăng nhập lại trong ngày làm việc.
+            id_token_validity=Duration.hours(4),
+            access_token_validity=Duration.hours(4),
         )
 
     def _create_admin_group(self) -> cognito.CfnUserPoolGroup:
@@ -262,17 +276,52 @@ class MainStack(Stack):
         )
 
     def _create_http_api(self) -> apigwv2.HttpApi:
-        # Route mặc định ($default) forward MỌI request sang Lambda,
-        # KHÔNG gắn authorizer ở tầng API Gateway — FastAPI/Mangum tự lo
-        # routing bên trong 1 Lambda-lith (đúng ARCH-02). `/health` nhờ
-        # vậy public, không cần JWT.
-        return apigwv2.HttpApi(
+        # KHÔNG dùng default_integration ($default) nữa (CHANGE-005) —
+        # HttpApi không áp được authorizer chọn lọc lên $default, nên
+        # phải khai báo route tường minh: /health public, các route còn
+        # lại bắt buộc JWT (AUTH-04, AUTH-05).
+        #
+        # cors_preflight: để API Gateway tự trả lời OPTIONS (preflight)
+        # KHÔNG qua authorizer/Lambda — nếu không, trình duyệt gửi
+        # OPTIONS (không kèm Authorization) sẽ bị JWT Authorizer chặn
+        # 401, làm hỏng CORS cho mọi API cần login (AUTH-12).
+        api = apigwv2.HttpApi(
             self,
             "HttpApi",
-            default_integration=apigwv2_integrations.HttpLambdaIntegration(
-                "BackendIntegration", self.backend_function
+            cors_preflight=apigwv2.CorsPreflightOptions(
+                allow_origins=[f"https://{self.distribution.domain_name}"],
+                allow_methods=[apigwv2.CorsHttpMethod.ANY],
+                allow_headers=["Authorization", "Content-Type"],
             ),
         )
+        integration = apigwv2_integrations.HttpLambdaIntegration(
+            "BackendIntegration", self.backend_function
+        )
+        api.add_routes(
+            path="/health",
+            methods=[apigwv2.HttpMethod.GET],
+            integration=integration,
+        )
+        api.add_routes(
+            path="/{proxy+}",
+            # KHÔNG dùng HttpMethod.ANY — nó bao gồm cả OPTIONS, khiến
+            # route tường minh (có authorizer) chiếm quyền xử lý OPTIONS
+            # thay vì để API Gateway tự trả lời preflight qua
+            # cors_preflight ở trên. Hậu quả: mọi preflight bị 401 vì
+            # trình duyệt không gửi Authorization kèm OPTIONS (phát
+            # hiện qua curl thật sau khi deploy — xem CHANGE-005 T10).
+            methods=[
+                apigwv2.HttpMethod.GET,
+                apigwv2.HttpMethod.POST,
+                apigwv2.HttpMethod.PUT,
+                apigwv2.HttpMethod.PATCH,
+                apigwv2.HttpMethod.DELETE,
+                apigwv2.HttpMethod.HEAD,
+            ],
+            integration=integration,
+            authorizer=self.jwt_authorizer,
+        )
+        return api
 
     def _deploy_frontend(self) -> None:
         # `frontend/dist` phải build sẵn trước khi `cdk deploy` (npm run

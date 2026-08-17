@@ -42,7 +42,7 @@
 
 | Module      | Vai trò                                       | Spec chi tiết          |
 |-------------|-------------------------------------------------|--------------------------|
-| auth        | Xác thực, đồng bộ user với Cognito, phân quyền  | `specs/auth.md` (chưa có — làm ở ticket riêng) |
+| auth        | Xác thực, đồng bộ user với Cognito, phân quyền  | `specs/auth.md`, `specs/auth-ui.md` |
 | projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md` (chưa có — làm ở ticket riêng) |
 | reporting   | Thống kê/dashboard (theo năm, khách hàng, tech...) | `specs/reporting.md` (chưa có — làm ở ticket riêng) |
 | export      | Export dữ liệu ra PowerPoint                    | Chưa spec — ưu tiên thấp, chưa quyết định chi tiết (xem `specs/vision.md` mục 4) |
@@ -75,6 +75,14 @@
   FastAPI app, không bao giờ chạy uvicorn thật.
 - **Domain**: dùng domain mặc định AWS cho cả frontend (CloudFront) và
   API (API Gateway) — chưa có custom domain.
+- **API Gateway CORS**: cấu hình qua `cors_preflight` ở tầng `HttpApi`
+  (KHÔNG qua middleware ứng dụng cho request từ CloudFront) — mọi route
+  bảo vệ bằng JWT Authorizer PHẢI khai báo method tường minh (GET/POST/
+  PUT/PATCH/DELETE/HEAD), KHÔNG dùng `HttpMethod.ANY`, vì `ANY` bao gồm
+  cả `OPTIONS` và sẽ khiến route (có authorizer) chiếm quyền xử lý
+  preflight thay vì để API Gateway tự trả lời — gây `401` cho mọi
+  preflight của trình duyệt (đã gặp bug thật lúc deploy `CHANGE-005`).
+  Áp dụng cho MỌI route thêm sau này, không riêng module nào.
 
 ## 4. Nguyên tắc kỹ thuật xuyên suốt
 
@@ -107,5 +115,6 @@
 | 2026-08-14 | CHANGE-002-architecture | Chốt kiến trúc khởi tạo: Serverless (Lambda+FastAPI, Aurora Serverless v2, Cognito, S3+CloudFront, CDK Python) |
 | 2026-08-15 | CHANGE-003-init-codebase | Chốt cấu trúc source code (`backend`/`frontend`/`infra` ở root), package manager (`uv`/`npm`), CI (GitHub Actions), hành vi `/health`, nguyên tắc cô lập DB access |
 | 2026-08-17 | CHANGE-006-deploy-production | Deploy thật lần đầu lên AWS (`ap-northeast-1`): Cognito, Aurora Serverless v2 (0-1 ACU), Lambda, API Gateway, S3+CloudFront. Xác nhận `/health` chạy đúng end-to-end trên production thật |
+| 2026-08-17 | CHANGE-005-auth-module | Bật JWT Authorizer thật cho mọi route (trừ `/health`), cấu hình CORS ở API Gateway (`cors_preflight`, route method tường minh — không dùng `ANY` vì chặn OPTIONS). Xác nhận login/đổi mật khẩu/logout E2E thật trên production |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

@@ -50,4 +50,4 @@
 
 | Ngày       | Ticket ID | Thay đổi                  |
 |------------|-----------|------------------------------|
-| YYYY-MM-DD | SIC_DEV-1 | Khởi tạo convention logging |
+| YYYY-MM-DD | CHANGE-1 | Khởi tạo convention logging |

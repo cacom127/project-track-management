@@ -41,4 +41,4 @@
 
 | Ngày       | Ticket ID | Thay đổi                          |
 |------------|-----------|--------------------------------------|
-| YYYY-MM-DD | SIC_DEV-1 | Khởi tạo chiến lược + catalog ban đầu |
+| YYYY-MM-DD | CHANGE-1 | Khởi tạo chiến lược + catalog ban đầu |

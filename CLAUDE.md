@@ -85,9 +85,17 @@
 
 - Layout, trạng thái màn hình (loading/error/empty...), và hành vi tương
   tác của TỪNG chức năng cụ thể được viết trong `specs/<module>-ui.md`
-  (hoặc mục `## UI` trong `specs/<module>.md` nếu module đơn giản).
+  (mẫu: `specs/example-module-auth-ui.md`), hoặc mục `## UI` trong
+  `specs/<module>.md` nếu module chỉ có 1 màn hình đơn giản.
 - UI feature spec tham chiếu ngược lại token trong `DESIGN.md`, không lặp
-  lại giá trị màu/font cụ thể.
+  lại giá trị màu/font cụ thể — chỉ ghi tên component/token.
+- Trong `changes/<ticket-id>/`: thay đổi UI đơn giản ghi thẳng vào mục
+  "## 1c" của `delta-spec.md`; thay đổi UI phức tạp (nhiều màn hình) tách
+  riêng `ui-delta-spec.md` (optional, xem mẫu trong
+  `changes/_template/ui-delta-spec.md`).
+- Ảnh/mockup/Figma chỉ là tài liệu tham khảo (mục "Tham chiếu thiết kế"),
+  KHÔNG phải nguồn chân lý — nguồn chân lý luôn là nội dung text (EARS +
+  state matrix), vì ảnh không diff/trace/test-map được.
 
 ## 6. Phân loại độ lớn thay đổi (Change Sizing)
 
