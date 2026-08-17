@@ -48,7 +48,7 @@ spec-template/
 6. Sau khi code xong, test pass, review xong:
    - Gộp nội dung `delta-spec.md` vào file tương ứng trong `specs/`.
    - Cập nhật bảng "Lịch sử thay đổi" trong file `specs/` đó.
-   - Di chuyển `changes/SIC_DEV-123-.../` sang `changes/_archive/`.
+   - Di chuyển `changes/CHANGE-123-.../` sang `changes/_archive/`.
 
 ## Cách dùng DESIGN.md (design system)
 
