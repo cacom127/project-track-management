@@ -84,12 +84,16 @@
         theo đúng token + áp class vào Login/ChangePassword/Header
         (commit `8cb2b79`). Đã xác nhận với user: giao diện production
         hiển thị đúng, đẹp.
-- [ ] **T11** — Tạo 1 user test qua AWS Console (theo hướng dẫn mục 3),
+- [x] **T11** — Tạo 1 user test qua AWS Console (theo hướng dẫn mục 3),
       verify E2E thật trên URL CloudFront: login → bị bắt đổi mật khẩu
       → đổi thành công → vào app → thấy email/role ở header → logout →
       về lại `/login`
 
       - Liên quan: AUTH-01, AUTH-02, AUTH-10, AUTH-14, UI-AUTH-01..03
+      - Ghi chú: dùng "Set a password" thay vì "Generate a password"
+        (mục Console không hiện lại được mật khẩu generate sau khi tạo
+        — cần tự đặt để chủ động test). User xác nhận toàn bộ flow
+        chạy đúng trên production thật.
 - [ ] **T12** — Fold `AUTH-01..14` vào `specs/auth.md` (tạo mới),
       `UI-AUTH-01..03` vào `specs/auth-ui.md` (tạo mới), cập nhật bảng
       module ở `specs/architecture.md` mục 2 (trỏ sang file spec vừa
