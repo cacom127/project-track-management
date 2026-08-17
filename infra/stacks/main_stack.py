@@ -106,6 +106,16 @@ class MainStack(Stack):
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True, mutable=True),
             ),
+            # Không bắt ký tự đặc biệt (khác mặc định CDK) — message lỗi
+            # tiếng Nhật ở FE (CHANGE-005, AUTH-14) chỉ giải thích
+            # hoa/thường/số để dễ hiểu cho người dùng không rành kỹ thuật.
+            password_policy=cognito.PasswordPolicy(
+                min_length=8,
+                require_uppercase=True,
+                require_lowercase=True,
+                require_digits=True,
+                require_symbols=False,
+            ),
         )
 
     def _create_user_pool_client(self) -> cognito.UserPoolClient:
@@ -118,6 +128,10 @@ class MainStack(Stack):
                 user_srp=True,
                 user_password=False,
             ),
+            # 4 giờ thay vì mặc định 1 giờ (CHANGE-005, AUTH-03) — giảm
+            # tần suất phải đăng nhập lại trong ngày làm việc.
+            id_token_validity=Duration.hours(4),
+            access_token_validity=Duration.hours(4),
         )
 
     def _create_admin_group(self) -> cognito.CfnUserPoolGroup:
