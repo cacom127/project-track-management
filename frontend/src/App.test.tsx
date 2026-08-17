@@ -11,6 +11,12 @@ vi.mock("./lib/auth", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("./lib/projectsApi", () => ({
+  listProjects: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20 }),
+  listTechTags: vi.fn().mockResolvedValue([]),
+  createProject: vi.fn(),
+}));
+
 function renderAppAt(path: string) {
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -50,5 +56,26 @@ describe("App", () => {
 
     expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
     expect(screen.queryByText(/Status:/)).not.toBeInTheDocument();
+  });
+
+  it("renders the project list screen at /projects when authenticated", async () => {
+    isAuthenticatedMock.mockReturnValue(true);
+    renderAppAt("/projects");
+
+    expect(await screen.findByText("プロジェクトが見つかりません")).toBeInTheDocument();
+  });
+
+  it("renders the project create screen at /projects/new when authenticated", () => {
+    isAuthenticatedMock.mockReturnValue(true);
+    renderAppAt("/projects/new");
+
+    expect(screen.getByRole("heading", { name: "新規プロジェクト" })).toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated users away from /projects", () => {
+    isAuthenticatedMock.mockReturnValue(false);
+    renderAppAt("/projects");
+
+    expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
   });
 });
