@@ -341,3 +341,7 @@ class MainStack(Stack):
         CfnOutput(self, "FrontendUrl", value=f"https://{self.distribution.domain_name}")
         CfnOutput(self, "UserPoolId", value=self.user_pool.user_pool_id)
         CfnOutput(self, "UserPoolClientId", value=self.user_pool_client.user_pool_client_id)
+        # CHANGE-007: cần cho backend/scripts/apply_migration_via_data_api.py
+        # (production không có kết nối trực tiếp Aurora, chỉ Data API).
+        CfnOutput(self, "DbClusterArn", value=self.db_cluster.cluster_arn)
+        CfnOutput(self, "DbSecretArn", value=self.db_cluster.secret.secret_arn)
