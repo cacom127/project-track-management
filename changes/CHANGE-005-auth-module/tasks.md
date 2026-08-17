@@ -58,7 +58,7 @@
 
       - Liên quan: UI-AUTH-03-1..3
       - File dự kiến: `frontend/src/components/RouteGuard.tsx`, `frontend/src/components/Header.tsx` (tên file tuỳ theo cấu trúc hiện có)
-- [ ] **T9** — Frontend: HTTP client dùng chung — tự gắn
+- [x] **T9** — Frontend: HTTP client dùng chung — tự gắn
       `Authorization: Bearer <idToken>` cho mọi request tới backend; khi
       nhận `401` thì xoá token + redirect `/login`
 
