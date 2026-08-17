@@ -94,7 +94,7 @@
         (mục Console không hiện lại được mật khẩu generate sau khi tạo
         — cần tự đặt để chủ động test). User xác nhận toàn bộ flow
         chạy đúng trên production thật.
-- [ ] **T12** — Fold `AUTH-01..14` vào `specs/auth.md` (tạo mới),
+- [x] **T12** — Fold `AUTH-01..14` vào `specs/auth.md` (tạo mới),
       `UI-AUTH-01..03` vào `specs/auth-ui.md` (tạo mới), cập nhật bảng
       module ở `specs/architecture.md` mục 2 (trỏ sang file spec vừa
       tạo thay vì "chưa có"), archive ticket vào `changes/_archive/`
