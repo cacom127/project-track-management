@@ -43,13 +43,17 @@
   component `Navigation Sidebar` trong `DESIGN.md`). Ẩn Sidebar ở
   viewport <768px. Chỉ 1 mục nav hiện tại ("プロジェクト一覧"), mở rộng
   khi có module mới (`reporting`...). Xem `CHANGE-009-app-shell-and-projects-ui-refresh`.
+  Cũng render 1 `ToastHost` dùng chung (thông báo thành công sau
+  Tạo/Sửa/Xoá — xem `specs/projects-ui.md` mục 6) — mọi module dùng
+  chung component này, không tự implement riêng. Xem
+  `CHANGE-010-project-detail-edit-delete`.
 
 ## 2. Danh sách module/domain
 
 | Module      | Vai trò                                       | Spec chi tiết          |
 |-------------|-------------------------------------------------|--------------------------|
 | auth        | Xác thực, đồng bộ user với Cognito, phân quyền  | `specs/auth.md`, `specs/auth-ui.md` |
-| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md`, `specs/projects-ui.md` (List+Create xong; Edit/Delete/Detail/file đính kèm — ticket riêng) |
+| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md`, `specs/projects-ui.md` (List+Create+Detail+Edit+Delete xong; file đính kèm — ticket riêng) |
 | reporting   | Thống kê/dashboard (theo năm, khách hàng, tech...) | `specs/reporting.md` (chưa có — làm ở ticket riêng) |
 | export      | Export dữ liệu ra PowerPoint                    | Chưa spec — ưu tiên thấp, chưa quyết định chi tiết (xem `specs/vision.md` mục 4) |
 
@@ -171,5 +175,6 @@
 | 2026-08-18 | CHANGE-007-projects-list-create | Module `projects` đầu tiên (List+Create): chốt nguyên tắc raw SQL qua `DBSession` (không ORM), migration production qua script Data API (`apply_migration_via_data_api.py`), dependency lấy user hiện tại từ JWT (`app/core/auth.py`), validation error trả 400 thay vì 422 mặc định |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix 3 bug thật phát hiện lúc deploy `CHANGE-007` (retry `DatabaseResumingException`, cast `date`/`numeric` tường minh, parse đúng `isNull`/`arrayValue` của Data API response) + 1 fix chủ động (array_agg) — tất cả áp dụng cho MỌI module qua Data API, không riêng `projects` |
 | 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | Thêm App Shell (Sidebar dọc 240px, dùng chung mọi route); cập nhật `DESIGN.md` (component Navigation Sidebar, Dropdown/Filter) |
+| 2026-08-19 | CHANGE-010-project-detail-edit-delete | Module `projects`: thêm Detail/Edit/Delete (soft delete); thêm `ToastHost` dùng chung trong App Shell; cập nhật `DESIGN.md` (Modal, Toast, Action Button destructive) |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

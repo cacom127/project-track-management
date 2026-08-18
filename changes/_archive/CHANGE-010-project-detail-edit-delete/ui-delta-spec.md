@@ -71,26 +71,32 @@
   click bên trong panel.
 - Nút "削除する" dùng Action Button biến thể destructive (màu `error`).
 
-### 2.4 List — thêm nút Detail
+### 2.4 List — thêm icon Detail
 
-- Thêm 1 cột/nút "詳細" cuối mỗi row trong bảng List
-  (`specs/projects-ui.md` mục 2.1), điều hướng tới `/projects/:id`.
-  Không thêm nút Sửa/Xoá trực tiếp ở List (quyết định của Product
-  owner — Detail là nơi duy nhất chứa hành động Sửa/Xoá).
+- Thêm 1 cột icon (kính lúp/mắt xem, KHÔNG phải link chữ "詳細") cuối
+  mỗi row trong bảng List (`specs/projects-ui.md` mục 2.1), điều hướng
+  tới `/projects/:id`. Accessible name giữ "詳細" qua `aria-label` (sửa
+  từ bản nháp ban đầu dùng link chữ — feedback CHANGE-010: dùng icon
+  cho gọn). Không thêm nút Sửa/Xoá trực tiếp ở List (quyết định của
+  Product owner — Detail là nơi duy nhất chứa hành động Sửa/Xoá).
 
 ### 2.5 ToastHost — thông báo thành công
 
 ```
-┌─────────────────────────────────────────────┐
-│ ✓ 「サンプル案件」を作成しました                  │  ← .toast-success, top của .app-page
-├─────────────────────────────────────────────┤
-│ (nội dung trang bên dưới)                     │
-└─────────────────────────────────────────────┘
+                                    ┌───────────────────────────┐
+                                    │ 「サンプル案件」を作成しました │  ← .toast-success
+                                    └───────────────────────────┘
+                                                    góc dưới-phải màn hình, nổi trên nội dung
 ```
 
 - Component **Toast** (MỚI trong DESIGN.md, xem mục 6) — biến thể
-  `success` (token `tertiary-container`/`on-tertiary-container`, đã có
-  sẵn) cạnh biến thể `error` hiện có (`.toast-error`).
+  `success` nền `tertiary-container`, text `on-tertiary` (KHÔNG phải
+  `on-tertiary-container` — 2 tông xanh gần nhau cho tương phản kém,
+  sửa lại từ bản nháp ban đầu theo feedback CHANGE-010) cạnh biến thể
+  `error` hiện có (`.toast-error`, vẫn là banner đầu trang như cũ).
+- Vị trí: cố định (`position: fixed`) góc dưới-phải màn hình, nổi trên
+  nội dung — KHÔNG phải banner full-width đầu trang như `.toast-error`
+  (sửa từ bản nháp ban đầu theo feedback CHANGE-010).
 - Đặt trong `AppShell` (không phải từng page riêng) — đọc
   `location.state?.successMessage` khi route thay đổi, hiển thị 3 giây
   rồi tự ẩn, đồng thời clear `history.state` ngay khi hiển thị (tránh
@@ -152,8 +158,19 @@
 - **[UI-PROJ-04-3] (MỚI)** The Edit form shall reuse the same
   validation rules as the Create form (required fields, 進行中/終了日
   conflict).
-- **[UI-PROJ-01-10] (MỚI)** The List table shall render a "詳細" link
-  per row navigating to `/projects/:id`.
+- **[UI-PROJ-01-10] (MỚI)** The List table shall render a "詳細" icon
+  (accessible name "詳細" qua `aria-label`) per row navigating to
+  `/projects/:id`.
+- **[UI-PROJ-02-9] (MỚI)** Disabled input/textarea (vd 終了日 khi
+  進行中 checked) shall render with a visibly muted background/text
+  color (`surface-container-low`/`on-surface-variant`), distinct from
+  the normal state — trước đó disabled trông không khác gì bình
+  thường (feedback CHANGE-010).
+- **[UI-PROJ-02-10] (MỚI)** The technology tag suggestion dropdown
+  shall render immediately below the input (không bị hint text chen
+  giữa), with a background tint distinct from the input/panel
+  (`surface-container-low`), hover item dùng `secondary-container`
+  (feedback CHANGE-010).
 - **[UI-PROJ-02-4] (SỬA)**
   - Cũ: When `POST /projects` succeeds, the system shall navigate to
     `/projects`.
@@ -162,8 +179,9 @@
     ("「{project_name}」を作成しました").
 - **[UI-SHELL-04] (MỚI)** The `AppShell` shall render a `ToastHost`
   that reads `successMessage` from router navigation state and shows a
-  `.toast-success` banner for 3 seconds, clearing the navigation state
-  immediately so it does not reappear on back/refresh.
+  `.toast-success` banner (nền `tertiary-container`, text `on-tertiary`,
+  vị trí cố định góc dưới-phải màn hình) for 3 seconds, clearing the
+  navigation state immediately so it does not reappear on back/refresh.
 
 ## 5. Test mapping
 
@@ -173,6 +191,7 @@
 | UI-PROJ-04-1..3 | `ProjectEdit.test.tsx` |
 | UI-PROJ-01-10 | `ProjectList.test.tsx` (case mới) |
 | UI-PROJ-02-4 | `ProjectCreate.test.tsx` (case sửa) |
+| UI-PROJ-02-9, UI-PROJ-02-10 | Xác minh thủ công (CSS, không có test tự động riêng) |
 | UI-SHELL-04 | `ToastHost.test.tsx` |
 
 ## 6. Ghi chú DESIGN.md cần bổ sung

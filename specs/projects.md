@@ -7,8 +7,9 @@
 
 CRUD thông tin dự án đã/đang thực hiện với khách hàng Nhật (`specs/vision.md`
 mục 2). Ticket đầu tiên (`CHANGE-007-projects-list-create`) chỉ làm
-**List + Create** — sửa/xoá, xem chi tiết, file đính kèm, và phân quyền
-theo role đều để dành ticket sau.
+**List + Create**; `CHANGE-010-project-detail-edit-delete` bổ sung
+**Detail/Edit/Delete** (soft delete). File đính kèm và phân quyền theo
+role vẫn để dành ticket sau.
 
 ## 2. Yêu cầu hiện tại (Requirements — EARS notation)
 
@@ -56,6 +57,23 @@ theo role đều để dành ticket sau.
   parameters to the target column type the way local SQLAlchemy/psycopg
   does (bug thật gặp lúc deploy, xem
   `changes/_archive/CHANGE-008-fix-db-resume-and-tech-hint/`).
+- **[PROJ-14]** When an authenticated user requests
+  `GET /projects/{id}`, the system shall return the full project object
+  (same shape as `ProjectOut`), or `404` if the id does not exist or is
+  soft-deleted.
+- **[PROJ-15]** When an authenticated user submits `PUT /projects/{id}`
+  with valid data, the system shall replace all fields of the project
+  (full replace, kể cả `technologies`/`project_types` — xoá hết mapping
+  cũ rồi insert lại theo payload mới) and return `200`. Áp dụng lại
+  validation của `POST /projects` (PROJ-06/07/08); trả `404` nếu id
+  không tồn tại/đã bị xoá.
+- **[PROJ-16]** When an authenticated user submits
+  `DELETE /projects/{id}`, the system shall soft-delete the project
+  (set `deleted_at = now()`, KHÔNG xoá bảng nối `project_tech_tags`/
+  `project_project_types` để giữ lịch sử) and return `204`. Trả `404`
+  nếu id không tồn tại/đã bị xoá.
+- **[PROJ-17]** `GET /projects` (list) shall exclude soft-deleted
+  projects (`deleted_at IS NOT NULL`) from both `items` and `total`.
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -115,7 +133,8 @@ mục 1/2 cho ER diagram tổng quan/bảng mapping):
   `is_ongoing` (bool, not null, default false), `team_size` (int,
   nullable), `total_man_month` (decimal, nullable), `source_note` (text,
   nullable), `created_by` (string — Cognito `sub`, not null),
-  `created_at`/`updated_at` (timestamp, theo `DM-G02`).
+  `created_at`/`updated_at` (timestamp, theo `DM-G02`), `deleted_at`
+  (timestamptz, nullable — soft delete, `CHANGE-010`).
 - **`tech_tags`**: `id` (PK), `name` (string, unique case-insensitive
   qua index `lower(name)`).
 - **`project_tech_tags`** (bảng nối N-N `projects`↔`tech_tags`):
@@ -136,5 +155,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 |------------|-----------------------------------|-------------------------------------------------------|
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo module: List + Create (PROJ-01..12), chưa có Edit/Delete/Detail/file đính kèm |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix bug thật: `POST /projects` thiếu cast `date`/`numeric` tường minh cho Data API (PROJ-13) |
+| 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm Detail/Edit/Delete (PROJ-14..17), soft delete qua `deleted_at` (DM-PROJ-05) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

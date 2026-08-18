@@ -65,8 +65,8 @@
       - File: `frontend/src/lib/projectsApi.ts`
 - [x] **T12** — Chạy full test suite (backend + frontend), lint, build
       - Backend: 76/76 pass. Frontend: 99/99 pass, lint sạch, build OK.
-- [ ] **T13** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
-      di chuyển ticket vào `changes/_archive/`
+- [x] **T13** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
+      `specs/architecture.md`, di chuyển ticket vào `changes/_archive/`
 - [ ] **T14** — Nhắc user chạy migration script trên production sau
       khi merge (`apply_migration_via_data_api.py`)
 
@@ -74,4 +74,4 @@
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
-| Đang làm    | 2026-08-19     | T1-T12 xong (backend + frontend + DESIGN.md), còn fold spec + archive (T13) |
+| Hoàn tất    | 2026-08-19     | T1-T13 xong (backend + frontend + DESIGN.md + fold spec). T14 (chạy migration production) chờ sau khi merge/push |
