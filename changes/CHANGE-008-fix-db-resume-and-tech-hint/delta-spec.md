@@ -17,6 +17,10 @@
   in the SQL — RDS Data API does not implicitly cast bound `stringValue`/
   `doubleValue` parameters to the target column type the way local
   SQLAlchemy/psycopg does.
+- **[ARCH-22] (MỚI)** When RDS Data API returns a NULL column value
+  (`{"isNull": true}`), `_parse_data_api_records` shall return `None`
+  for that field — not the literal value of the `isNull` key (`True`).
+  Applies to every query through `DataApiSession`, not just `projects`.
 - **[UI-PROJ-02-3] (SỬA)**
   - Cũ: ô nhập technology không có hướng dẫn cách thêm tag.
   - Mới: ô nhập có placeholder "入力してEnterで追加（複数可）" + hint chữ
@@ -77,3 +81,21 @@ khác nguyên nhân hoàn toàn:**
   nguyên literal trong SQL đã compile, gây lỗi syntax error hoàn toàn
   khác khi test lại ở SQLAlchemy/local — phát hiện qua chạy lại test
   suite ngay sau khi thêm cast, không phải giả định suông).
+
+**Bug thứ 3 phát hiện sau khi fix PROJ-13 (cast) — insert thành công
+nhưng response validate lỗi:**
+
+- Traceback CloudWatch lần 3: `pydantic_core.ValidationError` — `end_date`
+  nhận `True` thay vì date, `total_man_month` nhận `True` thay vì
+  Decimal, `source_note` nhận `True` thay vì string. Cả 3 field này đều
+  thật sự `NULL` trong DB (không điền khi tạo project).
+- Root cause: `_parse_data_api_records` dùng
+  `next(iter(field.values()), None)` để lấy giá trị field — nhưng Data
+  API trả field NULL dạng `{"isNull": True}` (đúng 1 key), nên
+  `next(iter(...))` lấy ra `True` (giá trị của key `isNull`), KHÔNG phải
+  `None`. Bug có từ `CHANGE-006-deploy-production` (khi viết
+  `DataApiSession` lần đầu) nhưng chưa ai phát hiện — `health` chỉ chạy
+  `SELECT 1`, không bao giờ có cột NULL nào để lộ bug.
+- Fix (ARCH-22): tách `_parse_data_api_field()` check riêng key
+  `isNull` trước khi lấy giá trị. Áp dụng cho MỌI query qua
+  `DataApiSession`, không riêng `projects`.

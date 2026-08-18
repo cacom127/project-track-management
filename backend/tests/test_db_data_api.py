@@ -41,6 +41,26 @@ def test_execute_returns_parsed_records():
     )
 
 
+def test_execute_returns_none_for_null_fields_not_the_isnull_flag():
+    """Bug thật gặp ở CHANGE-008: field NULL trả về dạng {"isNull": True}
+    — code cũ lấy next(iter(field.values())) ra thẳng True (giá trị của
+    key isNull) thay vì None, khiến Pydantic nhận nhầm bool cho cột
+    date/decimal/string. Chỉ lộ ra khi có cột NULL thật (health check
+    SELECT 1 không bao giờ NULL nên chưa từng bắt được)."""
+    fake_client = MagicMock()
+    fake_client.execute_statement.return_value = {
+        "columnMetadata": [{"name": "a"}, {"name": "b"}],
+        "records": [[{"isNull": True}, {"stringValue": "x"}]],
+    }
+    session = DataApiSession(
+        client=fake_client, cluster_arn="arn", secret_arn="arn", database="app"
+    )
+
+    rows = session.execute("SELECT a, b")
+
+    assert rows == [{"a": None, "b": "x"}]
+
+
 def test_execute_passes_typed_parameters():
     fake_client = MagicMock()
     fake_client.execute_statement.return_value = {"columnMetadata": [], "records": []}

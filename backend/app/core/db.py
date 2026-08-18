@@ -129,12 +129,24 @@ def _to_data_api_parameters(params: dict[str, Any]) -> list[dict[str, Any]]:
     return parameters
 
 
+def _parse_data_api_field(field: dict[str, Any] | None) -> Any:
+    """Data API trả field dạng `{"isNull": True}` cho cột NULL (đúng 1
+    key duy nhất, không kèm value khác) — PHẢI check riêng key `isNull`,
+    không được lấy đại `next(iter(field.values()))` vì với field NULL,
+    giá trị đó chính là `True` (flag của key `isNull`), không phải
+    `None` (bug thật gặp ở CHANGE-008: cột NULL bị hiểu nhầm thành bool
+    `True`, Pydantic validate lỗi vì kiểu date/decimal/string nhận `True`)."""
+    if not field or field.get("isNull"):
+        return None
+    return next(iter(field.values()), None)
+
+
 def _parse_data_api_records(response: dict[str, Any]) -> list[dict[str, Any]]:
     columns = [col["name"] for col in response.get("columnMetadata", [])]
     records = []
     for record in response.get("records", []):
         row = {
-            col_name: next(iter(field.values()), None) if field else None
+            col_name: _parse_data_api_field(field)
             for col_name, field in zip(columns, record, strict=False)
         }
         records.append(row)

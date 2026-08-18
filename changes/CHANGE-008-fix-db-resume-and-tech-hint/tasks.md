@@ -20,6 +20,12 @@
         `ruff check` sạch. LƯU Ý cú pháp: `:param ::type` (có khoảng
         trắng) — viết dính `:param::type` làm SQLAlchemy không nhận
         diện được bind param (đã gặp thật khi sửa).
+- [x] **T1c** — Fix bug thứ 3 (insert OK nhưng response validate lỗi
+      Pydantic): `_parse_data_api_records` trả nhầm `True` thay vì
+      `None` cho cột NULL (field Data API dạng `{"isNull": True}`).
+      - Liên quan: ARCH-22
+      - File: `backend/app/core/db.py`, `backend/tests/test_db_data_api.py`
+      - Verify: 49/49 full suite pass, `ruff check` sạch.
 - [x] **T2** — UI: thêm placeholder + hint chữ nhỏ cho ô 技術 (cách thêm
       nhiều tag bằng Enter).
       - Liên quan: UI-PROJ-02-3
