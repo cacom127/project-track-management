@@ -138,7 +138,14 @@ def _parse_data_api_field(field: dict[str, Any] | None) -> Any:
     `True`, Pydantic validate lỗi vì kiểu date/decimal/string nhận `True`)."""
     if not field or field.get("isNull"):
         return None
-    return next(iter(field.values()), None)
+    # Bỏ qua key "isNull" khi lấy giá trị thật — phòng trường hợp Data
+    # API trả kèm "isNull": false cùng key giá trị trong 1 dict (không
+    # chỉ đúng 1 key như quan sát thực tế), next(iter()) có thể vô tình
+    # lấy nhầm giá trị của "isNull" nếu nó đứng trước trong dict.
+    for key, value in field.items():
+        if key != "isNull":
+            return value
+    return None
 
 
 def _parse_data_api_records(response: dict[str, Any]) -> list[dict[str, Any]]:
