@@ -224,6 +224,8 @@ export function ProjectCreate() {
             <label htmlFor="tech-input">技術</label>
             <input
               id="tech-input"
+              placeholder="入力してEnterで追加（複数可）"
+              aria-describedby="tech-input-hint"
               value={tagInput}
               onChange={(event) => handleTagInputChange(event.target.value)}
               onKeyDown={(event) => {
@@ -234,6 +236,9 @@ export function ProjectCreate() {
               }}
               disabled={submitting}
             />
+            <p id="tech-input-hint" className="input-hint">
+              技術名を入力してEnterキーで追加できます。複数追加可能です。
+            </p>
             {tagSuggestions.length > 0 && (
               <ul className="tag-suggestions">
                 {tagSuggestions.map((suggestion) => (

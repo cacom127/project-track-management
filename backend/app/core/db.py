@@ -1,3 +1,4 @@
+import time
 from collections.abc import Generator
 from typing import Any, Protocol
 
@@ -5,6 +6,15 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
+
+# Aurora Serverless v2 auto-pause (capacity 0-1 ACU, xem
+# specs/architecture.md mục 3): request đầu tiên sau thời gian dài idle
+# có thể gặp DatabaseResumingException trong lúc Aurora "wake up" —
+# retry với backoff ngắn thay vì để lỗi bay thẳng ra client (bug thật
+# gặp lúc test CHANGE-007 trên production: POST /projects trả 500
+# "Internal Server Error" không có traceback rõ ràng phía client).
+DB_RESUME_MAX_RETRIES = 3
+DB_RESUME_RETRY_DELAY_SECONDS = 2
 
 
 class DBSession(Protocol):
@@ -68,20 +78,38 @@ class DataApiSession:
         self._database = database
 
     def execute(self, sql: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-        response = self._client.execute_statement(
-            resourceArn=self._cluster_arn,
-            secretArn=self._secret_arn,
-            database=self._database,
-            sql=sql,
-            parameters=_to_data_api_parameters(params or {}),
-            includeResultMetadata=True,
-        )
-        return _parse_data_api_records(response)
+        for attempt in range(DB_RESUME_MAX_RETRIES):
+            try:
+                response = self._client.execute_statement(
+                    resourceArn=self._cluster_arn,
+                    secretArn=self._secret_arn,
+                    database=self._database,
+                    sql=sql,
+                    parameters=_to_data_api_parameters(params or {}),
+                    includeResultMetadata=True,
+                )
+                return _parse_data_api_records(response)
+            except Exception as exc:
+                if not _is_database_resuming(exc) or attempt == DB_RESUME_MAX_RETRIES - 1:
+                    raise
+                time.sleep(DB_RESUME_RETRY_DELAY_SECONDS)
+        raise AssertionError("unreachable")  # vòng for luôn return hoặc raise
 
     def commit(self) -> None:
         """No-op: mỗi `execute_statement` (không truyền `transactionId`)
         tự commit ngay khi Data API xử lý xong, không có khái niệm
         session cần commit riêng như SQLAlchemy."""
+
+
+def _is_database_resuming(exc: Exception) -> bool:
+    """Nhận diện `botocore.errorfactory.DatabaseResumingException` bằng
+    `Error.Code` trong `exc.response` (giống cách botocore tự expose),
+    không dựa vào `client.exceptions.DatabaseResumingException` — tránh
+    phải mock đúng class thật trong test."""
+    response = getattr(exc, "response", None)
+    if not isinstance(response, dict):
+        return False
+    return response.get("Error", {}).get("Code") == "DatabaseResumingException"
 
 
 def _to_data_api_parameters(params: dict[str, Any]) -> list[dict[str, Any]]:

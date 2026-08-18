@@ -113,6 +113,12 @@ h1 {
   margin: 0;
 }
 
+.input-hint {
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+  margin: 0;
+}
+
 /* Action Button > Primary (DESIGN.md) */
 .button-primary {
   width: 100%;
