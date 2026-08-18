@@ -206,23 +206,28 @@ h1 {
   padding: 0 var(--space-md);
 }
 
-/* App Shell (UI-SHELL-01..03) — Header (đã có) full-width trên cùng,
-   Sidebar 240px cố định + content bên dưới. Token sidebar 240px đã có
-   sẵn từ đầu trong DESIGN.md (mục Layout & Spacing), chỉ chưa từng
+/* App Shell (UI-SHELL-01..03) — Sidebar 240px FIXED, kéo dài hết chiều
+   cao trang (đè lên cả Header phía trên bên trái — feedback CHANGE-009,
+   không bị cắt khi content cuộn dọc). Header + content nằm trong
+   `.app-main`, margin-left chừa chỗ cho sidebar. Token sidebar 240px đã
+   có sẵn từ đầu trong DESIGN.md (mục Layout & Spacing), chỉ chưa từng
    implement trước CHANGE-009. */
-.app-body {
-  display: flex;
-  align-items: flex-start;
+.app-shell {
+  min-height: 100vh;
 }
 
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 240px;
-  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 20;
   box-sizing: border-box;
   background: var(--color-surface-container-lowest);
   border-right: 1px solid var(--color-outline-variant);
   padding: var(--space-md) 0;
-  min-height: calc(100vh - 56px);
 }
 
 .sidebar-item {
@@ -243,9 +248,13 @@ h1 {
   font-weight: 600;
 }
 
+.app-main {
+  margin-left: 240px;
+  min-height: 100vh;
+}
+
 .app-page {
   padding: var(--space-xl);
-  flex: 1;
   max-width: 1440px;
   box-sizing: border-box;
   width: 100%;
@@ -274,13 +283,17 @@ h1 {
 }
 
 /* Toolbar List (chỉ search + filter — nút tạo mới đã chuyển sang
-   .page-header-row) */
+   .page-header-row). Border riêng cho cả group (feedback CHANGE-009). */
 .project-list-toolbar {
   display: flex;
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
   flex-wrap: wrap;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  padding: var(--space-md);
+  background: var(--color-surface-container-lowest);
 }
 
 /* Ô tìm kiếm riêng — KHÔNG dùng .input-field (thiết kế cho form, không
@@ -545,6 +558,17 @@ fieldset label {
    đã có (UI-PROJ-02-6). */
 .form-container {
   max-width: 640px;
+  margin: 0 auto;
+}
+
+/* 2 field số nằm ngang hàng (feedback CHANGE-009) */
+.form-row {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.form-row .input-field {
+  flex: 1;
 }
 
 .form-group-card {
@@ -618,6 +642,10 @@ fieldset label {
 @media (max-width: 767px) {
   .sidebar {
     display: none;
+  }
+
+  .app-main {
+    margin-left: 0;
   }
 
   .app-page {

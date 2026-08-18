@@ -2,18 +2,19 @@ import type { ReactNode } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-/** UI-SHELL-01..03: Header (đầy đủ chiều rộng, đã có từ CHANGE-005) +
- * Sidebar 240px cố định + nội dung trang — dùng chung mọi route đã
- * đăng nhập, thay vì mỗi trang tự render Header riêng lẻ. */
+/** UI-SHELL-01..03: Sidebar 240px kéo dài hết chiều cao trang (fixed,
+ * đè lên cả Header phía trên — feedback CHANGE-009), Header + nội dung
+ * nằm trong phần còn lại bên phải. Dùng chung mọi route đã đăng nhập,
+ * thay vì mỗi trang tự render Header riêng lẻ. */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <>
-      <Header />
-      <div className="app-body">
-        <Sidebar />
+    <div className="app-shell">
+      <Sidebar />
+      <div className="app-main">
+        <Header />
         {children}
       </div>
-    </>
+    </div>
   );
 }
 

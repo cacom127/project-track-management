@@ -211,32 +211,35 @@ export function ProjectCreate() {
               )}
             </div>
 
-            {/* UI-PROJ-02-7: đơn vị cố định cạnh input, không phải placeholder */}
-            <div className="input-field">
-              <label htmlFor="team-size">人数</label>
-              <div className="input-field-with-unit">
-                <input
-                  id="team-size"
-                  type="number"
-                  value={teamSize}
-                  onChange={(event) => setTeamSize(event.target.value)}
-                  disabled={submitting}
-                />
-                <span className="input-unit">名</span>
+            {/* UI-PROJ-02-7: đơn vị cố định cạnh input, không phải
+                placeholder; 2 field nằm ngang hàng (feedback CHANGE-009) */}
+            <div className="form-row">
+              <div className="input-field">
+                <label htmlFor="team-size">人数</label>
+                <div className="input-field-with-unit">
+                  <input
+                    id="team-size"
+                    type="number"
+                    value={teamSize}
+                    onChange={(event) => setTeamSize(event.target.value)}
+                    disabled={submitting}
+                  />
+                  <span className="input-unit">名</span>
+                </div>
               </div>
-            </div>
 
-            <div className="input-field">
-              <label htmlFor="total-man-month">総人月</label>
-              <div className="input-field-with-unit">
-                <input
-                  id="total-man-month"
-                  type="number"
-                  value={totalManMonth}
-                  onChange={(event) => setTotalManMonth(event.target.value)}
-                  disabled={submitting}
-                />
-                <span className="input-unit">人月</span>
+              <div className="input-field">
+                <label htmlFor="total-man-month">総人月</label>
+                <div className="input-field-with-unit">
+                  <input
+                    id="total-man-month"
+                    type="number"
+                    value={totalManMonth}
+                    onChange={(event) => setTotalManMonth(event.target.value)}
+                    disabled={submitting}
+                  />
+                  <span className="input-unit">人月</span>
+                </div>
               </div>
             </div>
           </section>
