@@ -50,6 +50,12 @@ theo role đều để dành ticket sau.
 - **[PROJ-12]** Every route under this module shall require a valid
   JWT (enforced globally since `CHANGE-005-auth-module`); no
   role-based restriction is applied to `GET`/`POST /projects` yet.
+- **[PROJ-13]** `POST /projects` shall explicitly cast `start_date`/
+  `end_date` parameters to `::date` and `total_man_month` to
+  `::numeric` in the SQL — RDS Data API does not implicitly cast bound
+  parameters to the target column type the way local SQLAlchemy/psycopg
+  does (bug thật gặp lúc deploy, xem
+  `changes/_archive/CHANGE-008-fix-db-resume-and-tech-hint/`).
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -129,5 +135,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 | Ngày       | Ticket ID                       | Thay đổi                                          |
 |------------|-----------------------------------|-------------------------------------------------------|
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo module: List + Create (PROJ-01..12), chưa có Edit/Delete/Detail/file đính kèm |
+| 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix bug thật: `POST /projects` thiếu cast `date`/`numeric` tường minh cho Data API (PROJ-13) |
 
-<!-- Trỏ về changes/_archive/CHANGE-007-projects-list-create/ để xem đầy đủ proposal/plan gốc -->
+<!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

@@ -38,17 +38,21 @@
       - Liên quan: UI-PROJ-02-3
       - File: `frontend/src/pages/ProjectCreate.tsx`, `frontend/src/index.css`
       - Verify: 57/57 test pass, lint sạch, build thành công.
-- [ ] **T3** — Deploy lên production (`namlp` tự chạy `cdk deploy`,
-      không cần chạy lại migration — không đổi schema DB), verify thật:
+- [x] **T3** — Deploy lên production (`namlp` tự chạy `cdk deploy`,
+      không chạy lại migration — không đổi schema DB), verify thật:
       tạo project ngay sau thời gian Aurora idle lâu, xác nhận không
       còn `500`.
-- [ ] **T4** — Review chéo + fold `delta-spec.md` vào
-      `specs/architecture.md` (ARCH-21) và `specs/projects-ui.md`
-      (UI-PROJ-02-3).
-- [ ] **T5** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge.
+      - Thực tế deploy phát hiện thêm 2 bug nữa ngoài dự kiến ban đầu
+        (không chỉ retry `DatabaseResumingException`) — đã fix ở T1b/T1c
+        (và T1d chủ động trước khi gặp lỗi thật). Sau 4 vòng fix, user
+        xác nhận "đã hết lỗi" — tạo project + xem list hoạt động đúng.
+- [x] **T4** — Review chéo + fold `delta-spec.md` vào
+      `specs/architecture.md` (ARCH-21/22/23), `specs/projects.md`
+      (PROJ-13), và `specs/projects-ui.md` (UI-PROJ-02-3).
+- [x] **T5** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge.
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |---|---|---|
-| Đang làm | 2026-08-18 | T1-T2 xong (code + test local), chờ deploy + verify T3. |
+| Hoàn tất | 2026-08-18 | Toàn bộ T1-T5 xong. Deploy production verify OK sau 4 vòng fix (retry resume + cast date/numeric + null-field parsing + array_agg parsing), đã fold vào specs/, đã archive. |

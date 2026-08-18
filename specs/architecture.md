@@ -131,6 +131,28 @@
   `RequestValidationError` trong `app/main.py` đổi `422` mặc định của
   FastAPI thành `400` (khớp `ERR-02`), áp dụng cho mọi route có request
   body — không riêng module nào.
+- **Retry khi Aurora đang resume**: `DataApiSession.execute()` retry
+  tối đa 3 lần (cách 2 giây) khi gặp `DatabaseResumingException`
+  (Aurora Serverless v2 wake up sau auto-pause, mục 3) — nhận diện qua
+  `exc.response["Error"]["Code"]`, không dựa vào
+  `client.exceptions.DatabaseResumingException` (dễ mock sai trong
+  test). Áp dụng cho MỌI truy vấn qua Data API, không riêng module nào.
+  Bug thật gặp lúc deploy `CHANGE-007`: `POST /projects` trả `500`
+  không có retry — xem `changes/_archive/CHANGE-008-fix-db-resume-and-tech-hint/`.
+- **Parse response Data API — chuẩn hoá `isNull`/`arrayValue`**:
+  `_parse_data_api_field()` PHẢI check riêng key `isNull` trước khi lấy
+  giá trị (field NULL dạng `{"isNull": True}` — lấy đại
+  `next(iter(field.values()))` sẽ ra nhầm `True`); PHẢI parse riêng key
+  `arrayValue` (cột Postgres ARRAY, vd `array_agg`) thành `list` phẳng
+  thay vì trả nguyên dict lồng. Cả 2 bug có từ `CHANGE-006` (viết
+  `DataApiSession` lần đầu) nhưng chưa lộ ra vì `health` chỉ `SELECT 1`
+  — chỉ phát hiện khi `projects` thực sự ghi/đọc dữ liệu NULL/ARRAY.
+- **Cast tường minh cho tham số `date`/`numeric` qua Data API**: RDS
+  Data API KHÔNG tự cast tham số `stringValue`/`doubleValue` sang kiểu
+  cột đích như SQLAlchemy/psycopg ở local — SQL phải viết
+  `:param ::date`/`:param ::numeric` tường minh (LƯU Ý: phải có khoảng
+  trắng trước `::`, viết dính `:param::type` khiến SQLAlchemy `text()`
+  không nhận diện được bind parameter).
 
 ## 5. Lịch sử thay đổi kiến trúc lớn
 
@@ -141,5 +163,6 @@
 | 2026-08-17 | CHANGE-006-deploy-production | Deploy thật lần đầu lên AWS (`ap-northeast-1`): Cognito, Aurora Serverless v2 (0-1 ACU), Lambda, API Gateway, S3+CloudFront. Xác nhận `/health` chạy đúng end-to-end trên production thật |
 | 2026-08-17 | CHANGE-005-auth-module | Bật JWT Authorizer thật cho mọi route (trừ `/health`), cấu hình CORS ở API Gateway (`cors_preflight`, route method tường minh — không dùng `ANY` vì chặn OPTIONS). Xác nhận login/đổi mật khẩu/logout E2E thật trên production |
 | 2026-08-18 | CHANGE-007-projects-list-create | Module `projects` đầu tiên (List+Create): chốt nguyên tắc raw SQL qua `DBSession` (không ORM), migration production qua script Data API (`apply_migration_via_data_api.py`), dependency lấy user hiện tại từ JWT (`app/core/auth.py`), validation error trả 400 thay vì 422 mặc định |
+| 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix 3 bug thật phát hiện lúc deploy `CHANGE-007` (retry `DatabaseResumingException`, cast `date`/`numeric` tường minh, parse đúng `isNull`/`arrayValue` của Data API response) + 1 fix chủ động (array_agg) — tất cả áp dụng cho MỌI module qua Data API, không riêng `projects` |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

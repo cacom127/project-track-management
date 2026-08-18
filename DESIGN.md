@@ -249,6 +249,29 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
 - **Nội dung:** giá trị số lớn dùng `headline-md` màu `primary`, mô tả
   phụ dùng `label-sm` màu neutral.
 
+### Navigation Sidebar
+- **Cấu trúc:** cố định `240px`, `position: fixed`, kéo dài hết chiều
+  cao viewport (không cuộn theo nội dung, đè lên vùng header phía trên
+  cùng bên trái). Nền `surface-container-lowest`, border-right 1px
+  `outline-variant`.
+- **Item:** padding dọc theo `spacing.sm`, ngang theo `spacing.lg`.
+  Item active dùng nền `secondary-container`, text
+  `on-secondary-container`, in đậm; hover (không active) dùng nền
+  `surface-container-low`.
+
+### Dropdown / Filter
+- **Button:** border 1px `outline-variant`, nền
+  `surface-container-lowest`, giống chiều cao Input Field (40px). Label
+  hiện kèm số lượng đang chọn trong dấu ngoặc (vd "技術 (2)") khi có ít
+  nhất 1 giá trị được chọn. LUÔN kèm ký hiệu mũi tên `▾` cỡ 16px màu
+  `on-surface-variant`, đặt cạnh label để phân biệt trực quan với
+  Action Button (không có mũi tên).
+- **Panel:** mở khi click button, đóng khi click ra ngoài. Nền
+  `surface-container-lowest`, border 1px `outline-variant`, bo góc
+  `rounded.DEFAULT`, shadow rất nhẹ (`0 2px 4px rgba(0,0,0,0.05)`, xem
+  mục Elevation & Depth). Danh sách checkbox bên trong, không giới hạn
+  số lượng.
+
 ## Do's and Don'ts
 
 - ✅ Dùng đúng token trong `colors`/`typography`/`rounded`/`spacing` ở
@@ -259,3 +282,15 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   hiển thị đúng ký tự Nhật).
 - ❌ Không thêm drop-shadow/gradient trang trí — mọi độ sâu thể hiện qua
   tông màu nền (Tonal Layering) hoặc border phẳng (xem mục Elevation & Depth).
+- ❌ Không dùng `<select multiple>` gốc trình duyệt cho multi-select
+  filter — trải nghiệm kém (phải giữ Ctrl/Cmd để chọn nhiều, không có
+  gợi ý cách dùng, không style được). Dùng component **Dropdown /
+  Filter** đã định nghĩa ở mục Components.
+- ✅ Nội dung chính (form, bảng dữ liệu) căn giữa theo chiều ngang khi
+  còn dư không gian (`margin: 0 auto` kèm `max-width` phù hợp) — không
+  để dính sát 1 lề khi màn hình rộng hơn nội dung.
+- ✅ Form nhiều field (>5) nên phân nhóm theo card (border 1px
+  `outline-variant`, xem cấu trúc tương tự `Stat Card`) để dễ quét mắt,
+  thay vì xếp phẳng liên tục — chi tiết field nào thuộc nhóm nào do
+  `specs/<module>-ui.md` của từng màn hình quyết định, file này chỉ quy
+  định NGUYÊN TẮC chung.

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, Route, Routes } from "react-router";
-import Header from "./components/Header";
+import { Route, Routes } from "react-router";
+import AppShell from "./components/AppShell";
 import RouteGuard from "./components/RouteGuard";
 import LoginFlow from "./pages/LoginFlow";
 import ProjectCreate from "./pages/ProjectCreate";
@@ -23,15 +23,11 @@ function Home() {
   }, []);
 
   return (
-    <>
-      <Header />
-      <main className="app-page">
-        <h1>実績管理システム</h1>
-        <p>Status: {health?.status ?? "loading..."}</p>
-        <p>DB: {health?.db ?? "loading..."}</p>
-        <Link to="/projects">プロジェクト一覧</Link>
-      </main>
-    </>
+    <main className="app-page">
+      <h1>実績管理システム</h1>
+      <p>Status: {health?.status ?? "loading..."}</p>
+      <p>DB: {health?.db ?? "loading..."}</p>
+    </main>
   );
 }
 
@@ -43,7 +39,9 @@ function App() {
         path="/"
         element={
           <RouteGuard>
-            <Home />
+            <AppShell>
+              <Home />
+            </AppShell>
           </RouteGuard>
         }
       />
@@ -51,7 +49,9 @@ function App() {
         path="/projects"
         element={
           <RouteGuard>
-            <ProjectList />
+            <AppShell>
+              <ProjectList />
+            </AppShell>
           </RouteGuard>
         }
       />
@@ -59,7 +59,9 @@ function App() {
         path="/projects/new"
         element={
           <RouteGuard>
-            <ProjectCreate />
+            <AppShell>
+              <ProjectCreate />
+            </AppShell>
           </RouteGuard>
         }
       />
