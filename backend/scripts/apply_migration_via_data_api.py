@@ -9,8 +9,22 @@ RDS Data API. Xem
 
 Tái dùng được cho MỌI migration sau này, không chỉ CHANGE-007.
 
-Usage (từ máy dev, sau khi đã cấu hình AWS SSO/profile đúng):
-    uv run python scripts/apply_migration_via_data_api.py
+Usage (từ thư mục `backend/`, sau khi đã cấu hình AWS SSO/profile đúng):
+    export AWS_PROFILE=project-track
+    export AWS_DEFAULT_REGION=ap-northeast-1
+    export DB_CLUSTER_ARN=<lấy từ CDK Output DbClusterArn>
+    export DB_SECRET_ARN=<lấy từ CDK Output DbSecretArn>
+    export DB_NAME=app
+    uv run python -m scripts.apply_migration_via_data_api
+
+LƯU Ý: PHẢI chạy dạng module (`-m scripts.apply_migration_via_data_api`),
+KHÔNG chạy trực tiếp (`python scripts/apply_migration_via_data_api.py`)
+— chạy trực tiếp thì `sys.path[0]` là thư mục `scripts/`, không phải gốc
+`backend/`, nên `from app.core.config import settings` báo
+`ModuleNotFoundError: No module named 'app'` (gặp thật khi deploy
+CHANGE-007). `boto3` cũng cần `AWS_PROFILE`/`AWS_DEFAULT_REGION` tường
+minh trong ĐÚNG terminal đang chạy script — không tự kế thừa từ terminal
+khác đã `cdk deploy`/`aws sso login` trước đó.
 """
 
 import subprocess

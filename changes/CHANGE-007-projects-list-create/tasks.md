@@ -115,11 +115,23 @@
         (className `tag-chip-list`/`tag-suggestions`)
       - Verify: 57/57 pass, lint sạch, `npm run build` thành công (CSS
         3.08kB → 6.42kB, hợp lý vì có style thật thay vì HTML thô).
-- [ ] **T12** — Deploy migration (qua script T2) + code lên production
+- [x] **T12** — Deploy migration (qua script T2) + code lên production
       (`namlp` tự chạy thủ công như các ticket trước); sau đó chạy
       checklist trong skill local `post-deploy-smoke-test` (health check,
       kiểm tra bundle FE, nhờ hard-refresh + xem Console) — báo lại kết quả.
       - Liên quan: toàn bộ PROJ-*, UI-PROJ-*
+      - Ghi chú thực tế khi deploy: script T2 ban đầu báo
+        `ModuleNotFoundError: No module named 'app'` do chạy trực tiếp
+        (`python scripts/....py`) thay vì dạng module; cũng thiếu
+        `AWS_PROFILE`/`AWS_DEFAULT_REGION` tường minh trong terminal
+        chạy script. Đã sửa docstring trong
+        `apply_migration_via_data_api.py` ghi rõ cách gọi đúng, tránh
+        lặp lại lỗi này ở migration sau.
+      - Verify thật trên production: tạo project có `technologies` +
+        `project_types`, xem lại `/projects` — hiển thị đúng, rủi ro
+        `array_agg`/Data API `arrayValue` đã ghi ở mục 3 KHÔNG xảy ra
+        (Data API trả đúng mảng string, parse OK qua
+        `_parse_data_api_records` hiện có, không cần fix thêm).
 - [ ] **T13** — Review chéo + fold `delta-spec.md`/`ui-delta-spec.md` vào
       `specs/projects.md` (MỚI) và `specs/projects-ui.md` (MỚI); thêm
       dòng module `projects` trỏ đúng file trong `specs/architecture.md`

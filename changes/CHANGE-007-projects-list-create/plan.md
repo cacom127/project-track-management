@@ -55,6 +55,11 @@ project_project_types (project_id FK, project_type_id FK)  -- bảng nối N-N
 - Case-insensitive matching cho `tech_tags.name` cần index phù hợp
   (`LOWER(name)` hoặc citext) để tránh tạo tag trùng khác hoa/thường —
   ghi rõ ở T2 khi implement.
+- ~~`array_agg` (Postgres ARRAY) qua RDS Data API có thể trả `arrayValue`
+  (cấu trúc lồng) thay vì string đơn giản, chưa test được ở môi trường
+  dev~~ — **đã xác nhận KHÔNG xảy ra** khi verify thật trên production
+  (T12): tạo project có `technologies`/`project_types`, xem lại
+  `GET /projects` hiển thị đúng, không cần fix `_parse_data_api_records`.
 
 ## 4. Migration / rollback
 
