@@ -172,8 +172,22 @@ export function ProjectList() {
                     <td>{project.team_size ?? "—"}</td>
                     <td>{project.total_man_month ?? "—"}</td>
                     <td>
-                      {/* UI-PROJ-01-10 */}
-                      <Link to={`/projects/${project.id}`}>詳細</Link>
+                      {/* UI-PROJ-01-10 — icon thay cho link chữ (feedback
+                          CHANGE-010), accessible name giữ nguyên "詳細". */}
+                      <Link
+                        to={`/projects/${project.id}`}
+                        className="row-action-link"
+                        aria-label="詳細"
+                      >
+                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path
+                            d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                          />
+                          <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
+                        </svg>
+                      </Link>
                     </td>
                   </tr>
                 ))}

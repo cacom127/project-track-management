@@ -289,34 +289,38 @@ export function ProjectForm({
 
           <div className="input-field">
             <label htmlFor="tech-input">技術</label>
-            <input
-              id="tech-input"
-              placeholder="入力してEnterで追加（複数可）"
-              aria-describedby="tech-input-hint"
-              value={tagInput}
-              onChange={(event) => handleTagInputChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  addTag(tagInput);
-                }
-              }}
-              disabled={submitting}
-            />
+            {/* Wrapper để dropdown gợi ý bám sát ngay dưới input, không bị
+                hint text chen giữa (feedback CHANGE-010). */}
+            <div className="tech-input-wrapper">
+              <input
+                id="tech-input"
+                placeholder="入力してEnterで追加（複数可）"
+                aria-describedby="tech-input-hint"
+                value={tagInput}
+                onChange={(event) => handleTagInputChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addTag(tagInput);
+                  }
+                }}
+                disabled={submitting}
+              />
+              {tagSuggestions.length > 0 && (
+                <ul className="tag-suggestions">
+                  {tagSuggestions.map((suggestion) => (
+                    <li key={suggestion}>
+                      <button type="button" onClick={() => addTag(suggestion)}>
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <p id="tech-input-hint" className="input-hint">
               技術名を入力してEnterキーで追加できます。複数追加可能です。
             </p>
-            {tagSuggestions.length > 0 && (
-              <ul className="tag-suggestions">
-                {tagSuggestions.map((suggestion) => (
-                  <li key={suggestion}>
-                    <button type="button" onClick={() => addTag(suggestion)}>
-                      {suggestion}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
             <ul className="tag-chip-list">
               {technologies.map((tag) => (
                 <li key={tag}>

@@ -293,7 +293,10 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   `on-error-container` (`#93000a`). Giữ nguyên cho tới khi user dismiss
   hoặc thử lại — không tự ẩn.
 - **Success (`.toast-success`):** nền `tertiary-container` (`#003f25`),
-  text `on-tertiary-container` (`#5caf81`). Tự ẩn sau 3 giây.
+  text `on-tertiary` (`#ffffff`) — KHÔNG dùng `on-tertiary-container`
+  (`#5caf81`): 2 tông xanh gần nhau cho tương phản thực tế kém dù số đo
+  WCAG chỉ vừa đạt ngưỡng (phát hiện thật từ feedback CHANGE-010). Tự ẩn
+  sau 3 giây.
 
 ## Do's and Don'ts
 
