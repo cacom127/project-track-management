@@ -37,6 +37,12 @@
   cấp `specs/`/`changes/`. 
 - **Package manager**: `uv` cho `backend`/`infra` (Python), `npm` cho
   `frontend`.
+- **App Shell (frontend)**: mọi route đã đăng nhập dùng chung layout
+  Header (ngang, đã có từ `CHANGE-005`) + Sidebar (dọc, 240px cố định,
+  `position: fixed` kéo dài hết chiều cao viewport, đè lên Header —
+  component `Navigation Sidebar` trong `DESIGN.md`). Ẩn Sidebar ở
+  viewport <768px. Chỉ 1 mục nav hiện tại ("プロジェクト一覧"), mở rộng
+  khi có module mới (`reporting`...). Xem `CHANGE-009-app-shell-and-projects-ui-refresh`.
 
 ## 2. Danh sách module/domain
 
@@ -164,5 +170,6 @@
 | 2026-08-17 | CHANGE-005-auth-module | Bật JWT Authorizer thật cho mọi route (trừ `/health`), cấu hình CORS ở API Gateway (`cors_preflight`, route method tường minh — không dùng `ANY` vì chặn OPTIONS). Xác nhận login/đổi mật khẩu/logout E2E thật trên production |
 | 2026-08-18 | CHANGE-007-projects-list-create | Module `projects` đầu tiên (List+Create): chốt nguyên tắc raw SQL qua `DBSession` (không ORM), migration production qua script Data API (`apply_migration_via_data_api.py`), dependency lấy user hiện tại từ JWT (`app/core/auth.py`), validation error trả 400 thay vì 422 mặc định |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix 3 bug thật phát hiện lúc deploy `CHANGE-007` (retry `DatabaseResumingException`, cast `date`/`numeric` tường minh, parse đúng `isNull`/`arrayValue` của Data API response) + 1 fix chủ động (array_agg) — tất cả áp dụng cho MỌI module qua Data API, không riêng `projects` |
+| 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | Thêm App Shell (Sidebar dọc 240px, dùng chung mọi route); cập nhật `DESIGN.md` (component Navigation Sidebar, Dropdown/Filter) |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

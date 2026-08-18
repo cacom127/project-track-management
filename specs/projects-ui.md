@@ -19,14 +19,14 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ Header (email/role + logout)                          │
+│ プロジェクト                      [+ 新規プロジェクト] │  ← hàng tiêu đề
 ├─────────────────────────────────────────────────────┤
-│ [🔍 検索..............] [技術 ▾] [種別 ▾]            │
-│                                    [+ 新規プロジェクト] │
+│┌───────────────────────────────────────────────────┐│
+││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾]              ││  ← toolbar (border riêng)
+│└───────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────┤
-│顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別|技術|人数|総人月        │
-│ ------ | -------- | ---- | ---- | ---- | ---- | ---- | ---- │
-│ ...    | ...      | ...  | ...  | ...  | ...  | ...  | ...  │
+│顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月│
+│ ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | ..  │
 ├─────────────────────────────────────────────────────┤
 │              ‹ 1 2 3 4 ›  (pagination)                │
 └─────────────────────────────────────────────────────┘
@@ -38,10 +38,21 @@
 `technologies`, `team_size`, `total_man_month`. `team_size`/
 `total_man_month` hiển thị "—" nếu `null`.
 
-- Component dùng: `.input-field` (ô search), `.button-primary` (nút
-  "新規プロジェクト"), Data Table theo `DESIGN.md` mục Components (border
-  bottom outline-variant mỗi row, header nền surface-container-low,
-  hover row nền surface-container-low), pagination dùng Action Button
+- **Hàng tiêu đề** (`<h1>プロジェクト</h1>` + nút "+ 新規プロジェクト")
+  tách riêng khỏi **hàng toolbar** (search + filter, có border riêng
+  bao quanh cả group — token component `Dropdown/Filter`/`Input Field`
+  trong `DESIGN.md`).
+- **Ô tìm kiếm**: class riêng (KHÔNG dùng `.input-field` nguyên khối),
+  width cố định 320px, icon kính lúp inline.
+- **Filter công nghệ/loại hình**: dùng component `Dropdown/Filter`
+  (`DESIGN.md`) — button + mũi tên ▾ + panel checkbox, KHÔNG dùng
+  `<select multiple>` gốc trình duyệt.
+- **種別/技術**: mỗi giá trị 1 badge riêng (không nối chuỗi bằng dấu
+  phẩy) — 種別 dùng tông `secondary-container`, 技術 dùng tông
+  `tertiary-container` (phân biệt theo NHÓM, không theo từng giá trị).
+- Data Table theo `DESIGN.md` mục Components (border bottom
+  outline-variant mỗi row, header nền surface-container-low, hover row
+  nền surface-container-low), pagination dùng Action Button
   Secondary/Ghost.
 - Row KHÔNG có hành động click (detail/edit để ticket sau).
 - Search debounce 300ms trước khi gọi API, reset về page 1 khi đổi
@@ -72,6 +83,18 @@
 - **[UI-PROJ-01-5]** The List table shall render 8 columns per row (xem
   mục 2.1), with `team_size`/`total_man_month` rendered as "—" when
   `null`.
+- **[UI-PROJ-01-6]** The List screen shall render the page title
+  ("プロジェクト") and the "+ 新規プロジェクト" action button on a
+  dedicated header row, separate from the search/filter toolbar row.
+- **[UI-PROJ-01-7]** The search input shall render at a fixed max-width
+  (320px), not stretch to fill the toolbar row.
+- **[UI-PROJ-01-8]** The technology/loại hình filter UI shall be a
+  dropdown button + checkbox panel (component `Dropdown/Filter`), not a
+  native `<select multiple>`. Button phải có ký hiệu mũi tên ▾.
+- **[UI-PROJ-01-9]** The List table shall render each
+  `project_types`/`technologies` value as an individual badge — 種別
+  badges use `secondary-container` tint, 技術 badges use
+  `tertiary-container` tint.
 
 ---
 
@@ -80,31 +103,38 @@
 ### 3.1 Layout
 
 ```
-┌─────────────────────────────────┐
-│ Header                          │
-├─────────────────────────────────┤
+┌─ 基本情報 ──────────────────────┐
 │ 顧客名 *        [___________]   │
 │ プロジェクト名 * [___________]   │
 │ 概要            [___________]   │
+└─────────────────────────────────┘
+┌─ 期間・規模 ────────────────────┐
 │ 開始日 *        [__/__/____]    │
 │ ☐ 進行中                        │
 │ 終了日          [__/__/____]    │ ← disable khi 進行中 checked
-│ 人数            [___]           │
-│ 総人月          [___]           │
-│ 技術            [tag input....] │
-│ 種別            [☐offshore ☐ses │
-│                  ☐lab ☐new_dev  │
-│                  ☐maintenance]  │
-│ 確認元メモ      [___________]   │
-│           [作成する]            │
+│ 人数 [___]名     総人月 [___]人月 │  ← 2 field nằm ngang hàng
 └─────────────────────────────────┘
+┌─ 分類 ──────────────────────────┐
+│ 技術            [tag input....] │
+│ 種別            [☐offshore ...] │
+└─────────────────────────────────┘
+確認元メモ        [___________]
+           [作成する]  [キャンセル]
 ```
 
+- Form phân nhóm theo 3 card (component "Card" atomic — border 1px
+  `outline-variant`, giống `.auth-card`), toàn trang giới hạn max-width
+  640px và **căn giữa**.
 - Component dùng: `.input-field`/`.input-field-error`, `.button-primary`,
-  `.toast-error`, Filter Chip (tag công nghệ đã chọn, `radius-lg`), single
-  -column layout giống `Login`/`ChangePassword`.
-- Field bắt buộc đánh dấu `*`. Tag công nghệ có autocomplete gọi
-  `GET /tech-tags?q=` khi gõ.
+  Action Button Secondary/Ghost (nút Huỷ), `.toast-error`, Filter Chip
+  (tag công nghệ đã chọn, `radius-lg`).
+- Field bắt buộc đánh dấu `*` màu `error`. Tag công nghệ có autocomplete
+  gọi `GET /tech-tags?q=` khi gõ, có placeholder + hint hướng dẫn thêm
+  bằng Enter.
+- `team_size`/`total_man_month`: đơn vị "名"/"人月" cố định cạnh input,
+  2 field nằm ngang hàng.
+- Nút "キャンセル" (Action Button Secondary/Ghost) cạnh nút "作成する",
+  điều hướng về `/projects` không submit.
 
 ### 3.2 Trạng thái màn hình (state matrix)
 
@@ -132,6 +162,15 @@
   người dùng không biết cách thêm).
 - **[UI-PROJ-02-4]** When `POST /projects` succeeds, the system shall
   navigate to `/projects`.
+- **[UI-PROJ-02-5]** Required field labels shall render a trailing `*`
+  character in `error` color.
+- **[UI-PROJ-02-6]** The Create form shall group fields into 3 visual
+  sections: 基本情報 (customer/project name/description), 期間・規模
+  (dates/team_size/total_man_month), 分類 (technologies/project_types).
+- **[UI-PROJ-02-7]** `team_size`/`total_man_month` inputs shall display
+  a fixed unit label ("名"/"人月") adjacent to the field, side by side.
+- **[UI-PROJ-02-8]** The Create screen shall render a "キャンセル" link
+  next to "作成する" that navigates to `/projects` without submitting.
 
 ---
 
@@ -141,5 +180,6 @@
 |------------|-----------------------------------|--------------------------------------------------|
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo: màn List + Tạo dự án (UI-PROJ-01/02) |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Thêm placeholder/hint cho ô 技術 (UI-PROJ-02-3) |
+| 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | App Shell (Sidebar, xem `specs/architecture.md` mục 1); List: tách title/toolbar, dropdown filter, badge (UI-PROJ-01-6..9); Create: phân nhóm card, dấu *, đơn vị ngang hàng, nút Huỷ (UI-PROJ-02-5..8) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->
