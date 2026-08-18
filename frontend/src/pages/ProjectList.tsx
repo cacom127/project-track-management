@@ -144,6 +144,7 @@ export function ProjectList() {
                   <th>技術</th>
                   <th>人数</th>
                   <th>総人月</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -170,6 +171,10 @@ export function ProjectList() {
                     </td>
                     <td>{project.team_size ?? "—"}</td>
                     <td>{project.total_man_month ?? "—"}</td>
+                    <td>
+                      {/* UI-PROJ-01-10 */}
+                      <Link to={`/projects/${project.id}`}>詳細</Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -36,6 +36,13 @@ class ProjectCreate(BaseModel):
         return self
 
 
+class ProjectUpdate(ProjectCreate):
+    """PROJ-15 — full replace (`PUT /projects/{id}`). Kế thừa toàn bộ
+    field/validator (PROJ-07/PROJ-08) từ `ProjectCreate` vì payload giống
+    hệt nhau (`created_by` không nằm trong request body ở cả 2 route,
+    lấy từ `get_current_user_id`)."""
+
+
 class ProjectOut(BaseModel):
     id: int
     customer_name: str

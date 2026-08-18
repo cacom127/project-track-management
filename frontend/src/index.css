@@ -15,6 +15,7 @@
   --color-secondary: #1960a3;
   --color-on-secondary: #ffffff;
   --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
   --color-secondary-container: #7db6ff;
@@ -151,6 +152,82 @@ h1 {
   border-radius: var(--radius-default);
   margin-bottom: var(--space-md);
   font-size: 14px;
+}
+
+/* Toast > success (DESIGN.md mục Components > Toast, UI-SHELL-04) —
+   cùng padding/border-radius/margin/font-size với .toast-error, khác
+   màu token (tertiary-container). */
+.toast-success {
+  background: var(--color-tertiary-container);
+  color: var(--color-on-tertiary-container);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-default);
+  margin-bottom: var(--space-md);
+  font-size: 14px;
+}
+
+/* Action Button > Destructive (DESIGN.md mục Components > Action
+   Button) — dùng cho nút xác nhận xoá trong Modal. */
+.button-destructive {
+  width: auto;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-default);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button-destructive:disabled {
+  background: var(--color-outline-variant);
+  border-color: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+/* Modal / Confirm Dialog (DESIGN.md mục Components > Modal, UI-PROJ-03-4/5) —
+   backdrop primary 40% opacity phủ toàn màn hình, panel căn giữa. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 32, 69, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-default);
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 var(--space-sm);
+  color: var(--color-on-surface);
+}
+
+.modal-body {
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-lg);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
 }
 
 /* Layout màn login/đổi mật khẩu — single-column, max-width 360px

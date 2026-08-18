@@ -76,14 +76,18 @@ describe("ProjectCreate", () => {
     expect(screen.getByText("React")).toBeInTheDocument();
   });
 
-  it("submits successfully and navigates to /projects (UI-PROJ-02-4)", async () => {
-    createProjectMock.mockResolvedValue({ id: 1 });
+  it("submits successfully and navigates to /projects with a success toast (UI-PROJ-02-4)", async () => {
+    createProjectMock.mockResolvedValue({ id: 1, project_name: "基幹システム刷新" });
     renderCreate();
     fillRequiredFields();
 
     fireEvent.click(screen.getByRole("button", { name: "作成する" }));
 
-    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith("/projects"));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith("/projects", {
+        state: { successMessage: "「基幹システム刷新」を作成しました" },
+      }),
+    );
     expect(createProjectMock).toHaveBeenCalledWith(
       expect.objectContaining({
         customer_name: "ABC商事",

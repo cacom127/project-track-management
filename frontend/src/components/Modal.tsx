@@ -1,0 +1,55 @@
+import type { ReactNode } from "react";
+
+interface ModalProps {
+  open: boolean;
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+  confirmLabel: string;
+  onConfirm: () => void;
+  confirmDisabled?: boolean;
+}
+
+/** UI-PROJ-03-4/5: modal xác nhận dùng chung (không riêng cho xoá). */
+export function Modal({
+  open,
+  title,
+  children,
+  onClose,
+  confirmLabel,
+  onConfirm,
+  confirmDisabled = false,
+}: ModalProps) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div
+        className="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <p className="modal-title">{title}</p>
+        <div className="modal-body">{children}</div>
+        <div className="modal-actions">
+          <button type="button" className="button-secondary" onClick={onClose}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            className="button-destructive"
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Modal;

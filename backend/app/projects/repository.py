@@ -12,7 +12,7 @@ tiên trong field dict, CẦN kiểm tra lại trên Data API thật.
 """
 
 from app.core.db import DBSession
-from app.projects.schemas import ProjectCreate, ProjectOut
+from app.projects.schemas import ProjectCreate, ProjectOut, ProjectUpdate
 
 
 def _fetch_or_create_tag_ids(db: DBSession, names: list[str]) -> list[int]:
@@ -94,10 +94,121 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
     )
 
 
+def get_project(db: DBSession, project_id: int) -> ProjectOut | None:
+    # PROJ-14 — trả None nếu không tồn tại/đã soft-delete để route trả 404.
+    rows = db.execute(
+        """
+        SELECT p.id, p.customer_name, p.project_name, p.description, p.start_date, p.end_date,
+               p.is_ongoing, p.team_size, p.total_man_month, p.source_note, p.created_by,
+               p.created_at, p.updated_at,
+               COALESCE(array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL), '{}')
+                   AS technologies,
+               COALESCE(array_agg(DISTINCT pt.code) FILTER (WHERE pt.code IS NOT NULL), '{}')
+                   AS project_types
+        FROM projects p
+        LEFT JOIN project_tech_tags ptt ON ptt.project_id = p.id
+        LEFT JOIN tech_tags t ON t.id = ptt.tag_id
+        LEFT JOIN project_project_types ppt ON ppt.project_id = p.id
+        LEFT JOIN project_types pt ON pt.id = ppt.project_type_id
+        WHERE p.id = :project_id AND p.deleted_at IS NULL
+        GROUP BY p.id
+        """,
+        {"project_id": project_id},
+    )
+    if not rows:
+        return None
+    return ProjectOut(**rows[0])
+
+
+def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> ProjectOut | None:
+    # PROJ-15 — full replace: cập nhật hết cột scalar rồi xoá/insert lại
+    # toàn bộ mapping technologies/project_types theo payload mới.
+    rows = db.execute(
+        """
+        UPDATE projects
+        SET customer_name = :customer_name,
+            project_name = :project_name,
+            description = :description,
+            start_date = :start_date ::date,
+            end_date = :end_date ::date,
+            is_ongoing = :is_ongoing,
+            team_size = :team_size,
+            total_man_month = :total_man_month ::numeric,
+            source_note = :source_note,
+            updated_at = now()
+        WHERE id = :project_id AND deleted_at IS NULL
+        RETURNING id, customer_name, project_name, description, start_date, end_date,
+                  is_ongoing, team_size, total_man_month, source_note, created_by,
+                  created_at, updated_at
+        """,
+        {
+            "project_id": project_id,
+            "customer_name": data.customer_name,
+            "project_name": data.project_name,
+            "description": data.description,
+            "start_date": data.start_date.isoformat(),
+            "end_date": data.end_date.isoformat() if data.end_date else None,
+            "is_ongoing": data.is_ongoing,
+            "team_size": data.team_size,
+            "total_man_month": (
+                float(data.total_man_month) if data.total_man_month is not None else None
+            ),
+            "source_note": data.source_note,
+        },
+    )
+    if not rows:
+        return None
+    project_row = rows[0]
+
+    db.execute(
+        "DELETE FROM project_tech_tags WHERE project_id = :project_id", {"project_id": project_id}
+    )
+    db.execute(
+        "DELETE FROM project_project_types WHERE project_id = :project_id",
+        {"project_id": project_id},
+    )
+
+    for tag_id in _fetch_or_create_tag_ids(db, data.technologies):
+        db.execute(
+            "INSERT INTO project_tech_tags (project_id, tag_id) VALUES (:pid, :tid)",
+            {"pid": project_id, "tid": tag_id},
+        )
+
+    for type_id in _fetch_project_type_ids(db, data.project_types):
+        db.execute(
+            "INSERT INTO project_project_types (project_id, project_type_id) VALUES (:pid, :tid)",
+            {"pid": project_id, "tid": type_id},
+        )
+
+    db.commit()
+
+    return ProjectOut(
+        **project_row,
+        technologies=list(data.technologies),
+        project_types=list(data.project_types),
+    )
+
+
+def delete_project(db: DBSession, project_id: int) -> bool:
+    # PROJ-16 — soft delete, bảng nối KHÔNG bị xoá theo (giữ lịch sử).
+    rows = db.execute(
+        """
+        UPDATE projects
+        SET deleted_at = now()
+        WHERE id = :project_id AND deleted_at IS NULL
+        RETURNING id
+        """,
+        {"project_id": project_id},
+    )
+    db.commit()
+    return bool(rows)
+
+
 def _build_where(
     q: str | None, technologies: list[str] | None, project_types: list[str] | None
 ) -> tuple[str, dict]:
-    clauses: list[str] = []
+    # PROJ-17 — loại bỏ project đã soft-delete khỏi list (items + total).
+    clauses: list[str] = ["p.deleted_at IS NULL"]
     params: dict = {}
 
     if q:

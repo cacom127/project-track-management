@@ -4,6 +4,8 @@ import AppShell from "./components/AppShell";
 import RouteGuard from "./components/RouteGuard";
 import LoginFlow from "./pages/LoginFlow";
 import ProjectCreate from "./pages/ProjectCreate";
+import ProjectDetail from "./pages/ProjectDetail";
+import ProjectEdit from "./pages/ProjectEdit";
 import ProjectList from "./pages/ProjectList";
 
 type HealthResponse = {
@@ -61,6 +63,26 @@ function App() {
           <RouteGuard>
             <AppShell>
               <ProjectCreate />
+            </AppShell>
+          </RouteGuard>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <RouteGuard>
+            <AppShell>
+              <ProjectDetail />
+            </AppShell>
+          </RouteGuard>
+        }
+      />
+      <Route
+        path="/projects/:id/edit"
+        element={
+          <RouteGuard>
+            <AppShell>
+              <ProjectEdit />
             </AppShell>
           </RouteGuard>
         }

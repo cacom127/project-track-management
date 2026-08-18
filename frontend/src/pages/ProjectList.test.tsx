@@ -80,7 +80,7 @@ describe("ProjectList", () => {
     expect(await screen.findByText("プロジェクト一覧の取得に失敗しました")).toBeInTheDocument();
   });
 
-  it("renders 8 columns, showing — for null team_size/total_man_month (UI-PROJ-01-5)", async () => {
+  it("renders 8 data columns + 詳細 link column, showing — for null team_size/total_man_month (UI-PROJ-01-5)", async () => {
     listProjectsMock.mockResolvedValue({
       items: [SAMPLE_PROJECT],
       total: 1,
@@ -94,8 +94,23 @@ describe("ProjectList", () => {
     const row = screen.getByText("基幹システム刷新").closest("tr");
     expect(row).not.toBeNull();
     const cells = row!.querySelectorAll("td");
-    expect(cells).toHaveLength(8);
+    expect(cells).toHaveLength(9);
     expect(row!.textContent).toContain("—");
+  });
+
+  it("renders a 詳細 link per row navigating to /projects/:id (UI-PROJ-01-10)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    const detailLink = screen.getByRole("link", { name: "詳細" });
+    expect(detailLink).toHaveAttribute("href", "/projects/1");
   });
 
   it("debounces search input 300ms before calling the API again (UI-PROJ-01-2)", async () => {
