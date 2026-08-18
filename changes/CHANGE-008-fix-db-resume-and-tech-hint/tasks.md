@@ -26,6 +26,13 @@
       - Liên quan: ARCH-22
       - File: `backend/app/core/db.py`, `backend/tests/test_db_data_api.py`
       - Verify: 49/49 full suite pass, `ruff check` sạch.
+- [x] **T1d** — Chủ động fix trước khi user gặp lỗi thật: `array_agg`
+      (`technologies`/`project_types` ở `GET /projects`) trả dạng
+      `arrayValue` lồng nhau qua Data API — chưa được parse thành list
+      phẳng.
+      - Liên quan: ARCH-23
+      - File: `backend/app/core/db.py`, `backend/tests/test_db_data_api.py`
+      - Verify: 50/50 full suite pass, `ruff check` sạch.
 - [x] **T2** — UI: thêm placeholder + hint chữ nhỏ cho ô 技術 (cách thêm
       nhiều tag bằng Enter).
       - Liên quan: UI-PROJ-02-3

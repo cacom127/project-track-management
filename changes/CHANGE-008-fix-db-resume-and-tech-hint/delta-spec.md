@@ -21,6 +21,10 @@
   (`{"isNull": true}`), `_parse_data_api_records` shall return `None`
   for that field — not the literal value of the `isNull` key (`True`).
   Applies to every query through `DataApiSession`, not just `projects`.
+- **[ARCH-23] (MỚI)** When RDS Data API returns a PostgreSQL ARRAY
+  column value (`{"arrayValue": {"stringValues": [...]}}` — vd
+  `array_agg` cho `technologies`/`project_types`), `_parse_data_api_records`
+  shall return a plain flat `list`, not the nested `arrayValue` dict.
 - **[UI-PROJ-02-3] (SỬA)**
   - Cũ: ô nhập technology không có hướng dẫn cách thêm tag.
   - Mới: ô nhập có placeholder "入力してEnterで追加（複数可）" + hint chữ
@@ -99,3 +103,15 @@ nhưng response validate lỗi:**
 - Fix (ARCH-22): tách `_parse_data_api_field()` check riêng key
   `isNull` trước khi lấy giá trị. Áp dụng cho MỌI query qua
   `DataApiSession`, không riêng `projects`.
+
+**Chủ động fix thêm (chưa gặp lỗi thật, nhưng gần như chắc chắn sẽ là
+bug thứ 4 nếu không sửa trước — đúng rủi ro đã cảnh báo từ `CHANGE-007`):**
+
+- `GET /projects` dùng `array_agg` cho `technologies`/`project_types` —
+  Data API trả cột ARRAY dạng `{"arrayValue": {"stringValues": [...]}}`
+  (cấu trúc lồng), không phải list phẳng như SQLAlchemy/psycopg ở local.
+  Không sửa trước sẽ khiến `ProjectOut.technologies`/`project_types`
+  (khai báo `list[str]`) nhận nhầm 1 dict, Pydantic validate lỗi giống
+  hệt bug thứ 3 nhưng ở field khác.
+- Fix (ARCH-23): thêm `_parse_data_api_array_value()`, gọi từ
+  `_parse_data_api_field()` khi gặp key `arrayValue`.

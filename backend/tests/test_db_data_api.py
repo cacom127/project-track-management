@@ -41,6 +41,24 @@ def test_execute_returns_parsed_records():
     )
 
 
+def test_execute_returns_plain_list_for_array_value_fields():
+    """Rủi ro đã cảnh báo ở CHANGE-007 (array_agg cho technologies/
+    project_types) — Data API trả cột PostgreSQL ARRAY dạng
+    {"arrayValue": {"stringValues": [...]}}, không phải list phẳng."""
+    fake_client = MagicMock()
+    fake_client.execute_statement.return_value = {
+        "columnMetadata": [{"name": "technologies"}],
+        "records": [[{"arrayValue": {"stringValues": ["React", "AWS"]}}]],
+    }
+    session = DataApiSession(
+        client=fake_client, cluster_arn="arn", secret_arn="arn", database="app"
+    )
+
+    rows = session.execute("SELECT technologies")
+
+    assert rows == [{"technologies": ["React", "AWS"]}]
+
+
 def test_execute_returns_none_for_null_fields_not_the_isnull_flag():
     """Bug thật gặp ở CHANGE-008: field NULL trả về dạng {"isNull": True}
     — code cũ lấy next(iter(field.values())) ra thẳng True (giá trị của

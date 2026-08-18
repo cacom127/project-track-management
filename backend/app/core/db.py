@@ -143,9 +143,26 @@ def _parse_data_api_field(field: dict[str, Any] | None) -> Any:
     # chỉ đúng 1 key như quan sát thực tế), next(iter()) có thể vô tình
     # lấy nhầm giá trị của "isNull" nếu nó đứng trước trong dict.
     for key, value in field.items():
-        if key != "isNull":
-            return value
+        if key == "isNull":
+            continue
+        if key == "arrayValue":
+            return _parse_data_api_array_value(value)
+        return value
     return None
+
+
+def _parse_data_api_array_value(array_value: dict[str, Any]) -> list[Any]:
+    """Cột Postgres ARRAY (vd `array_agg` cho `technologies`/
+    `project_types` — xem `app.projects.repository.list_projects`) trả
+    dạng `{"arrayValue": {"stringValues": [...]}}` (hoặc
+    `longValues`/`booleanValues`/`doubleValues`/`arrayValues` tuỳ kiểu
+    phần tử) qua Data API — KHÔNG phải list phẳng như local SQLAlchemy.
+    Rủi ro đã cảnh báo ở `CHANGE-007`, xác nhận + fix ở `CHANGE-008`."""
+    for key, value in array_value.items():
+        if key == "arrayValues":
+            return [_parse_data_api_array_value(item) for item in value]
+        return list(value)
+    return []
 
 
 def _parse_data_api_records(response: dict[str, Any]) -> list[dict[str, Any]]:
