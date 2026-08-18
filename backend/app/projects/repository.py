@@ -47,8 +47,9 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
             customer_name, project_name, description, start_date, end_date,
             is_ongoing, team_size, total_man_month, source_note, created_by
         ) VALUES (
-            :customer_name, :project_name, :description, :start_date, :end_date,
-            :is_ongoing, :team_size, :total_man_month, :source_note, :created_by
+            :customer_name, :project_name, :description, :start_date ::date,
+            :end_date ::date, :is_ongoing, :team_size, :total_man_month ::numeric,
+            :source_note, :created_by
         )
         RETURNING id, customer_name, project_name, description, start_date, end_date,
                   is_ongoing, team_size, total_man_month, source_note, created_by,

@@ -10,6 +10,16 @@
       - Liên quan: ARCH-21
       - File: `backend/app/core/db.py`, `backend/tests/test_db_data_api.py`
       - Verify: 48/48 test pass, `ruff check` sạch.
+- [x] **T1b** — Fix bug thứ 2 (vẫn 500 sau khi deploy T1): thêm
+      `::date`/`::numeric` cast tường minh cho `start_date`/`end_date`/
+      `total_man_month` trong `POST /projects` — Data API không tự cast
+      tham số sang kiểu cột đích.
+      - Liên quan: PROJ-13
+      - File: `backend/app/projects/repository.py`
+      - Verify: 22/22 test `tests/projects/` pass, 48/48 full suite,
+        `ruff check` sạch. LƯU Ý cú pháp: `:param ::type` (có khoảng
+        trắng) — viết dính `:param::type` làm SQLAlchemy không nhận
+        diện được bind param (đã gặp thật khi sửa).
 - [x] **T2** — UI: thêm placeholder + hint chữ nhỏ cho ô 技術 (cách thêm
       nhiều tag bằng Enter).
       - Liên quan: UI-PROJ-02-3
