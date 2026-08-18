@@ -73,16 +73,23 @@
         công (CSS 6.42kB → 10.21kB — hợp lý, thêm style thật cho
         sidebar/badge/dropdown/form-group-card). `npx prettier --write`
         đã chạy trên toàn bộ file mới/sửa.
-- [ ] **T9** — Deploy (`namlp` tự chạy `npm run build` + `cdk deploy`,
-      không cần migration) — verify bằng mắt theo đúng 5 comment gốc
-      (sidebar, search box, nút tạo mới, badge, dấu * đỏ).
-- [ ] **T10** — Fold `ui-delta-spec.md` vào `specs/projects-ui.md` (SỬA)
-      + `specs/architecture.md` mục 1 (thêm mô tả App Shell).
-- [ ] **T11** — Di chuyển thư mục này vào `changes/_archive/` sau khi
+- [x] **T9** — Deploy (`namlp` tự chạy `npm run build` + `cdk deploy`,
+      không cần migration) — verify bằng mắt theo đúng 5 comment gốc.
+      - Thêm 4 vòng feedback sau test local: sidebar bị cắt (chuyển
+        sang `position: fixed`/100vh, đè lên Header), form chưa căn
+        giữa + 人数/総人月 chưa ngang hàng, toolbar cần border riêng,
+        filter thiếu mũi tên ▾. Đã sửa hết, deploy + push code thành
+        công, PR #6 merge vào `master`.
+- [x] **T10** — Fold `ui-delta-spec.md` vào `specs/projects-ui.md` (SỬA)
+      + `specs/architecture.md` mục 1 (thêm mô tả App Shell). Đồng thời
+      cập nhật `DESIGN.md` (component Navigation Sidebar, Dropdown/
+      Filter + 3 Do's/Don'ts) — rút kinh nghiệm từ nhiều vòng feedback,
+      xem `delta-spec.md` mục 4.
+- [x] **T11** — Di chuyển thư mục này vào `changes/_archive/` sau khi
       merge.
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |---|---|---|
-| Đang làm | 2026-08-18 | T1-T8 xong (code + test local, 3 component build song song qua subagent). Còn T9 (deploy + verify bằng mắt theo 5 comment gốc), T10 (fold specs), T11 (archive). |
+| Hoàn tất | 2026-08-19 | Toàn bộ T1-T11 xong. Deploy production verify OK sau 4 vòng fix, DESIGN.md cập nhật, đã fold vào specs/, đã archive. |
