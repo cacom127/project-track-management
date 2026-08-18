@@ -31,6 +31,13 @@ jobs:
       - name: Lint
         working-directory: backend
         run: uv run ruff check .
+      - name: Run DB migrations
+        # CHANGE-007: test module projects cần bảng thật (trước đây
+        # test chỉ cần "SELECT 1" nên thiếu bước này không lộ ra).
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://app:app@localhost:5432/app
+        run: uv run alembic upgrade head
       - name: Test
         working-directory: backend
         env:

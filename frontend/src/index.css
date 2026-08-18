@@ -30,6 +30,7 @@
 
   /* Shape */
   --radius-default: 0.25rem;
+  --radius-lg: 0.5rem;
 
   font-family: var(--font-family);
   color: var(--color-on-surface);
@@ -64,9 +65,10 @@ h1 {
   color: var(--color-on-surface-variant);
 }
 
-.input-field input {
+.input-field input,
+.input-field textarea {
   height: 40px;
-  padding: 0 var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-default);
   font-size: 14px;
@@ -76,19 +78,44 @@ h1 {
   box-sizing: border-box;
 }
 
-.input-field input:focus {
+.input-field textarea {
+  height: auto;
+  min-height: 72px;
+  resize: vertical;
+}
+
+.input-field input:focus,
+.input-field textarea:focus {
   outline: none;
   border-color: var(--color-secondary);
   box-shadow: inset 0 0 0 1px var(--color-secondary);
 }
 
-.input-field-error input {
+.input-field-error input,
+.input-field-error textarea {
   border-color: var(--color-error);
+}
+
+.input-field input[type="checkbox"] {
+  height: auto;
+  width: auto;
+  margin-right: var(--space-xs);
+}
+
+.input-field label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
 }
 
 .field-error-message {
   color: var(--color-error);
   font-size: 13px;
+  margin: 0;
+}
+
+.input-hint {
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
   margin: 0;
 }
 
@@ -177,4 +204,185 @@ h1 {
 
 .app-page {
   padding: var(--space-xl);
+}
+
+/* Toolbar List (search + filter + nút tạo mới) */
+.project-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.project-list-toolbar .input-field {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+.project-list-toolbar select {
+  height: 40px;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+}
+
+.project-list-toolbar .button-primary {
+  width: auto;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+/* Bảng dữ liệu mật độ cao (DESIGN.md mục Components > Data Table) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead {
+  background: var(--color-surface-container-low);
+}
+
+th {
+  text-align: left;
+  padding: var(--space-sm);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-on-surface-variant);
+}
+
+td {
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+tbody tr:hover {
+  background: var(--color-surface-container-low);
+}
+
+.project-list-description {
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-list-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+/* Action Button > Secondary/Ghost (DESIGN.md) — dùng cho pagination */
+.project-list-pagination button {
+  height: 32px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.project-list-pagination button:disabled {
+  border-color: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+/* Filter Chip (DESIGN.md mục Components > Filter Chip) — tag công nghệ
+   đã chọn ở màn Tạo dự án. */
+.tag-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-xs) 0 0;
+}
+
+.tag-chip-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+}
+
+.tag-chip-list button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+
+.tag-suggestions {
+  list-style: none;
+  padding: var(--space-xs);
+  margin: var(--space-xs) 0 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
+}
+
+.tag-suggestions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-on-surface);
+  padding: var(--space-xs) var(--space-sm);
+  width: 100%;
+  text-align: left;
+}
+
+.tag-suggestions button:hover {
+  background: var(--color-surface-container-low);
+}
+
+/* 種別 checkbox group */
+fieldset {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  padding: var(--space-md);
+  margin: 0 0 var(--space-md);
+}
+
+legend {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-on-surface-variant);
+  padding: 0 var(--space-xs);
+}
+
+fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-right: var(--space-md);
+  font-size: 14px;
+  font-weight: 400;
 }

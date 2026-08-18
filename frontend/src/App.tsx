@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Route, Routes } from "react-router";
+import { Link, Route, Routes } from "react-router";
 import Header from "./components/Header";
 import RouteGuard from "./components/RouteGuard";
 import LoginFlow from "./pages/LoginFlow";
+import ProjectCreate from "./pages/ProjectCreate";
+import ProjectList from "./pages/ProjectList";
 
 type HealthResponse = {
   status: string;
@@ -27,6 +29,7 @@ function Home() {
         <h1>実績管理システム</h1>
         <p>Status: {health?.status ?? "loading..."}</p>
         <p>DB: {health?.db ?? "loading..."}</p>
+        <Link to="/projects">プロジェクト一覧</Link>
       </main>
     </>
   );
@@ -41,6 +44,22 @@ function App() {
         element={
           <RouteGuard>
             <Home />
+          </RouteGuard>
+        }
+      />
+      <Route
+        path="/projects"
+        element={
+          <RouteGuard>
+            <ProjectList />
+          </RouteGuard>
+        }
+      />
+      <Route
+        path="/projects/new"
+        element={
+          <RouteGuard>
+            <ProjectCreate />
           </RouteGuard>
         }
       />
