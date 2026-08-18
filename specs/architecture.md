@@ -43,7 +43,7 @@
 | Module      | Vai trò                                       | Spec chi tiết          |
 |-------------|-------------------------------------------------|--------------------------|
 | auth        | Xác thực, đồng bộ user với Cognito, phân quyền  | `specs/auth.md`, `specs/auth-ui.md` |
-| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md` (chưa có — làm ở ticket riêng) |
+| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md`, `specs/projects-ui.md` (List+Create xong; Edit/Delete/Detail/file đính kèm — ticket riêng) |
 | reporting   | Thống kê/dashboard (theo năm, khách hàng, tech...) | `specs/reporting.md` (chưa có — làm ở ticket riêng) |
 | export      | Export dữ liệu ra PowerPoint                    | Chưa spec — ưu tiên thấp, chưa quyết định chi tiết (xem `specs/vision.md` mục 4) |
 
@@ -107,6 +107,30 @@
   duy nhất (`app.core.db`) — để khi deploy production đổi sang RDS Data
   API, chỉ cần thay implementation trong module này, không phải sửa
   code gọi DB rải rác nhiều nơi.
+- **Truy vấn DB bằng raw SQL, KHÔNG dùng ORM**: `DBSession.execute(sql,
+  params)` trả `list[dict[str, Any]]` nhất quán ở cả nhánh local
+  (SQLAlchemy) và production (RDS Data API); `commit()` tường minh
+  (no-op ở Data API, thật ở SQLAlchemy) — không dùng SQLAlchemy ORM
+  model vì Data API không có ORM tương thích cả 2 nhánh (xem
+  `CHANGE-007-projects-list-create`).
+- **Migration lên production qua RDS Data API**: production không có
+  kết nối trực tiếp tới Aurora (không VPC/bastion) — chạy
+  `backend/scripts/apply_migration_via_data_api.py` (sinh SQL bằng
+  `alembic upgrade <rev>:head --sql`, thực thi qua Data API
+  `begin/commit/rollback_transaction`) thay vì `alembic upgrade head`
+  trực tiếp. `DbClusterArn`/`DbSecretArn` lấy từ `CfnOutput` của CDK
+  stack. Áp dụng cho MỌI migration sau này, không riêng module nào.
+- **Xác thực "ai đang gọi" ở backend**: dependency `get_current_user_id`
+  (`app/core/auth.py`) lấy Cognito `sub` — production đọc từ
+  `request.scope["aws.event"]` (Mangum giữ nguyên Lambda event, claims
+  đã được API Gateway JWT Authorizer verify trước khi forward); local
+  dev decode thẳng payload JWT từ header `Authorization` không verify
+  chữ ký. Dùng chung cho mọi route cần biết người gọi, không riêng
+  module nào.
+- **Validation error trả `400`**: exception handler global cho
+  `RequestValidationError` trong `app/main.py` đổi `422` mặc định của
+  FastAPI thành `400` (khớp `ERR-02`), áp dụng cho mọi route có request
+  body — không riêng module nào.
 
 ## 5. Lịch sử thay đổi kiến trúc lớn
 
@@ -116,5 +140,6 @@
 | 2026-08-15 | CHANGE-003-init-codebase | Chốt cấu trúc source code (`backend`/`frontend`/`infra` ở root), package manager (`uv`/`npm`), CI (GitHub Actions), hành vi `/health`, nguyên tắc cô lập DB access |
 | 2026-08-17 | CHANGE-006-deploy-production | Deploy thật lần đầu lên AWS (`ap-northeast-1`): Cognito, Aurora Serverless v2 (0-1 ACU), Lambda, API Gateway, S3+CloudFront. Xác nhận `/health` chạy đúng end-to-end trên production thật |
 | 2026-08-17 | CHANGE-005-auth-module | Bật JWT Authorizer thật cho mọi route (trừ `/health`), cấu hình CORS ở API Gateway (`cors_preflight`, route method tường minh — không dùng `ANY` vì chặn OPTIONS). Xác nhận login/đổi mật khẩu/logout E2E thật trên production |
+| 2026-08-18 | CHANGE-007-projects-list-create | Module `projects` đầu tiên (List+Create): chốt nguyên tắc raw SQL qua `DBSession` (không ORM), migration production qua script Data API (`apply_migration_via_data_api.py`), dependency lấy user hiện tại từ JWT (`app/core/auth.py`), validation error trả 400 thay vì 422 mặc định |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->
