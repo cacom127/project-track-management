@@ -17,12 +17,12 @@
 ### 2.1 Layout
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Header (nền primary, full-width): 実績管理システム   email/role/ログアウト │
-├──────────┬────────────────────────────────────────────────┤
-│ Sidebar  │                                                 │
-│ 240px    │              (nội dung trang)                   │
-│          │                                                 │
+┌──────────┬────────────────────────────────────────────────┐
+│ Sidebar  │ Header (nền primary): 実績管理システム  email/role/ログアウト │
+│ (fixed,  ├────────────────────────────────────────────────┤
+│ 100vh,   │                                                 │
+│ đè lên   │              (nội dung trang)                   │
+│ Header)  │                                                 │
 │ ・プロジェ │                                                 │
 │  クト一覧  │                                                 │
 │ (active) │                                                 │
@@ -30,19 +30,29 @@
 ```
 
 - Sidebar: 240px cố định (token có sẵn trong `DESIGN.md` mục Layout &
-  Spacing), nền `surface-container-lowest`, border-right 1px
-  `outline-variant`. Item active: nền `secondary-container` nhạt, text
+  Spacing), `position: fixed` **kéo dài hết chiều cao viewport
+  (`height: 100vh`), đè lên cả Header phía trên** (SỬA — thiết kế ban
+  đầu để Header full-width phía trên rồi Sidebar bên dưới, khiến Sidebar
+  bị cắt mất phần dưới khi nội dung trang cuộn dài hơn 1 màn hình; sửa
+  theo feedback test local). Header + nội dung trang nằm trong 1 khối
+  bên phải, dịch phải bằng `margin-left: 240px` để chừa chỗ cho Sidebar.
+  Nền `surface-container-lowest`, border-right 1px `outline-variant`.
+  Item active: nền `secondary-container` nhạt, text
   `on-secondary-container`.
 - Responsive: Desktop/Tablet (≥768px) hiện sidebar đầy đủ; Mobile
   (<768px) ẩn hẳn sidebar (chỉ 1 nav item hiện tại, chưa cần hamburger
-  menu — làm khi có ≥3 mục).
-- Header giữ nguyên hành vi/thiết kế đã có từ `CHANGE-005`.
+  menu — làm khi có ≥3 mục), lúc đó Header/nội dung trang trở về
+  `margin-left: 0`.
+- Header giữ nguyên hành vi/thiết kế đã có từ `CHANGE-005` — chỉ khác
+  là không còn full-width toàn viewport nữa (chiều rộng = viewport trừ
+  240px Sidebar, trừ khi màn hình <768px).
 
 ### 2.2 Hành vi tương tác (EARS)
 
-- **[UI-SHELL-01] (MỚI)** The system shall render a persistent 240px
-  left sidebar on viewports ≥768px, containing at minimum "プロジェクト
-  一覧" linking to `/projects`.
+- **[UI-SHELL-01] (SỬA)** The system shall render a persistent 240px
+  left sidebar, **fixed and spanning the full viewport height (does not
+  scroll away with page content, overlaps the Header)**, on viewports
+  ≥768px, containing at minimum "プロジェクト一覧" linking to `/projects`.
 - **[UI-SHELL-02] (MỚI)** When the current route matches a sidebar
   item's target, the system shall render that item with an active
   visual state (nền `secondary-container`).
@@ -59,7 +69,9 @@
 ┌─────────────────────────────────────────────────────┐
 │ プロジェクト                      [+ 新規プロジェクト] │  ← hàng tiêu đề
 ├─────────────────────────────────────────────────────┤
-│ [🔍 検索......] [技術 ▾ (2)] [種別 ▾]                │  ← hàng toolbar
+│┌───────────────────────────────────────────────────┐│
+││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾]              ││  ← hàng toolbar
+│└───────────────────────────────────────────────────┘│  (có border riêng cho cả group)
 ├─────────────────────────────────────────────────────┤
 │顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月│
 │ ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | ..  │
@@ -75,6 +87,10 @@
   (không `flex: 1` giãn hết), icon kính lúp SVG inline bên trong, dùng
   token `Input Field` cho border/radius nhưng KHÔNG dùng `.input-field`
   nguyên khối (sửa comment #2).
+- **Hàng toolbar (search + filter)** có border riêng bao quanh cả group
+  (1px `outline-variant`, nền `surface-container-lowest`) — phân biệt
+  trực quan với vùng bảng dữ liệu bên dưới (thêm sau khi test local,
+  feedback #3).
 - **Filter dropdown** (`FilterDropdown` component, thay `<select
   multiple>`): button hiển thị label + số lượng đang chọn (vd
   "技術 (2)"), click mở panel checkbox list bên dưới (`position:
@@ -105,7 +121,10 @@
 - **[UI-PROJ-01-8] (SỬA)** UI-PROJ-01-3's technology/loại hình filter
   UI shall be a dropdown button + checkbox panel (`FilterDropdown`),
   not a native `<select multiple>`. Behavior (calling `GET /projects`
-  with updated params, resetting to page 1) is unchanged.
+  with updated params, resetting to page 1) is unchanged. Button phải
+  có ký hiệu mũi tên (▾, `aria-hidden`) để phân biệt trực quan là
+  dropdown chọn giá trị, không phải nút hành động thường (feedback test
+  local — bản đầu chỉ có text, trông giống nút bấm).
 - **[UI-PROJ-01-9] (MỚI)** The List table shall render each
   `project_types`/`technologies` value as an individual badge — 種別
   badges use `secondary-container` tint, 技術 badges use
@@ -127,8 +146,7 @@
 │ 開始日 *        [__/__/____]    │
 │ ☐ 進行中                        │
 │ 終了日          [__/__/____]    │
-│ 人数            [___] 名        │
-│ 総人月          [___] 人月       │
+│ 人数 [___]名     総人月 [___]人月 │  ← 2 field nằm ngang hàng
 └─────────────────────────────────┘
 ┌─ 分類 ──────────────────────────┐
 │ 技術            [tag input....] │
@@ -144,10 +162,14 @@
 - Dấu `*` sau label bắt buộc: `<span className="required-mark">*</span>`,
   màu `error`.
 - `team_size`/`total_man_month`: thêm text "名"/"人月" ngay cạnh input
-  (không phải placeholder — label đơn vị cố định luôn hiện).
+  (không phải placeholder — label đơn vị cố định luôn hiện). 2 field
+  này nằm NGANG HÀNG (`.form-row`, flex) thay vì xếp dọc — sửa theo
+  feedback #2 test local, đẹp hơn khi 2 field số nhỏ đứng riêng dòng.
 - Nút "キャンセル": `<Link to="/projects">`, style Secondary/Ghost
   (border 1px `secondary`, không nền đặc) — đặt cạnh nút "作成する".
-- Toàn trang giới hạn `max-width` (không kéo giãn hết màn hình rộng).
+- Toàn trang giới hạn `max-width` (640px) và **căn giữa
+  (`margin: 0 auto`)** — bản đầu chỉ giới hạn max-width nhưng quên căn
+  giữa nên form dính sát lề trái (feedback #2 test local).
 
 ### 4.2 Trạng thái màn hình
 

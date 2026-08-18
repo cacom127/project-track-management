@@ -45,6 +45,9 @@ export function FilterDropdown({ label, options, value, onChange }: FilterDropdo
         onClick={() => setOpen((prev) => !prev)}
       >
         {buttonLabel}
+        <span className="filter-dropdown-chevron" aria-hidden="true">
+          ▾
+        </span>
       </button>
       {open && (
         <div className="filter-dropdown-panel">

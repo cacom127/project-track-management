@@ -339,9 +339,11 @@ h1 {
   position: relative;
 }
 
+/* Có mũi tên ▾ riêng để phân biệt rõ đây là dropdown chọn giá trị,
+   không phải nút hành động (feedback CHANGE-009) */
 .filter-dropdown-button {
   height: 40px;
-  padding: 0 var(--space-md);
+  padding: 0 var(--space-sm) 0 var(--space-md);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-default);
   background: var(--color-surface-container-lowest);
@@ -350,6 +352,15 @@ h1 {
   color: var(--color-on-surface);
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.filter-dropdown-chevron {
+  font-size: 16px;
+  color: var(--color-on-surface-variant);
+  line-height: 1;
 }
 
 .filter-dropdown-button:hover {
