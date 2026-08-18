@@ -11,11 +11,6 @@ vi.mock("../lib/projectsApi", () => ({
   listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
 }));
 
-vi.mock("../lib/auth", () => ({
-  getCurrentUser: () => ({ email: "user@vnext.vn", role: "member" }),
-  logout: vi.fn(),
-}));
-
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>();
   return { ...actual, useNavigate: () => navigateMock };
@@ -128,5 +123,36 @@ describe("ProjectCreate", () => {
     expect(await screen.findByText("プロジェクトの作成に失敗しました")).toBeInTheDocument();
     expect(screen.getByLabelText("顧客名 *")).toHaveValue("ABC商事");
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("renders required field asterisk in error color (UI-PROJ-02-5)", () => {
+    renderCreate();
+
+    const marks = screen.getAllByText("*");
+    expect(marks.length).toBeGreaterThan(0);
+    marks.forEach((mark) => expect(mark).toHaveClass("required-mark"));
+  });
+
+  it("groups fields into 3 sections (UI-PROJ-02-6)", () => {
+    renderCreate();
+
+    expect(screen.getByText("基本情報")).toBeInTheDocument();
+    expect(screen.getByText("期間・規模")).toBeInTheDocument();
+    expect(screen.getByText("分類")).toBeInTheDocument();
+  });
+
+  it("shows unit labels next to team_size/total_man_month inputs (UI-PROJ-02-7)", () => {
+    renderCreate();
+
+    expect(screen.getByText("名")).toBeInTheDocument();
+    expect(screen.getByText("人月")).toBeInTheDocument();
+  });
+
+  it("renders a キャンセル link to /projects that does not submit (UI-PROJ-02-8)", () => {
+    renderCreate();
+
+    const cancelLink = screen.getByRole("link", { name: "キャンセル" });
+    expect(cancelLink).toHaveAttribute("href", "/projects");
+    expect(createProjectMock).not.toHaveBeenCalled();
   });
 });

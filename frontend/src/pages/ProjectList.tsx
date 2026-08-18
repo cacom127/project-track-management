@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import Header from "../components/Header";
+import Badge from "../components/Badge";
+import FilterDropdown from "../components/FilterDropdown";
 import { listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
 
@@ -13,10 +14,6 @@ function formatPeriod(project: Project): string {
   const start = project.start_date;
   if (project.is_ongoing) return `${start} 〜 進行中`;
   return project.end_date ? `${start} 〜 ${project.end_date}` : start;
-}
-
-function selectedValues(select: HTMLSelectElement): string[] {
-  return Array.from(select.selectedOptions).map((option) => option.value);
 }
 
 export function ProjectList() {
@@ -72,11 +69,33 @@ export function ProjectList() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  function handleTechnologyChange(selected: string[]) {
+    setTechnology(selected);
+    setPage(1);
+  }
+
+  function handleProjectTypeChange(selected: string[]) {
+    setProjectType(selected);
+    setPage(1);
+  }
+
   return (
-    <>
-      <Header />
-      <main className="app-page">
-        <div className="project-list-toolbar">
+    <main className="app-page">
+      {/* UI-PROJ-01-6: title + nút hành động chính tách riêng khỏi toolbar */}
+      <div className="page-header-row">
+        <h1>プロジェクト</h1>
+        <Link to="/projects/new" className="button-primary">
+          + 新規プロジェクト
+        </Link>
+      </div>
+
+      <div className="project-list-toolbar">
+        {/* UI-PROJ-01-7: width cố định, không giãn hết toolbar */}
+        <div className="search-box">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="11" y1="11" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
           <input
             type="search"
             role="searchbox"
@@ -84,49 +103,36 @@ export function ProjectList() {
             placeholder="検索..."
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            className="input-field"
           />
-          <select
-            multiple
-            aria-label="技術でフィルタ"
-            value={technology}
-            onChange={(event) => setTechnology(selectedValues(event.target))}
-          >
-            {techOptions.map((tech) => (
-              <option key={tech} value={tech}>
-                {tech}
-              </option>
-            ))}
-          </select>
-          <select
-            multiple
-            aria-label="種別でフィルタ"
-            value={projectType}
-            onChange={(event) => setProjectType(selectedValues(event.target))}
-          >
-            {PROJECT_TYPE_OPTIONS.map(({ code, label }) => (
-              <option key={code} value={code}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <Link to="/projects/new" className="button-primary">
-            + 新規プロジェクト
-          </Link>
         </div>
+        {/* UI-PROJ-01-8: dropdown + checkbox thay <select multiple> */}
+        <FilterDropdown
+          label="技術"
+          options={techOptions.map((tech) => ({ value: tech, label: tech }))}
+          value={technology}
+          onChange={handleTechnologyChange}
+        />
+        <FilterDropdown
+          label="種別"
+          options={PROJECT_TYPE_OPTIONS.map(({ code, label }) => ({ value: code, label }))}
+          value={projectType}
+          onChange={handleProjectTypeChange}
+        />
+      </div>
 
-        {status === "error" && (
-          <p className="toast-error" role="alert">
-            プロジェクト一覧の取得に失敗しました
-          </p>
-        )}
+      {status === "error" && (
+        <p className="toast-error" role="alert">
+          プロジェクト一覧の取得に失敗しました
+        </p>
+      )}
 
-        {status === "loading" && <p role="status">読み込み中...</p>}
+      {status === "loading" && <p role="status">読み込み中...</p>}
 
-        {status === "loaded" && total === 0 && <p>プロジェクトが見つかりません</p>}
+      {status === "loaded" && total === 0 && <p>プロジェクトが見つかりません</p>}
 
-        {status === "loaded" && total > 0 && (
-          <>
+      {status === "loaded" && total > 0 && (
+        <>
+          <div className="table-scroll">
             <table>
               <thead>
                 <tr>
@@ -148,38 +154,49 @@ export function ProjectList() {
                     <td className="project-list-description">{project.description}</td>
                     <td>{formatPeriod(project)}</td>
                     <td>
-                      {project.project_types.map((t) => PROJECT_TYPE_LABELS[t] ?? t).join(", ")}
+                      {/* UI-PROJ-01-9: mỗi giá trị 1 badge riêng, không nối chuỗi */}
+                      {project.project_types.map((t) => (
+                        <Badge key={t} variant="type">
+                          {PROJECT_TYPE_LABELS[t] ?? t}
+                        </Badge>
+                      ))}
                     </td>
-                    <td>{project.technologies.join(", ")}</td>
+                    <td>
+                      {project.technologies.map((tech) => (
+                        <Badge key={tech} variant="tech">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </td>
                     <td>{project.team_size ?? "—"}</td>
                     <td>{project.total_man_month ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="project-list-pagination">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                前へ
-              </button>
-              <span>
-                {page} / {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                次へ
-              </button>
-            </div>
-          </>
-        )}
-      </main>
-    </>
+          </div>
+          <div className="project-list-pagination">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              前へ
+            </button>
+            <span>
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              次へ
+            </button>
+          </div>
+        </>
+      )}
+    </main>
   );
 }
 

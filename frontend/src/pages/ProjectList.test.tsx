@@ -10,11 +10,6 @@ vi.mock("../lib/projectsApi", () => ({
   listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
 }));
 
-vi.mock("../lib/auth", () => ({
-  getCurrentUser: () => ({ email: "user@vnext.vn", role: "member" }),
-  logout: vi.fn(),
-}));
-
 import ProjectList from "./ProjectList";
 
 function renderList() {
@@ -149,15 +144,38 @@ describe("ProjectList", () => {
     );
 
     listProjectsMock.mockClear();
-    const techSelect = screen.getByLabelText("技術でフィルタ") as HTMLSelectElement;
-    const option = Array.from(techSelect.options).find((o) => o.value === "React")!;
-    option.selected = true;
-    fireEvent.change(techSelect);
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "React" }));
 
     await waitFor(() =>
       expect(listProjectsMock).toHaveBeenCalledWith(
         expect.objectContaining({ page: 1, technology: ["React"] }),
       ),
     );
+  });
+
+  it("renders 種別/技術 as individual badges, not a comma-joined string (UI-PROJ-01-9)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    expect(screen.getByText("React")).toHaveClass("badge-tech");
+    expect(screen.getByText("AWS")).toHaveClass("badge-tech");
+    expect(screen.getByText("オフショア")).toHaveClass("badge-type");
+  });
+
+  it("renders title row separate from the toolbar row (UI-PROJ-01-6)", async () => {
+    listProjectsMock.mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20 });
+
+    renderList();
+
+    expect(screen.getByRole("heading", { name: "プロジェクト" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "+ 新規プロジェクト" })).toBeInTheDocument();
   });
 });

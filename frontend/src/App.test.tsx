@@ -78,4 +78,21 @@ describe("App", () => {
 
     expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
   });
+
+  it("renders the sidebar with プロジェクト一覧 on every authenticated route (UI-SHELL-01)", async () => {
+    isAuthenticatedMock.mockReturnValue(true);
+    renderAppAt("/");
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "プロジェクト一覧" })).toBeInTheDocument();
+    });
+  });
+
+  it("marks the sidebar item active on /projects (UI-SHELL-02)", async () => {
+    isAuthenticatedMock.mockReturnValue(true);
+    renderAppAt("/projects");
+
+    const link = await screen.findByRole("link", { name: "プロジェクト一覧" });
+    expect(link.className).toContain("sidebar-item-active");
+  });
 });

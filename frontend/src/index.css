@@ -17,6 +17,10 @@
   --color-error: #ba1a1a;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
+  --color-secondary-container: #7db6ff;
+  --color-on-secondary-container: #00477f;
+  --color-tertiary-container: #003f25;
+  --color-on-tertiary-container: #5caf81;
 
   /* Typography */
   --font-family: "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -202,11 +206,75 @@ h1 {
   padding: 0 var(--space-md);
 }
 
-.app-page {
-  padding: var(--space-xl);
+/* App Shell (UI-SHELL-01..03) — Header (đã có) full-width trên cùng,
+   Sidebar 240px cố định + content bên dưới. Token sidebar 240px đã có
+   sẵn từ đầu trong DESIGN.md (mục Layout & Spacing), chỉ chưa từng
+   implement trước CHANGE-009. */
+.app-body {
+  display: flex;
+  align-items: flex-start;
 }
 
-/* Toolbar List (search + filter + nút tạo mới) */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: var(--color-surface-container-lowest);
+  border-right: 1px solid var(--color-outline-variant);
+  padding: var(--space-md) 0;
+  min-height: calc(100vh - 56px);
+}
+
+.sidebar-item {
+  display: block;
+  padding: var(--space-sm) var(--space-lg);
+  color: var(--color-on-surface);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.sidebar-item:hover {
+  background: var(--color-surface-container-low);
+}
+
+.sidebar-item-active {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  font-weight: 600;
+}
+
+.app-page {
+  padding: var(--space-xl);
+  flex: 1;
+  max-width: 1440px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Hàng tiêu đề trang (title + nút hành động chính) — tách khỏi toolbar
+   search/filter, KHÔNG cùng hàng nữa (UI-PROJ-01-6). */
+.page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.page-header-row h1 {
+  margin: 0;
+}
+
+.page-header-row .button-primary {
+  width: auto;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toolbar List (chỉ search + filter — nút tạo mới đã chuyển sang
+   .page-header-row) */
 .project-list-toolbar {
   display: flex;
   align-items: center;
@@ -215,31 +283,117 @@ h1 {
   flex-wrap: wrap;
 }
 
-.project-list-toolbar .input-field {
-  margin-bottom: 0;
-  flex: 1;
-  min-width: 200px;
+/* Ô tìm kiếm riêng — KHÔNG dùng .input-field (thiết kế cho form, không
+   phù hợp toolbar ngang), width cố định thay vì giãn hết (UI-PROJ-01-7). */
+.search-box {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
 }
 
-.project-list-toolbar select {
+.search-box svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-on-surface-variant);
+  pointer-events: none;
+}
+
+.search-box input {
+  width: 100%;
   height: 40px;
-  padding: 0 var(--space-sm);
+  padding: 0 var(--space-sm) 0 36px;
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-default);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: inset 0 0 0 1px var(--color-secondary);
+}
+
+/* FilterDropdown (thay <select multiple> — UI-PROJ-01-8) */
+.filter-dropdown {
+  position: relative;
+}
+
+.filter-dropdown-button {
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container-lowest);
   font-family: inherit;
   font-size: 14px;
   color: var(--color-on-surface);
-  background: var(--color-surface-container-lowest);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.project-list-toolbar .button-primary {
-  width: auto;
-  white-space: nowrap;
-  text-decoration: none;
-  display: inline-flex;
+.filter-dropdown-button:hover {
+  background: var(--color-surface-container-low);
+}
+
+.filter-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  padding: var(--space-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.filter-dropdown-panel label {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  margin-left: auto;
+  gap: var(--space-xs);
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* Badge (UI-PROJ-01-9) — phân biệt màu theo NHÓM, không theo từng giá
+   trị: 種別 = secondary-container (nhạt), 技術 = tertiary-container. */
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px 4px 2px 0;
+  white-space: nowrap;
+}
+
+.badge-type {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.badge-tech {
+  background: var(--color-tertiary-container);
+  color: var(--color-on-tertiary-container);
+}
+
+/* Bảng cuộn ngang trên màn hẹp — DESIGN.md không định nghĩa breakpoint
+   riêng cho bảng nhưng để tránh vỡ layout khi thiếu overflow wrapper. */
+.table-scroll {
+  overflow-x: auto;
 }
 
 /* Bảng dữ liệu mật độ cao (DESIGN.md mục Components > Data Table) */
@@ -385,4 +539,103 @@ fieldset label {
   margin-right: var(--space-md);
   font-size: 14px;
   font-weight: 400;
+}
+
+/* Màn Tạo dự án — phân nhóm field theo card, giống pattern .auth-card
+   đã có (UI-PROJ-02-6). */
+.form-container {
+  max-width: 640px;
+}
+
+.form-group-card {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+  background: var(--color-surface-container-lowest);
+}
+
+.form-group-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 var(--space-md);
+  color: var(--color-primary);
+}
+
+/* Dấu * trường bắt buộc (UI-PROJ-02-5) */
+.required-mark {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+/* Field số kèm đơn vị cố định (UI-PROJ-02-7) */
+.input-field-with-unit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.input-field-with-unit input {
+  flex: 0 0 120px;
+}
+
+.input-unit {
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+}
+
+/* Action Button > Secondary/Ghost (DESIGN.md) — nút Huỷ (UI-PROJ-02-8) */
+.button-secondary {
+  width: auto;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.form-actions .button-primary {
+  width: auto;
+}
+
+/* Responsive — 3 breakpoint theo DESIGN.md mục Layout & Spacing.
+   Chỉ 1 mục nav hiện tại nên tablet KHÔNG thu gọn icon riêng (xem
+   plan.md CHANGE-009 mục 2), ẩn hẳn sidebar ở mobile. */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+
+  .app-page {
+    padding: var(--space-md);
+  }
+
+  .page-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .project-list-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    width: 100%;
+  }
 }
