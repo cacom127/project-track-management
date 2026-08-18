@@ -126,7 +126,10 @@
 - **[UI-PROJ-02-3]** When the user types a new value into the
   technology tag input, the system shall call `GET /tech-tags?q=` to
   show matching existing tags, allowing the user to pick one or keep
-  typing a new tag.
+  typing a new tag. Ô nhập hiển thị placeholder
+  "入力してEnterで追加（複数可）" + hint chữ nhỏ xác nhận có thể thêm nhiều
+  tag bằng Enter (sửa ở `CHANGE-008` — ban đầu không có hướng dẫn nào,
+  người dùng không biết cách thêm).
 - **[UI-PROJ-02-4]** When `POST /projects` succeeds, the system shall
   navigate to `/projects`.
 
@@ -137,5 +140,6 @@
 | Ngày       | Ticket ID                       | Thay đổi                                    |
 |------------|-----------------------------------|--------------------------------------------------|
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo: màn List + Tạo dự án (UI-PROJ-01/02) |
+| 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Thêm placeholder/hint cho ô 技術 (UI-PROJ-02-3) |
 
-<!-- Trỏ về changes/_archive/CHANGE-007-projects-list-create/ để xem đầy đủ ui-delta-spec gốc -->
+<!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->
