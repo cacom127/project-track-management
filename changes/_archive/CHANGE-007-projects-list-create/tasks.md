@@ -140,11 +140,11 @@
         `specs/architecture.md` (bảng module, mục 4 thêm 4 nguyên tắc
         kỹ thuật mới — raw SQL/không ORM, migration qua Data API script,
         `get_current_user_id`, validation error 400 — + dòng lịch sử).
-- [ ] **T14** — Di chuyển thư mục này vào `changes/_archive/` sau khi
+- [x] **T14** — Di chuyển thư mục này vào `changes/_archive/` sau khi
       merge.
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |---|---|---|
-| Đang làm | 2026-08-18 | T1-T13 hoàn tất, deploy production verify OK. Còn T14 (archive sau khi PR merge). |
+| Hoàn tất | 2026-08-18 | Toàn bộ T1-T14 xong. Deploy production verify OK, đã fold vào specs/, đã archive. |
