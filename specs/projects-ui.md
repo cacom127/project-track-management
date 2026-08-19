@@ -127,6 +127,7 @@
 │ ☐ 進行中                        │
 │ 終了日          [__/__/____]    │ ← disable khi 進行中 checked
 │ 人数 [___]名     総人月 [___]人月 │  ← 2 field nằm ngang hàng
+│ チーム体制の詳細  [___________]   │  ← CHANGE-013, textarea
 └─────────────────────────────────┘
 ┌─ 分類 ──────────────────────────┐
 │ 技術            [tag input....] │
@@ -223,6 +224,9 @@
 - **[UI-PROJ-02-13]** The Create/Edit form shall render `開発工程` as a
   checkbox group (fixed catalog: 要件定義/設計/実装/テスト/リリース/
   保守運用) in 分類, giống cấu trúc `種別` (`CHANGE-012`).
+- **[UI-PROJ-02-14]** The Create/Edit form shall render an optional
+  `チーム体制の詳細` textarea in 期間・規模, cạnh `人数`/`総人月`
+  (`CHANGE-013`).
 
 ---
 
@@ -240,6 +244,7 @@
 ┌─ 期間・規模 ────────────────────┐
 │ 期間             2024-01-01〜進行中│
 │ 人数 / 総人月     5名 / 12.5人月  │
+│ チーム体制の詳細  ○○○           │  ← CHANGE-013
 └─────────────────────────────────┘
 ┌─ 分類 ──────────────────────────┐
 │ 技術             [React][AWS]   │
@@ -301,6 +306,8 @@
 - **[UI-PROJ-03-6]** The Detail screen shall render `業種`, `開発工程`
   (dạng Badge), and `成果・課題・解決策` read-only in their respective
   sections (`CHANGE-012`).
+- **[UI-PROJ-03-7]** The Detail screen shall render `チーム体制の詳細`
+  read-only in 期間・規模, cạnh `人数`/`総人月` (`CHANGE-013`).
 
 ---
 
@@ -441,5 +448,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm màn Chi tiết (mục 4)/Sửa (mục 5); List: icon 詳細 thay link chữ (UI-PROJ-01-10); Create: toast thành công (UI-PROJ-02-4 sửa), input disabled rõ ràng hơn, dropdown gợi ý 技術 bám input + đổi màu nền (UI-PROJ-02-9/10); ToastHost dùng chung (mục 7, UI-SHELL-04) |
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm `AttachmentManager` dùng chung (mục 6, UI-PROJ-05-1..7) cho Tạo/Sửa/Chi tiết (Detail dùng `readOnly` — chỉ xem); `ProjectForm` đổi contract `onSubmit`/`onSuccess` (UI-PROJ-02-11) |
 | 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `業種`/`開発工程`/`成果・課題・解決策` vào Create/Edit/Detail (UI-PROJ-02-12/13, UI-PROJ-03-6); List thêm filter 開発工程 (UI-PROJ-01-11), đổi filter 種別 sang AND semantics |
+| 2026-08-19 | CHANGE-013-team-composition-note | Thêm `チーム体制の詳細` vào Create/Edit/Detail (UI-PROJ-02-14, UI-PROJ-03-7) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->

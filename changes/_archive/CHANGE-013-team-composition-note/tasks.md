@@ -33,14 +33,13 @@
         `frontend/src/pages/ProjectEdit.tsx` (nếu có `toFormValues`)
 - [x] **T6** — Chạy full test suite (backend + frontend), lint, build,
       `prettier --check` trong git worktree sạch (không CRLF)
-- [ ] **T7** — Fold vào `specs/projects.md`, `specs/projects-ui.md`, di
-      chuyển ticket vào `changes/_archive/` — LÀM SAU khi user deploy +
-      test production OK
-- [ ] **T8** — Nhắc user: chạy migration script trên production sau
-      khi merge
+- [x] **T7** — Fold vào `specs/projects.md`, `specs/projects-ui.md`, di
+      chuyển ticket vào `changes/_archive/`
+- [x] **T8** — User đã tự chạy migration + deploy production, xác nhận
+      test OK
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
-| Đang làm    | 2026-08-19     | T1-T6 xong (backend 99/99, frontend 132/132, lint/build/prettier sạch). T7 (fold spec) và T8 chờ user deploy + test production OK |
+| Hoàn tất    | 2026-08-19     | T1-T8 xong, đã deploy + test production OK |
