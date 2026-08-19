@@ -9,8 +9,13 @@
   thật sau khi tạo project thành công)
 - Sửa dự án — `/projects/:id/edit` (SỬA — thêm mục 画像添付, upload/xoá
   ngay lập tức)
-- Chi tiết dự án — `/projects/:id` (SỬA — thêm mục 画像添付, xem/xoá)
-- `AttachmentManager` (MỚI — component dùng chung, không phải 1 route)
+- Chi tiết dự án — `/projects/:id` (SỬA — thêm mục 画像添付, CHỈ XEM —
+  không thêm/xoá được, đúng tinh thần "Detail read-only" như các field
+  khác; feedback sau khi implement lần đầu: bản đầu cho Detail
+  thêm/xoá được luôn, đã sửa lại thành view-only)
+- `AttachmentManager` (MỚI — component dùng chung, không phải 1 route,
+  có prop `readOnly` cho mode `live` — Detail truyền `readOnly`, Edit
+  không truyền)
 
 ## 2. Layout
 
@@ -75,6 +80,10 @@
   states: bình thường (border nét đứt `outline-variant`), đang focus
   (border `secondary` + box-shadow, giống `:focus` của Input Field),
   và đủ 10 ảnh (border mờ hơn, không focus được).
+- **[UI-PROJ-05-7] (MỚI)** On the Detail screen, `AttachmentManager`
+  shall render with `readOnly` — hiding "+ 画像を選択", the Paste Zone,
+  and each thumbnail's delete button; clicking a thumbnail still opens
+  the Lightbox. Chỉ Edit mới thêm/xoá được ảnh.
 - **[UI-PROJ-05-3] (MỚI)** In `live` mode (Edit/Detail), adding an
   image shall immediately call the presign → PUT → confirm flow and
   refresh the list; removing shall immediately call `DELETE`.
@@ -95,7 +104,7 @@
 
 | ID | Test case tương ứng |
 |---|---|
-| UI-PROJ-05-1..6 | `AttachmentManager.test.tsx` |
+| UI-PROJ-05-1..7 | `AttachmentManager.test.tsx`, `ProjectDetail.test.tsx` (case UI-PROJ-05-7) |
 | UI-PROJ-02-11 | `ProjectForm.test.tsx` (mới), `ProjectCreate.test.tsx`/`ProjectEdit.test.tsx` (cập nhật mock `onSubmit`) |
 
 ## 6. Ghi chú DESIGN.md cần bổ sung
