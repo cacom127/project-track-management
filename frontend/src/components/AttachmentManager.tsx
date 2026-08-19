@@ -18,6 +18,10 @@ type StagedProps = {
 type LiveProps = {
   mode: "live";
   projectId: number;
+  // Detail chỉ xem (read-only) — ẩn nút "+ 画像を選択"/Paste Zone/nút
+  // xoá, giữ đúng tinh thần "Detail read-only" như các field khác;
+  // muốn thêm/xoá ảnh phải sang Edit (feedback CHANGE-011).
+  readOnly?: boolean;
 };
 
 export type AttachmentManagerProps = StagedProps | LiveProps;
@@ -102,6 +106,7 @@ export function AttachmentManager(props: AttachmentManagerProps) {
     };
   }, []);
 
+  const readOnly = mode === "live" && props.readOnly === true;
   const stagedCount = mode === "staged" ? props.stagedFiles.length : 0;
   const liveCount = mode === "live" ? attachments.length + pendingUploads.length : 0;
   const totalCount = mode === "staged" ? stagedCount : liveCount;
@@ -226,7 +231,7 @@ export function AttachmentManager(props: AttachmentManagerProps) {
             key: `attachment-${attachment.id}`,
             url: attachment.url,
             loading: deletingIds.has(attachment.id),
-            onRemove: () => handleDeleteLive(attachment.id),
+            onRemove: readOnly ? undefined : () => handleDeleteLive(attachment.id),
           })),
           ...pendingUploads.map((pending) => ({
             key: pending.tempKey,
@@ -245,34 +250,38 @@ export function AttachmentManager(props: AttachmentManagerProps) {
 
   return (
     <div className="attachment-manager">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        aria-label="画像ファイルを選択"
-        hidden
-        disabled={atLimit}
-        onChange={handleFileInputChange}
-      />
-      <button
-        type="button"
-        className="button-secondary"
-        disabled={atLimit}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        + 画像を選択
-      </button>
+      {!readOnly && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            aria-label="画像ファイルを選択"
+            hidden
+            disabled={atLimit}
+            onChange={handleFileInputChange}
+          />
+          <button
+            type="button"
+            className="button-secondary"
+            disabled={atLimit}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            + 画像を選択
+          </button>
 
-      <div
-        className={pasteZoneClassName}
-        tabIndex={atLimit ? undefined : 0}
-        onFocus={() => setPasteZoneFocused(true)}
-        onBlur={() => setPasteZoneFocused(false)}
-        onPaste={handlePaste}
-      >
-        {atLimit ? "上限（10枚）に達しました" : "クリックしてCtrl+Vで画像を貼り付け"}
-      </div>
+          <div
+            className={pasteZoneClassName}
+            tabIndex={atLimit ? undefined : 0}
+            onFocus={() => setPasteZoneFocused(true)}
+            onBlur={() => setPasteZoneFocused(false)}
+            onPaste={handlePaste}
+          >
+            {atLimit ? "上限（10枚）に達しました" : "クリックしてCtrl+Vで画像を貼り付け"}
+          </div>
+        </>
+      )}
 
       {error && <p className="attachment-error">{error}</p>}
 

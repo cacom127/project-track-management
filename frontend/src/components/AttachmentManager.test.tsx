@@ -246,4 +246,18 @@ describe("AttachmentManager — live mode", () => {
       "https://s3.example.com/full.png",
     );
   });
+
+  it("readOnly: hides add button/paste zone/remove button, but still opens the lightbox (feedback CHANGE-011: Detail phải view-only)", async () => {
+    listAttachmentsMock.mockResolvedValue([makeAttachment({ id: 1 })]);
+    render(<AttachmentManager mode="live" projectId={1} readOnly />);
+
+    await waitFor(() => expect(document.querySelectorAll(".thumbnail-image").length).toBe(1));
+
+    expect(screen.queryByRole("button", { name: "+ 画像を選択" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "削除" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/クリックしてCtrl\+Vで画像を貼り付け/)).not.toBeInTheDocument();
+
+    fireEvent.click(document.querySelector(".thumbnail-image")!);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
 });

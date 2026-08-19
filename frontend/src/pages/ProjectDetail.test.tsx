@@ -104,6 +104,14 @@ describe("ProjectDetail", () => {
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
+  it("renders attachments read-only — no add button (feedback CHANGE-011)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.queryByRole("button", { name: "+ 画像を選択" })).not.toBeInTheDocument();
+  });
+
   it("opens a confirm modal when clicking 削除 (UI-PROJ-03-4)", async () => {
     getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
     renderDetail();

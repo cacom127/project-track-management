@@ -132,7 +132,7 @@ export function ProjectDetail() {
 
         <section className="form-group-card">
           <h2 className="form-group-card-title">画像添付（最大10枚）</h2>
-          <AttachmentManager mode="live" projectId={project.id} />
+          <AttachmentManager mode="live" projectId={project.id} readOnly />
         </section>
 
         <p>確認元メモ: {project.source_note || "—"}</p>
