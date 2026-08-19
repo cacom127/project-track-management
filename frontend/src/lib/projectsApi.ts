@@ -24,6 +24,7 @@ export type Project = {
   industry: string | null;
   outcome_note: string | null;
   dev_process_phases: string[];
+  team_composition_note: string | null;
 };
 
 export type ProjectListResponse = {
@@ -48,6 +49,7 @@ export type ProjectCreateInput = {
   industry?: string | null;
   outcome_note?: string | null;
   dev_process_phases?: string[];
+  team_composition_note?: string | null;
 };
 
 export type ListProjectsParams = {

@@ -11,8 +11,9 @@ mục 2). Ticket đầu tiên (`CHANGE-007-projects-list-create`) chỉ làm
 **Detail/Edit/Delete** (soft delete); `CHANGE-011-project-attachments`
 bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án);
 `CHANGE-012-project-extra-fields` bổ sung `industry`/`outcome_note`/
-`dev_process_phases` để phục vụ import dữ liệu thật. Phân quyền theo
-role vẫn để dành ticket sau.
+`dev_process_phases`; `CHANGE-013-team-composition-note` bổ sung
+`team_composition_note` — để phục vụ import dữ liệu thật. Phân quyền
+theo role vẫn để dành ticket sau.
 
 ## 2. Yêu cầu hiện tại (Requirements — EARS notation)
 
@@ -117,6 +118,15 @@ role vẫn để dành ticket sau.
 - **[PROJ-26]** `GET /projects/{id}`, list item, và response của
   create/update shall include `industry`, `outcome_note`,
   `dev_process_phases`.
+- **[PROJ-27]** `POST /projects`/`PUT /projects/{id}` shall accept an
+  optional `team_composition_note` (free text, no validation catalog),
+  stored as-is — mô tả chi tiết vai trò trong team, bổ sung cho
+  `team_size` (chỉ 1 con số tổng).
+- **[PROJ-28]** `GET /projects/{id}`, list item, và response của
+  create/update shall include `team_composition_note`.
+- **[PROJ-29]** `GET /projects` (list) shall include
+  `team_composition_note` in the `q` keyword search (ILIKE, cùng nhóm
+  với PROJ-24).
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -181,6 +191,10 @@ role vẫn để dành ticket sau.
   không quy về hữu hạn giá trị được. `dev_process_phases` dùng catalog
   cố định + bảng nối N-N — tái dùng đúng pattern code của
   `project_types` (`_fetch_project_type_ids`-style helper).
+- **Field bổ sung (CHANGE-013)**: `team_composition_note` cùng kiểu
+  free text như `outcome_note` — mô tả chi tiết vai trò trong team (vd
+  "PM：1名、BrSE 1名、開発者：5名"), bổ sung cho `team_size` (chỉ 1 con
+  số tổng, mất thông tin phân vai).
 
 ## 4. Data Model
 
@@ -196,7 +210,8 @@ mục 1/2 cho ER diagram tổng quan/bảng mapping):
   `created_at`/`updated_at` (timestamp, theo `DM-G02`), `deleted_at`
   (timestamptz, nullable — soft delete, `CHANGE-010`), `industry`
   (string, nullable, free text — `CHANGE-012`), `outcome_note` (text,
-  nullable, free text — `CHANGE-012`).
+  nullable, free text — `CHANGE-012`), `team_composition_note` (text,
+  nullable, free text — `CHANGE-013`).
 - **`tech_tags`**: `id` (PK), `name` (string, unique case-insensitive
   qua index `lower(name)`).
 - **`project_tech_tags`** (bảng nối N-N `projects`↔`tech_tags`):
@@ -231,5 +246,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm Detail/Edit/Delete (PROJ-14..17), soft delete qua `deleted_at` (DM-PROJ-05) |
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm ảnh đính kèm (PROJ-18..21), bảng `attachments` (DM-PROJ-06), presigned URL S3 |
 | 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `industry`/`outcome_note`/`dev_process_phases` (PROJ-22..26), bảng `dev_process_phases` (DM-PROJ-08); đổi filter `project_type` từ OR sang AND semantics (PROJ-04 sửa) |
+| 2026-08-19 | CHANGE-013-team-composition-note | Thêm `team_composition_note` (PROJ-27..29, DM-PROJ-09) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

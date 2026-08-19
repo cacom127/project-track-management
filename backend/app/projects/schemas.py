@@ -37,6 +37,7 @@ class ProjectCreate(BaseModel):
     industry: str | None = None
     outcome_note: str | None = None
     dev_process_phases: list[str] = Field(default_factory=list)
+    team_composition_note: str | None = None
 
     @model_validator(mode="after")
     def _validate_ongoing_end_date(self) -> "ProjectCreate":
@@ -88,6 +89,7 @@ class ProjectOut(BaseModel):
     industry: str | None
     outcome_note: str | None
     dev_process_phases: list[str]
+    team_composition_note: str | None
 
 
 class ProjectListResponse(BaseModel):

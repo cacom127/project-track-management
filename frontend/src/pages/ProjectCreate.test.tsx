@@ -196,4 +196,23 @@ describe("ProjectCreate", () => {
       }),
     );
   });
+
+  it("renders チーム体制の詳細 textarea and submits it (CHANGE-013)", async () => {
+    createProjectMock.mockResolvedValue({ id: 1, project_name: "基幹システム刷新" });
+    renderCreate();
+    fillRequiredFields();
+
+    fireEvent.change(screen.getByLabelText("チーム体制の詳細"), {
+      target: { value: "PM 1名、開発者 3名" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "作成する" }));
+
+    await waitFor(() => expect(createProjectMock).toHaveBeenCalled());
+    expect(createProjectMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        team_composition_note: "PM 1名、開発者 3名",
+      }),
+    );
+  });
 });
