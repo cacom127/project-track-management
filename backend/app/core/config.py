@@ -15,5 +15,11 @@ class Settings(BaseSettings):
     # Danh sách origin cho phép CORS, phân cách bởi dấu phẩy.
     cors_origins: str = "http://localhost:5173"
 
+    # CHANGE-011 — bucket S3 chứa ảnh đính kèm dự án (xem app/core/s3.py).
+    # Rỗng ở local mặc định: dev cần set trong `.env` (giá trị lấy từ
+    # CfnOutput `AttachmentsBucketName` sau khi `cdk deploy`) nếu muốn
+    # test presign thật với S3, không dùng trong test (đã mock).
+    attachments_bucket_name: str = ""
+
 
 settings = Settings()

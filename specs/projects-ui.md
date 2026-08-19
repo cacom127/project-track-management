@@ -127,6 +127,11 @@
 │ 技術            [tag input....] │
 │ 種別            [☐offshore ...] │
 └─────────────────────────────────┘
+┌─ 画像添付（最大10枚）──────────────┐
+│ [+ 画像を選択]  [Paste Zone]      │  ← xem mục 6 (CHANGE-011)
+│ ┌───┐┌───┐┌───┐              │
+│ │📷 ││📷 ││📷 │  ← thumbnail        │
+└─────────────────────────────────┘
 確認元メモ        [___________]
            [作成する]  [キャンセル]
 ```
@@ -150,8 +155,11 @@
 - Nút "キャンセル" (Action Button Secondary/Ghost) cạnh nút "作成する",
   điều hướng về `/projects` không submit.
 - Form dùng component dùng chung `ProjectForm` (props `initialValues`,
-  `onSubmit`, `submitLabel`, `cancelTo`) — tái sử dụng bởi cả màn Tạo và
-  Sửa (mục 5), xem `CHANGE-010`.
+  `projectId?`, `onSubmit`, `onSuccess`, `submitLabel`, `cancelTo`) —
+  tái sử dụng bởi cả màn Tạo và Sửa (mục 5), xem `CHANGE-010`/
+  `CHANGE-011`.
+- Section "画像添付" (`AttachmentManager` mode `staged` — chưa có
+  `project_id` lúc này) nằm sau 分類, trước 確認元メモ. Xem mục 6.
 
 ### 3.2 Trạng thái màn hình (state matrix)
 
@@ -197,6 +205,11 @@
   render immediately below the input, with a background tint distinct
   from the input/panel (`surface-container-low`), hover item dùng
   `secondary-container` (`CHANGE-010`).
+- **[UI-PROJ-02-11]** `ProjectForm`'s `onSubmit` prop shall return the
+  created/updated `Project`, and a new `onSuccess` prop shall be called
+  AFTER attachment upload (if any staged) completes — tách "gửi dữ
+  liệu form" khỏi "điều hướng/toast khi xong" để chỗ cho bước upload
+  ảnh staged ở giữa (`CHANGE-011`).
 
 ---
 
@@ -218,13 +231,21 @@
 │ 技術             [React][AWS]   │
 │ 種別             [オフショア]     │
 └─────────────────────────────────┘
+┌─ 画像添付（最大10枚）──────────────┐
+│ ┌───┐┌───┐┌───┐              │
+│ │📷 ││📷 ││📷 │  ← thumbnail, click mở Lightbox, KHÔNG có nút thêm/xoá │
+└─────────────────────────────────┘
 確認元メモ         ○○○
            [編集]  [削除]
 ```
 
 - Cùng layout 3-card + max-width 640px căn giữa như màn Tạo (mục 3.1),
   nhưng field hiển thị dạng text read-only (không phải input). 種別/技術
-  vẫn hiển thị Badge như List.
+  vẫn hiển thị Badge như List. Section "画像添付" (`AttachmentManager`
+  mode `live` + `readOnly`) đặt sau 分類 — **chỉ xem** (thumbnail +
+  Lightbox), KHÔNG có nút "+ 画像を選択"/Paste Zone/nút xoá, đúng tinh
+  thần Detail read-only; muốn thêm/xoá ảnh phải bấm "編集" sang màn Sửa
+  (`CHANGE-011`, sửa lại từ bản đầu cho Detail thêm/xoá được luôn).
 - Nút "編集" (Action Button Primary, `.button-primary` — text luôn căn
   giữa kể cả khi render bằng `<Link>`) điều hướng `/projects/:id/edit`.
   Nút "削除" (Action Button Destructive) mở Modal xác nhận trước khi
@@ -268,7 +289,11 @@
 Layout giống hệt màn Tạo (mục 3.1, dùng chung component `ProjectForm`),
 form điền sẵn giá trị hiện tại. Nút submit đổi label "更新する" thay vì
 "作成する". Nút "キャンセル" điều hướng về `/projects/:id` (Detail) thay
-vì `/projects` như Tạo.
+vì `/projects` như Tạo. Section "画像添付" dùng mode `live` (khác Tạo
+dùng mode `staged`) vì `project_id` đã tồn tại — thao tác thêm/xoá ảnh
+ngay lập tức, không phụ thuộc việc submit form; KHÁC Detail (mode
+`live` + `readOnly`), Edit KHÔNG bật `readOnly` nên vẫn thêm/xoá được
+(`CHANGE-011`).
 
 ### 5.2 Trạng thái màn hình (state matrix)
 
@@ -295,7 +320,81 @@ vì `/projects` như Tạo.
 
 ---
 
-## 6. Thông báo thành công (ToastHost)
+## 6. Ảnh đính kèm (`AttachmentManager`)
+
+Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDetail`
+— xem layout ở mục 3.1/4.1/5.1.
+
+### 6.1 Layout
+
+```
+[+ 画像を選択]
+┌─ Paste Zone ──────────────────┐
+│ クリックしてCtrl+Vで画像を貼り付け │  ← tabIndex=0, xem trạng thái bên dưới
+└───────────────────────────────┘
+┌───┐┌───┐┌───┐┌───┐
+│📷 ││📷 ││📷 ││📷 │  ← thumbnail, click mở Lightbox
+│ × ││ × ││ × ││ × │  ← nút xoá góc trên-phải (ẩn nếu `readOnly`)
+└───┘└───┘└───┘└───┘
+```
+
+- Click "+ 画像を選択" mở file picker
+  (`accept="image/jpeg,image/png,image/webp"`, `multiple`).
+- **Paste Zone**: khối `tabIndex=0` nhận `onPaste`, 3 trạng thái (token
+  xem `DESIGN.md` mục Components > Paste Zone):
+  - Bình thường (chưa focus, còn <10 ảnh): border nét đứt
+    `outline-variant`.
+  - Đang focus (còn <10 ảnh): border `secondary` + box-shadow — giống
+    `:focus` của Input Field.
+  - Đủ 10 ảnh: border mờ hơn, bỏ `tabIndex`, `cursor: not-allowed`.
+- Mỗi thumbnail có nút "×" xoá góc trên-phải; click thumbnail (không
+  phải nút xoá) mở Lightbox (bespoke, tái dùng backdrop style của
+  `Modal` nhưng không có nút Confirm — chỉ xem ảnh + đóng).
+- Đủ 10 ảnh: ẩn/disable nút "+ 画像を選択", đồng bộ với Paste Zone.
+- Sai định dạng/quá 5MB: lỗi inline dưới section, không thêm vào danh
+  sách.
+- **`readOnly` (chỉ mode `live`, dùng ở Detail)**: ẩn hoàn toàn nút "+
+  画像を選択", Paste Zone, và nút xoá trên mỗi thumbnail — chỉ còn xem
+  thumbnail + Lightbox. Edit KHÔNG bật cờ này (vẫn thêm/xoá được).
+
+### 6.2 Trạng thái (state matrix)
+
+| Trạng thái | Trigger | Hiển thị |
+|---|---|---|
+| Idle | Mount, chưa có ảnh | Chỉ nút "+ 画像を選択" + Paste Zone (ẩn nếu `readOnly`) |
+| Loaded (mode `live`) | `GET .../attachments` xong | Lưới thumbnail |
+| Uploading 1 ảnh (mode `live`) | Đang presign/PUT/confirm | Overlay loading trên thumbnail đó, ảnh khác vẫn tương tác được |
+| Deleting (mode `live`) | Đang gọi `DELETE .../attachments/:id` | Thumbnail đó disable + loading |
+| Staged (mode `staged`, Create) | Chọn/paste trước khi project tồn tại | Preview local (`URL.createObjectURL`), chưa gọi API |
+| Uploading staged (sau submit Create) | `POST /projects` xong, đang upload từng ảnh | Toàn form disable, nút submit hiện "画像をアップロード中..." |
+| Read-only (Detail) | `readOnly=true` | Chỉ lưới thumbnail + Lightbox, không có nút thêm/xoá |
+
+### 6.3 Hành vi tương tác (EARS)
+
+- **[UI-PROJ-05-1]** The `AttachmentManager` shall accept image files
+  via file picker or clipboard paste (Ctrl+V trong Paste Zone),
+  validating type (jpeg/png/webp) and size (≤5MB) client-side.
+- **[UI-PROJ-05-2]** When 10 attachments already exist/staged, the
+  system shall disable the Paste Zone and "+ 画像を選択" button.
+- **[UI-PROJ-05-3]** In `live` mode, adding an image shall immediately
+  call the presign → PUT → confirm flow and update the list; removing
+  shall immediately call `DELETE`.
+- **[UI-PROJ-05-4]** In `staged` mode, images shall be held
+  client-side until the form submits successfully; after
+  `POST /projects` succeeds, the system shall upload each staged image
+  (best-effort, không rollback nếu 1 ảnh lỗi) before calling
+  `onSuccess`.
+- **[UI-PROJ-05-5]** Clicking a thumbnail (not its delete button) shall
+  open a Lightbox showing the full-size image.
+- **[UI-PROJ-05-6]** The Paste Zone shall render 3 distinguishable
+  states: bình thường, đang focus (giống `:focus` Input Field), và đủ
+  10 ảnh (không focus được).
+- **[UI-PROJ-05-7]** On the Detail screen, `AttachmentManager` shall
+  render with `readOnly` — hiding "+ 画像を選択", the Paste Zone, and
+  each thumbnail's delete button; clicking a thumbnail still opens the
+  Lightbox. Chỉ Edit mới thêm/xoá được ảnh.
+
+## 7. Thông báo thành công (ToastHost)
 
 - Sau khi Tạo/Sửa/Xoá thành công, `AppShell` render 1 `ToastHost` dùng
   chung (đọc `location.state?.successMessage` khi route thay đổi) hiện
@@ -310,13 +409,14 @@ vì `/projects` như Tạo.
 
 ---
 
-## 7. Lịch sử thay đổi module này
+## 8. Lịch sử thay đổi module này
 
 | Ngày       | Ticket ID                       | Thay đổi                                    |
 |------------|-----------------------------------|--------------------------------------------------|
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo: màn List + Tạo dự án (UI-PROJ-01/02) |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Thêm placeholder/hint cho ô 技術 (UI-PROJ-02-3) |
 | 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | App Shell (Sidebar, xem `specs/architecture.md` mục 1); List: tách title/toolbar, dropdown filter, badge (UI-PROJ-01-6..9); Create: phân nhóm card, dấu *, đơn vị ngang hàng, nút Huỷ (UI-PROJ-02-5..8) |
-| 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm màn Chi tiết (mục 4)/Sửa (mục 5); List: icon 詳細 thay link chữ (UI-PROJ-01-10); Create: toast thành công (UI-PROJ-02-4 sửa), input disabled rõ ràng hơn, dropdown gợi ý 技術 bám input + đổi màu nền (UI-PROJ-02-9/10); ToastHost dùng chung (mục 6, UI-SHELL-04) |
+| 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm màn Chi tiết (mục 4)/Sửa (mục 5); List: icon 詳細 thay link chữ (UI-PROJ-01-10); Create: toast thành công (UI-PROJ-02-4 sửa), input disabled rõ ràng hơn, dropdown gợi ý 技術 bám input + đổi màu nền (UI-PROJ-02-9/10); ToastHost dùng chung (mục 7, UI-SHELL-04) |
+| 2026-08-19 | CHANGE-011-project-attachments | Thêm `AttachmentManager` dùng chung (mục 6, UI-PROJ-05-1..7) cho Tạo/Sửa/Chi tiết (Detail dùng `readOnly` — chỉ xem); `ProjectForm` đổi contract `onSubmit`/`onSuccess` (UI-PROJ-02-11) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->

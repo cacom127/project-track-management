@@ -29,8 +29,13 @@
   Data API** (không tự quản lý connection pool).
 - **Auth**: AWS Cognito User Pool. Vai trò (`admin`/`member`) lấy từ
   Cognito Group trong JWT claims — không lưu trùng trong DB ứng dụng.
-- **File đính kèm**: S3 bucket riêng, upload qua presigned URL do backend
-  cấp (tránh giới hạn payload của Lambda/API Gateway).
+- **File đính kèm**: S3 bucket riêng (`AttachmentsBucket`, private hoàn
+  toàn, không qua CloudFront), upload qua presigned URL do backend cấp
+  (tránh giới hạn payload của Lambda/API Gateway). Tên bucket truyền vào
+  Lambda qua env var `ATTACHMENTS_BUCKET_NAME` (output CDK
+  `AttachmentsBucketName`); CORS rule cho phép `PUT` từ CloudFront
+  domain + `localhost:5173` (local dev). Hiện thực hoá đầu tiên ở
+  `CHANGE-011-project-attachments` (module `projects`, ảnh dự án).
 - **IaC**: AWS CDK (Python), 1 stack.
 - **Cấu trúc source code**: `backend` (Python/FastAPI), `frontend`
   (React/Vite), `infra` (AWS CDK, Python) — nằm ngay tại repo root, ngang
@@ -53,7 +58,7 @@
 | Module      | Vai trò                                       | Spec chi tiết          |
 |-------------|-------------------------------------------------|--------------------------|
 | auth        | Xác thực, đồng bộ user với Cognito, phân quyền  | `specs/auth.md`, `specs/auth-ui.md` |
-| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md`, `specs/projects-ui.md` (List+Create+Detail+Edit+Delete xong; file đính kèm — ticket riêng) |
+| projects    | CRUD dữ liệu dự án đã làm với khách hàng Nhật    | `specs/projects.md`, `specs/projects-ui.md` (List+Create+Detail+Edit+Delete+ảnh đính kèm xong) |
 | reporting   | Thống kê/dashboard (theo năm, khách hàng, tech...) | `specs/reporting.md` (chưa có — làm ở ticket riêng) |
 | export      | Export dữ liệu ra PowerPoint                    | Chưa spec — ưu tiên thấp, chưa quyết định chi tiết (xem `specs/vision.md` mục 4) |
 
@@ -176,5 +181,6 @@
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix 3 bug thật phát hiện lúc deploy `CHANGE-007` (retry `DatabaseResumingException`, cast `date`/`numeric` tường minh, parse đúng `isNull`/`arrayValue` của Data API response) + 1 fix chủ động (array_agg) — tất cả áp dụng cho MỌI module qua Data API, không riêng `projects` |
 | 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | Thêm App Shell (Sidebar dọc 240px, dùng chung mọi route); cập nhật `DESIGN.md` (component Navigation Sidebar, Dropdown/Filter) |
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Module `projects`: thêm Detail/Edit/Delete (soft delete); thêm `ToastHost` dùng chung trong App Shell; cập nhật `DESIGN.md` (Modal, Toast, Action Button destructive) |
+| 2026-08-19 | CHANGE-011-project-attachments | Hiện thực hoá ảnh đính kèm (S3 presigned URL, CORS + env var `ATTACHMENTS_BUCKET_NAME` cho Lambda); cập nhật `DESIGN.md` (Thumbnail Grid, Paste Zone) |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->

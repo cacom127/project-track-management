@@ -1,6 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { listTechTags, type ProjectCreateInput, type ProjectTypeCode } from "../lib/projectsApi";
+import AttachmentManager from "./AttachmentManager";
+import { uploadAttachment } from "../lib/attachmentsApi";
+import {
+  listTechTags,
+  type Project,
+  type ProjectCreateInput,
+  type ProjectTypeCode,
+} from "../lib/projectsApi";
 import { PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
 
 export type ProjectFormValues = {
@@ -33,7 +40,12 @@ const EMPTY_VALUES: ProjectFormValues = {
 
 interface ProjectFormProps {
   initialValues?: Partial<ProjectFormValues>;
-  onSubmit: (input: ProjectCreateInput) => Promise<void>;
+  // UI-PROJ-02-11: Edit truyền projectId (ảnh đính kèm mode "live",
+  // upload/xoá ngay lập tức); Create không truyền (mode "staged", ảnh
+  // chỉ upload sau khi project được tạo thành công — xem handleSubmit).
+  projectId?: number;
+  onSubmit: (input: ProjectCreateInput) => Promise<Project>;
+  onSuccess: (project: Project) => void;
   submitLabel: string;
   serverErrorMessage: string;
   cancelTo: string;
@@ -43,7 +55,9 @@ interface ProjectFormProps {
  * (CHANGE-010, UI-PROJ-04-3: Edit tái dùng đúng validation của Create). */
 export function ProjectForm({
   initialValues,
+  projectId,
   onSubmit,
+  onSuccess,
   submitLabel,
   serverErrorMessage,
   cancelTo,
@@ -63,8 +77,10 @@ export function ProjectForm({
   const [tagInput, setTagInput] = useState("");
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [projectTypes, setProjectTypes] = useState<ProjectTypeCode[]>(values.project_types);
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
   const [touched, setTouched] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -118,7 +134,7 @@ export function ProjectForm({
     setSubmitting(true);
     setServerError(null);
     try {
-      await onSubmit({
+      const project = await onSubmit({
         customer_name: customerName,
         project_name: projectName,
         description: description || null,
@@ -131,10 +147,29 @@ export function ProjectForm({
         technologies,
         project_types: projectTypes,
       });
+
+      // UI-PROJ-05-4: project vừa tạo xong mới upload ảnh staged (chưa
+      // có project_id lúc chọn/paste ảnh ở màn Create). Project đã tạo
+      // thành công tính từ đây — best-effort từng ảnh, không rollback
+      // hay chặn điều hướng nếu 1 ảnh lỗi (tránh mất project vừa tạo).
+      if (!projectId && stagedFiles.length > 0) {
+        setUploadingAttachments(true);
+        for (const file of stagedFiles) {
+          try {
+            await uploadAttachment(project.id, file);
+          } catch {
+            // best-effort — bỏ qua lỗi từng ảnh, tiếp tục ảnh tiếp theo.
+          }
+        }
+        setUploadingAttachments(false);
+      }
+
+      onSuccess(project);
     } catch (err) {
       void err;
       setServerError(serverErrorMessage);
       setSubmitting(false);
+      setUploadingAttachments(false);
     }
   }
 
@@ -348,6 +383,21 @@ export function ProjectForm({
           </fieldset>
         </section>
 
+        {/* UI-PROJ-05-1..6: mode "live" khi đã có projectId (Edit) — upload/xoá
+            ngay lập tức; mode "staged" khi Create (chưa có project_id). */}
+        <section className="form-group-card">
+          <h2 className="form-group-card-title">画像添付（最大10枚）</h2>
+          {projectId ? (
+            <AttachmentManager mode="live" projectId={projectId} />
+          ) : (
+            <AttachmentManager
+              mode="staged"
+              stagedFiles={stagedFiles}
+              onStagedFilesChange={setStagedFiles}
+            />
+          )}
+        </section>
+
         <div className="input-field">
           <label htmlFor="source-note">確認元メモ</label>
           <textarea
@@ -361,7 +411,7 @@ export function ProjectForm({
         {/* UI-PROJ-02-8: nút Huỷ cạnh nút submit, không submit */}
         <div className="form-actions">
           <button type="submit" className="button-primary" disabled={submitting}>
-            {submitLabel}
+            {uploadingAttachments ? "画像をアップロード中..." : submitLabel}
           </button>
           <Link to={cancelTo} className="button-secondary">
             キャンセル

@@ -6,6 +6,11 @@ from pydantic import BaseModel, Field, model_validator
 # DM-PROJ-04 — catalog cố định, KHÔNG cho tạo thêm qua app.
 PROJECT_TYPE_CODES = ("offshore", "ses", "lab", "new_dev", "maintenance")
 
+# CHANGE-011 (PROJ-18/19) — giới hạn ảnh đính kèm cho mỗi dự án.
+ALLOWED_ATTACHMENT_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
+MAX_ATTACHMENTS_PER_PROJECT = 10
+MAX_ATTACHMENT_SIZE_BYTES = 5 * 1024 * 1024
+
 
 class ProjectCreate(BaseModel):
     customer_name: str = Field(min_length=1)
@@ -66,3 +71,37 @@ class ProjectListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class AttachmentPresignRequest(BaseModel):
+    """PROJ-18 — payload `POST /projects/{id}/attachments/presign`."""
+
+    file_name: str = Field(min_length=1)
+    content_type: str
+
+
+class AttachmentPresignResponse(BaseModel):
+    upload_url: str
+    s3_key: str
+
+
+class AttachmentConfirmRequest(BaseModel):
+    """PROJ-19 — payload `POST /projects/{id}/attachments` (xác nhận sau
+    khi client đã PUT file lên `upload_url`)."""
+
+    s3_key: str
+    file_name: str = Field(min_length=1)
+    content_type: str
+    size_bytes: int = Field(gt=0)
+
+
+class AttachmentOut(BaseModel):
+    id: int
+    project_id: int
+    file_name: str
+    content_type: str
+    size_bytes: int
+    created_at: datetime
+    url: str
+    """Presigned GET URL — sinh tại thời điểm serialize response (repository/
+    route), KHÔNG lưu trong DB (bucket private hoàn toàn, PROJ-20)."""

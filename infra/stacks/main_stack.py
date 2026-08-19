@@ -88,6 +88,7 @@ class MainStack(Stack):
         self.attachments_bucket = self._create_attachments_bucket()
         self.frontend_bucket = self._create_frontend_bucket()
         self.distribution = self._create_cloudfront_distribution()
+        self._add_attachments_bucket_cors()
 
         self.backend_function = self._create_backend_function()
         self.jwt_authorizer = self._create_jwt_authorizer()
@@ -188,6 +189,24 @@ class MainStack(Stack):
             removal_policy=RemovalPolicy.RETAIN,
         )
 
+    def _add_attachments_bucket_cors(self) -> None:
+        # CHANGE-011 (delta-spec.md mục 1d) — cho phép browser PUT thẳng
+        # lên presigned URL (upload trực tiếp từ FE, không qua backend).
+        # Gọi SAU khi `self.distribution` đã tạo (không phải trong
+        # `_create_attachments_bucket`) vì domain CloudFront chỉ có được
+        # sau khi distribution khởi tạo xong — L2 `Bucket.add_cors_rule`
+        # là escape hatch hợp lệ để thêm CORS rule "hậu kỳ" thay vì phải
+        # truyền `cors=[...]` ngay lúc construct bucket.
+        self.attachments_bucket.add_cors_rule(
+            allowed_methods=[s3.HttpMethods.PUT],
+            allowed_origins=[
+                "http://localhost:5173",
+                f"https://{self.distribution.domain_name}",
+            ],
+            allowed_headers=["*"],
+            max_age=3000,
+        )
+
     def _create_frontend_bucket(self) -> s3.Bucket:
         # Private — chỉ CloudFront (qua Origin Access Control) đọc được,
         # không public trực tiếp.
@@ -256,6 +275,7 @@ class MainStack(Stack):
                 "DB_SECRET_ARN": self.db_cluster.secret.secret_arn,
                 "DB_NAME": "app",
                 "CORS_ORIGINS": f"https://{self.distribution.domain_name}",
+                "ATTACHMENTS_BUCKET_NAME": self.attachments_bucket.bucket_name,
             },
         )
         self.db_cluster.grant_data_api_access(fn)
@@ -345,3 +365,6 @@ class MainStack(Stack):
         # (production không có kết nối trực tiếp Aurora, chỉ Data API).
         CfnOutput(self, "DbClusterArn", value=self.db_cluster.cluster_arn)
         CfnOutput(self, "DbSecretArn", value=self.db_cluster.secret.secret_arn)
+        # CHANGE-011: cần cho `.env` local (ATTACHMENTS_BUCKET_NAME) —
+        # giống cách DbClusterArn/DbSecretArn đang được dùng.
+        CfnOutput(self, "AttachmentsBucketName", value=self.attachments_bucket.bucket_name)

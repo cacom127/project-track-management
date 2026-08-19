@@ -11,8 +11,30 @@ giản — `app.core.db._parse_data_api_records` hiện chỉ lấy giá trị �
 tiên trong field dict, CẦN kiểm tra lại trên Data API thật.
 """
 
+from uuid import uuid4
+
+from app.core import s3
 from app.core.db import DBSession
-from app.projects.schemas import ProjectCreate, ProjectOut, ProjectUpdate
+from app.projects.schemas import (
+    ALLOWED_ATTACHMENT_CONTENT_TYPES,
+    MAX_ATTACHMENT_SIZE_BYTES,
+    MAX_ATTACHMENTS_PER_PROJECT,
+    AttachmentConfirmRequest,
+    AttachmentOut,
+    AttachmentPresignRequest,
+    AttachmentPresignResponse,
+    ProjectCreate,
+    ProjectOut,
+    ProjectUpdate,
+)
+
+# CHANGE-011 — suy ext file từ content_type (đã validate ∈
+# ALLOWED_ATTACHMENT_CONTENT_TYPES trước khi tra bảng này).
+_CONTENT_TYPE_EXTENSIONS = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+}
 
 
 def _fetch_or_create_tag_ids(db: DBSession, names: list[str]) -> list[int]:
@@ -303,3 +325,112 @@ def search_tech_tags(db: DBSession, q: str | None = None) -> list[str]:
     else:
         rows = db.execute("SELECT name FROM tech_tags ORDER BY name LIMIT 20")
     return [row["name"] for row in rows]
+
+
+def count_attachments(db: DBSession, project_id: int) -> int:
+    rows = db.execute(
+        "SELECT COUNT(*) AS c FROM attachments WHERE project_id = :project_id",
+        {"project_id": project_id},
+    )
+    return rows[0]["c"]
+
+
+def presign_attachment(
+    db: DBSession, project_id: int, data: AttachmentPresignRequest
+) -> AttachmentPresignResponse | None:
+    """PROJ-18 — trả None nếu project không tồn tại/đã xoá (route 404).
+    Raise `ValueError` nếu content_type không hợp lệ hoặc đã đủ 10 ảnh
+    (route bắt và trả 400 — không có tiền lệ 400 từ repository trong
+    codebase này ngoài Pydantic validator, nên dùng cách đơn giản nhất:
+    ValueError + route catch, giống quy ước FastAPI thông thường)."""
+    if get_project(db, project_id) is None:
+        return None
+
+    if data.content_type not in ALLOWED_ATTACHMENT_CONTENT_TYPES:
+        raise ValueError(f"content_type không hợp lệ: {data.content_type}")
+
+    if count_attachments(db, project_id) >= MAX_ATTACHMENTS_PER_PROJECT:
+        raise ValueError(f"Dự án đã đủ {MAX_ATTACHMENTS_PER_PROJECT} ảnh đính kèm")
+
+    ext = _CONTENT_TYPE_EXTENSIONS[data.content_type]
+    s3_key = f"projects/{project_id}/{uuid4()}.{ext}"
+    upload_url = s3.generate_presigned_put_url(s3_key, data.content_type)
+    return AttachmentPresignResponse(upload_url=upload_url, s3_key=s3_key)
+
+
+def confirm_attachment(
+    db: DBSession, project_id: int, data: AttachmentConfirmRequest, created_by: str
+) -> AttachmentOut | None:
+    """PROJ-19 — re-validate giới hạn 10 ảnh (chống race condition upload
+    đồng thời) và size_bytes ≤ 5MB trước khi insert."""
+    if get_project(db, project_id) is None:
+        return None
+
+    if count_attachments(db, project_id) >= MAX_ATTACHMENTS_PER_PROJECT:
+        raise ValueError(f"Dự án đã đủ {MAX_ATTACHMENTS_PER_PROJECT} ảnh đính kèm")
+
+    if data.size_bytes > MAX_ATTACHMENT_SIZE_BYTES:
+        raise ValueError(f"size_bytes vượt giới hạn {MAX_ATTACHMENT_SIZE_BYTES} bytes")
+
+    rows = db.execute(
+        """
+        INSERT INTO attachments (
+            project_id, s3_key, file_name, content_type, size_bytes, created_by
+        ) VALUES (
+            :project_id, :s3_key, :file_name, :content_type, :size_bytes, :created_by
+        )
+        RETURNING id, project_id, file_name, content_type, size_bytes, created_at
+        """,
+        {
+            "project_id": project_id,
+            "s3_key": data.s3_key,
+            "file_name": data.file_name,
+            "content_type": data.content_type,
+            "size_bytes": data.size_bytes,
+            "created_by": created_by,
+        },
+    )
+    db.commit()
+    row = rows[0]
+    return AttachmentOut(**row, url=s3.generate_presigned_get_url(data.s3_key))
+
+
+def list_attachments(db: DBSession, project_id: int) -> list[AttachmentOut]:
+    """PROJ-20 — mỗi attachment kèm presigned GET URL sinh mới."""
+    rows = db.execute(
+        """
+        SELECT id, project_id, s3_key, file_name, content_type, size_bytes, created_at
+        FROM attachments
+        WHERE project_id = :project_id
+        ORDER BY created_at ASC, id ASC
+        """,
+        {"project_id": project_id},
+    )
+    return [
+        AttachmentOut(
+            id=row["id"],
+            project_id=row["project_id"],
+            file_name=row["file_name"],
+            content_type=row["content_type"],
+            size_bytes=row["size_bytes"],
+            created_at=row["created_at"],
+            url=s3.generate_presigned_get_url(row["s3_key"]),
+        )
+        for row in rows
+    ]
+
+
+def delete_attachment(db: DBSession, project_id: int, attachment_id: int) -> bool:
+    """PROJ-21 — hard delete, cả S3 object lẫn record DB. Trả False nếu
+    không tồn tại hoặc không thuộc project_id trong URL (route 404)."""
+    rows = db.execute(
+        "SELECT s3_key FROM attachments WHERE id = :id AND project_id = :project_id",
+        {"id": attachment_id, "project_id": project_id},
+    )
+    if not rows:
+        return False
+
+    s3.delete_object(rows[0]["s3_key"])
+    db.execute("DELETE FROM attachments WHERE id = :id", {"id": attachment_id})
+    db.commit()
+    return True
