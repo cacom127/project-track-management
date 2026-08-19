@@ -8,8 +8,9 @@
 CRUD thông tin dự án đã/đang thực hiện với khách hàng Nhật (`specs/vision.md`
 mục 2). Ticket đầu tiên (`CHANGE-007-projects-list-create`) chỉ làm
 **List + Create**; `CHANGE-010-project-detail-edit-delete` bổ sung
-**Detail/Edit/Delete** (soft delete). File đính kèm và phân quyền theo
-role vẫn để dành ticket sau.
+**Detail/Edit/Delete** (soft delete); `CHANGE-011-project-attachments`
+bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền theo role vẫn
+để dành ticket sau.
 
 ## 2. Yêu cầu hiện tại (Requirements — EARS notation)
 
@@ -74,6 +75,26 @@ role vẫn để dành ticket sau.
   nếu id không tồn tại/đã bị xoá.
 - **[PROJ-17]** `GET /projects` (list) shall exclude soft-deleted
   projects (`deleted_at IS NOT NULL`) from both `items` and `total`.
+- **[PROJ-18]** When an authenticated user submits
+  `POST /projects/{id}/attachments/presign` with `{file_name,
+  content_type}`, the system shall validate `content_type` ∈
+  (`image/jpeg`, `image/png`, `image/webp`) and that the project has
+  fewer than 10 attachments, then return a presigned S3 PUT URL +
+  `s3_key`. Trả `400` nếu vi phạm, `404` nếu project không tồn tại/đã
+  bị xoá.
+- **[PROJ-19]** When the client confirms an upload via
+  `POST /projects/{id}/attachments` with `{s3_key, file_name,
+  content_type, size_bytes}`, the system shall re-validate the 10-image
+  limit and `size_bytes` ≤ 5MB, insert an `attachments` record, and
+  return it with a presigned GET URL. Trả `400` nếu vi phạm.
+- **[PROJ-20]** When an authenticated user requests
+  `GET /projects/{id}/attachments`, the system shall return all
+  attachments of that project, each with a freshly-generated presigned
+  GET URL.
+- **[PROJ-21]** When an authenticated user submits
+  `DELETE /projects/{id}/attachments/{attachment_id}`, the system shall
+  delete both the S3 object and the DB record (hard delete). Trả `404`
+  nếu attachment không tồn tại hoặc không thuộc `project_id`.
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -121,6 +142,17 @@ role vẫn để dành ticket sau.
   (nested transaction) để mỗi test tự rollback dù code gọi `db.commit()`
   thật — dùng Postgres thật (local qua docker-compose), không chỉ mock.
   CI cần chạy `alembic upgrade head` trước `pytest`.
+- **Ảnh đính kèm (CHANGE-011)**: upload qua presigned URL 2 bước
+  (`app/core/s3.py` bọc riêng boto3 S3 client, tương tự cách
+  `app/core/db.py` bọc DB access — test mock ở module này, không gọi S3
+  thật vì không có S3 emulator local): FE lấy presigned PUT URL từ
+  `/presign`, upload thẳng lên S3, rồi gọi `/attachments` (confirm) để
+  ghi DB + nhận lại presigned GET URL hiển thị. Bucket
+  (`ATTACHMENTS_BUCKET_NAME` env var, output CDK `AttachmentsBucketName`)
+  private hoàn toàn, không qua CloudFront. Giới hạn 10 ảnh/dự án, 5MB/
+  ảnh, jpg/png/webp — validate cả lúc presign lẫn lúc confirm (chống
+  race condition upload đồng thời). Màn Detail chỉ xem ảnh (read-only),
+  chỉ Edit mới thêm/xoá được.
 
 ## 4. Data Model
 
@@ -144,6 +176,11 @@ mục 1/2 cho ER diagram tổng quan/bảng mapping):
   `maintenance`.
 - **`project_project_types`** (bảng nối N-N `projects`↔`project_types`):
   `project_id` (FK), `project_type_id` (FK).
+- **`attachments`** (`CHANGE-011`): `id` (PK), `project_id` (FK →
+  `projects.id`), `s3_key` (string, unique), `file_name` (string),
+  `content_type` (string), `size_bytes` (int), `created_by` (string —
+  Cognito `sub`), `created_at` (timestamp). Hard delete (không có
+  `deleted_at`) — khác `projects`.
 
 ## 5. UI
 
@@ -156,5 +193,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 | 2026-08-18 | CHANGE-007-projects-list-create  | Khởi tạo module: List + Create (PROJ-01..12), chưa có Edit/Delete/Detail/file đính kèm |
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix bug thật: `POST /projects` thiếu cast `date`/`numeric` tường minh cho Data API (PROJ-13) |
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm Detail/Edit/Delete (PROJ-14..17), soft delete qua `deleted_at` (DM-PROJ-05) |
+| 2026-08-19 | CHANGE-011-project-attachments | Thêm ảnh đính kèm (PROJ-18..21), bảng `attachments` (DM-PROJ-06), presigned URL S3 |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

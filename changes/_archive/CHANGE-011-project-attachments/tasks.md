@@ -67,16 +67,15 @@
         hưởng.
       - Frontend: 125/125 pass (kể cả tắt `.env`, mô phỏng CI), lint/
         build sạch, prettier sạch trong worktree không CRLF.
-- [ ] **T15** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
-      `specs/architecture.md`, di chuyển ticket vào `changes/_archive/`
-      — CHỜ user deploy + chạy thử OK trước (quyết định Product owner,
-      khác thứ tự các ticket trước)
-- [ ] **T16** — Nhắc user: chạy migration script trên production
-      (`apply_migration_via_data_api.py`) VÀ `cdk deploy` lại (CORS/env
-      var/output mới) sau khi merge
+- [x] **T15** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
+      `specs/architecture.md`, `specs/data-model.md`, di chuyển ticket
+      vào `changes/_archive/` — làm sau khi user deploy + test production
+      OK (quyết định Product owner, khác thứ tự các ticket trước)
+- [x] **T16** — User đã tự chạy migration + `cdk deploy` production,
+      xác nhận test OK
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
-| Đang làm    | 2026-08-19     | T1-T14 xong (backend/infra/frontend implement + test đầy đủ). T15 (fold spec + archive) và T16 (migration + cdk deploy) chờ user deploy + test OK trên production trước |
+| Hoàn tất    | 2026-08-19     | T1-T16 xong, đã deploy + test production OK |

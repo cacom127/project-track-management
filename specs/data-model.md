@@ -37,7 +37,7 @@ erDiagram
 | Project     | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
 | TechTag     | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
 | ProjectType | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
-| Attachment  | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
+| Attachment  | projects       | `specs/projects.md` mục Data Model             |
 
 > Bảng nối (`project_tech_tags`, `project_project_types`) là chi tiết
 > triển khai của quan hệ N-N `Project ↔ TechTag` / `Project ↔ ProjectType`
