@@ -2,7 +2,7 @@
 
 - **Ticket ID**: CHANGE-012
 - **Module bị ảnh hưởng**: `specs/projects.md`
-- **Loại thay đổi**: ☑ Thêm mới
+- **Loại thay đổi**: ☑ Thêm mới &nbsp; ☑ Sửa (PROJ-04)
 
 ## 1. Yêu cầu thay đổi (EARS notation)
 
@@ -18,9 +18,19 @@
   and `outcome_note` in the `q` keyword search (ILIKE, cùng nhóm với
   `customer_name`/`project_name`/`description`/tech tag ở PROJ-02).
 - **[PROJ-25] (MỚI)** `GET /projects` shall accept one or more
-  `dev_process_phase` query params, filtering to projects that have ANY
-  of the specified phases (OR semantics, giống `project_type` ở
-  PROJ-04).
+  `dev_process_phase` query params, filtering to projects that have ALL
+  of the specified phases (AND semantics, giống `technology` ở PROJ-03
+  — sửa lại từ bản nháp ban đầu dùng OR, theo yêu cầu Product owner để
+  đồng nhất với `technology`).
+- **[PROJ-04] (SỬA)**
+  - Cũ: When `GET /projects` includes one or more `project_type` query
+    params, the system shall filter to projects that have ANY of the
+    specified project types (OR semantics).
+  - Mới: ... shall filter to projects that have ALL of the specified
+    project types (AND semantics, giống `technology` ở PROJ-03) — đồng
+    nhất semantics filter giữa `technology`/`project_type`/
+    `dev_process_phase`, tránh 3 filter cùng dạng UI (checkbox đa chọn)
+    nhưng hành vi khác nhau gây nhầm lẫn.
 - **[PROJ-26] (MỚI)** `GET /projects/{id}`, list item, và response của
   create/update shall include `industry`, `outcome_note`,
   `dev_process_phases` trong response body.
@@ -50,7 +60,8 @@ Xem `ui-delta-spec.md`.
 | PROJ-22 | `test_create_project_with_industry_and_outcome_note`, `test_update_project_replaces_industry_and_outcome_note` |
 | PROJ-23 | `test_create_project_validates_dev_process_phases`, `test_create_project_rejects_invalid_dev_process_phase` |
 | PROJ-24 | `test_list_projects_search_matches_industry`, `test_list_projects_search_matches_outcome_note` |
-| PROJ-25 | `test_list_projects_filters_by_dev_process_phase_or_semantics` |
+| PROJ-25 | `test_list_projects_filters_by_dev_process_phase_and_semantics`, `test_list_projects_filters_by_dev_process_phase_via_route` |
+| PROJ-04 (sửa) | `test_list_projects_filters_by_project_type_and_semantics`, `test_list_filters_by_project_type_and_semantics` |
 | PROJ-26 | `test_get_project_includes_new_fields` |
 
 ## 3. Ghi chú cho AI agent khi implement

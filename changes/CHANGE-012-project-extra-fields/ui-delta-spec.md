@@ -54,7 +54,10 @@ Hiển thị thêm 3 dòng text trong đúng section tương ứng: `業種` tro
 - Ô tìm kiếm hiện tại (`q`) tự động bao phủ thêm `industry`/
   `outcome_note` — KHÔNG đổi UI, chỉ đổi hành vi backend (PROJ-24).
 - Thêm `FilterDropdown` mới "開発工程" (component đã có sẵn, tái dùng y
-  hệt cách 種別/技術 đang dùng) — OR semantics.
+  hệt cách 種別/技術 đang dùng) — **AND semantics** (giống 技術, sửa lại
+  từ bản nháp ban đầu dùng OR). 種別 cũng đổi sang AND semantics trong
+  ticket này (PROJ-04 SỬA) để 3 filter cùng dạng UI có cùng hành vi,
+  tránh gây nhầm lẫn cho người dùng.
 
 ## 3. Hành vi tương tác (EARS)
 
@@ -68,7 +71,11 @@ Hiển thị thêm 3 dòng text trong đúng section tương ứng: `業種` tro
   `開発工程` (dạng Badge), and `成果・課題・解決策` read-only in their
   respective sections.
 - **[UI-PROJ-01-11] (MỚI)** The List toolbar shall render an additional
-  `FilterDropdown` for `開発工程` (OR semantics), alongside 技術/種別.
+  `FilterDropdown` for `開発工程` (AND semantics, giống 技術), alongside
+  技術/種別. Filter 種別 cũng đổi hành vi backend từ OR sang AND semantics
+  trong ticket này (xem `delta-spec.md` PROJ-04 SỬA) — không có EARS UI
+  riêng cho semantics filter 種別 (chỉ mô tả ở backend PROJ-04), UI
+  không đổi gì (vẫn dùng đúng component `FilterDropdown` như cũ).
 
 ## 4. Test mapping
 

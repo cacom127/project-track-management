@@ -133,18 +133,20 @@ def test_list_projects_search_matches_outcome_note(db_session):
     assert items[0].project_name == "Alpha"
 
 
-# PROJ-25
-def test_list_projects_filters_by_dev_process_phase_or_semantics(db_session):
-    _make_project(db_session, project_name="Alpha", dev_process_phases=["requirements"])
-    _make_project(db_session, project_name="Beta", dev_process_phases=["release"])
-    _make_project(db_session, project_name="Gamma", dev_process_phases=["maintenance_ops"])
+# PROJ-25 (SỬA — CHANGE-012): AND semantics, giống `technologies`.
+def test_list_projects_filters_by_dev_process_phase_and_semantics(db_session):
+    _make_project(
+        db_session, project_name="Alpha", dev_process_phases=["requirements", "release"]
+    )
+    _make_project(db_session, project_name="Beta", dev_process_phases=["requirements"])
+    _make_project(db_session, project_name="Gamma", dev_process_phases=["release"])
 
     items, total = list_projects(
         db_session, dev_process_phases=["requirements", "release"]
     )
     names = {item.project_name for item in items}
-    assert total == 2
-    assert names == {"Alpha", "Beta"}
+    assert total == 1
+    assert names == {"Alpha"}
 
 
 # PROJ-26
@@ -199,7 +201,7 @@ def test_get_project_route_includes_new_fields(client):
     assert set(body["dev_process_phases"]) == {"testing", "release"}
 
 
-# PROJ-25 — route level: OR semantics qua query param
+# PROJ-25 (SỬA — CHANGE-012) — route level: AND semantics qua query param
 def test_list_projects_filters_by_dev_process_phase_via_route(client):
     def _create(**overrides):
         payload = {
@@ -210,9 +212,9 @@ def test_list_projects_filters_by_dev_process_phase_via_route(client):
         payload.update(overrides)
         return client.post("/projects", json=payload, headers=AUTH_HEADER).json()
 
-    _create(project_name="Alpha", dev_process_phases=["requirements"])
-    _create(project_name="Beta", dev_process_phases=["release"])
-    _create(project_name="Gamma", dev_process_phases=["maintenance_ops"])
+    _create(project_name="Alpha", dev_process_phases=["requirements", "release"])
+    _create(project_name="Beta", dev_process_phases=["requirements"])
+    _create(project_name="Gamma", dev_process_phases=["release"])
 
     response = client.get(
         "/projects",
@@ -225,5 +227,5 @@ def test_list_projects_filters_by_dev_process_phase_via_route(client):
 
     body = response.json()
     names = {item["project_name"] for item in body["items"]}
-    assert body["total"] == 2
-    assert names == {"Alpha", "Beta"}
+    assert body["total"] == 1
+    assert names == {"Alpha"}

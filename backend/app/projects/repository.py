@@ -305,6 +305,8 @@ def _build_where(
         )
 
     if project_types:
+        # PROJ-04 (SỬA — CHANGE-012): đổi từ OR sang AND semantics, giống
+        # `technologies` — dự án phải có ĐỦ tất cả giá trị đã chọn.
         type_params = {f"ptype_{i}": code for i, code in enumerate(project_types)}
         placeholders = ", ".join(f":{key}" for key in type_params)
         params.update(type_params)
@@ -313,10 +315,13 @@ def _build_where(
             f"  SELECT ppt2.project_id FROM project_project_types ppt2"
             f"  JOIN project_types pt2 ON pt2.id = ppt2.project_type_id"
             f"  WHERE pt2.code IN ({placeholders})"
+            f"  GROUP BY ppt2.project_id"
+            f"  HAVING COUNT(DISTINCT pt2.code) = {len(project_types)}"
             f")"
         )
 
     if dev_process_phases:
+        # PROJ-25 (SỬA — CHANGE-012): AND semantics, giống `technologies`.
         phase_params = {f"phase_{i}": code for i, code in enumerate(dev_process_phases)}
         placeholders = ", ".join(f":{key}" for key in phase_params)
         params.update(phase_params)
@@ -325,6 +330,8 @@ def _build_where(
             f"  SELECT pdpp2.project_id FROM project_dev_process_phases pdpp2"
             f"  JOIN dev_process_phases dpp2 ON dpp2.id = pdpp2.dev_process_phase_id"
             f"  WHERE dpp2.code IN ({placeholders})"
+            f"  GROUP BY pdpp2.project_id"
+            f"  HAVING COUNT(DISTINCT dpp2.code) = {len(dev_process_phases)}"
             f")"
         )
 
