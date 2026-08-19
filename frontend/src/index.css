@@ -815,3 +815,128 @@ fieldset label {
     width: 100%;
   }
 }
+
+/* Attachment Manager (DESIGN.md mục Components > Thumbnail Grid / Paste
+   Zone, ui-delta-spec.md CHANGE-011 mục 6, UI-PROJ-05-1..6). */
+.attachment-manager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Paste Zone — 3 trạng thái: bình thường / focus (giống hệt .input-field
+   input:focus) / đủ giới hạn (mờ hơn, không nhận focus). */
+.paste-zone {
+  padding: var(--space-md);
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.paste-zone-focused {
+  outline: none;
+  border-style: solid;
+  border-color: var(--color-secondary);
+  box-shadow: inset 0 0 0 1px var(--color-secondary);
+}
+
+.paste-zone-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attachment-error {
+  font-size: 13px;
+  color: var(--color-error);
+  margin: 0;
+}
+
+/* Thumbnail Grid — ô vuông 96x96px, nút xoá tròn góc trên-phải. */
+.thumbnail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.thumbnail {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  display: block;
+}
+
+.thumbnail-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  border: none;
+  background: var(--color-error);
+  color: var(--color-on-error);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail-remove:disabled {
+  background: var(--color-outline-variant);
+  cursor: not-allowed;
+}
+
+.thumbnail-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 32, 69, 0.4);
+  border-radius: var(--radius-default);
+}
+
+/* Lightbox — tái dùng `.modal-backdrop` (đã có), panel riêng vì chứa
+   ảnh full-size thay vì text + action button (xem comment trong
+   AttachmentManager.tsx lý do không tái dùng Modal.tsx nguyên trạng). */
+.lightbox-panel {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: var(--space-md);
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  display: block;
+  border-radius: var(--radius-default);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: none;
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -5,43 +5,46 @@
 
 ## Checklist
 
-- [ ] **T1** — Infra: CORS rule cho `attachments_bucket`, env var
+- [x] **T1** — Infra: CORS rule cho `attachments_bucket`, env var
       `ATTACHMENTS_BUCKET_NAME`, `CfnOutput` tên bucket
       - Liên quan: delta-spec.md mục 1d
       - File dự kiến: `infra/stacks/main_stack.py`
-- [ ] **T2** — Migration: bảng `attachments`
+- [x] **T2** — Migration: bảng `attachments`
       - Liên quan: DM-PROJ-06
       - File dự kiến: `backend/migrations/versions/<new>.py`
-- [ ] **T3** — Backend: `app/core/s3.py` (presign PUT/GET, delete
+- [x] **T3** — Backend: `app/core/s3.py` (presign PUT/GET, delete
       object) — bọc riêng để test mock được, không gọi S3 thật
       - File dự kiến: `backend/app/core/s3.py`
-- [ ] **T4** — Backend: schemas `AttachmentOut`, `AttachmentPresignRequest`,
+- [x] **T4** — Backend: schemas `AttachmentOut`, `AttachmentPresignRequest`,
       `AttachmentPresignResponse`, `AttachmentConfirmRequest`
       - File dự kiến: `backend/app/projects/schemas.py`
-- [ ] **T5** — Backend: repository `presign_attachment`,
+- [x] **T5** — Backend: repository `presign_attachment`,
       `confirm_attachment`, `list_attachments`, `delete_attachment`,
       `count_attachments`
       - Liên quan: PROJ-18..21
       - File dự kiến: `backend/app/projects/repository.py`
-- [ ] **T6** — Backend: routes
+- [x] **T6** — Backend: routes
       `POST/GET /projects/{id}/attachments`,
       `POST /projects/{id}/attachments/presign`,
       `DELETE /projects/{id}/attachments/{attachment_id}`
       - Liên quan: PROJ-18..21
       - File dự kiến: `backend/app/projects/routes.py`
-- [ ] **T7** — Backend tests (TDD — viết test trước, mock `app/core/s3.py`)
+- [x] **T7** — Backend tests (TDD — viết test trước, mock `app/core/s3.py`)
       - Liên quan: xem bảng Test mapping trong `delta-spec.md`
       - File dự kiến: `backend/tests/projects/test_attachments.py`
-- [ ] **T8** — DESIGN.md: thêm component "Thumbnail Grid", "Paste Zone"
+- [x] **T8** — DESIGN.md: thêm component "Thumbnail Grid", "Paste Zone"
       (3 trạng thái: bình thường/focus/đủ giới hạn)
       - Liên quan: ui-delta-spec.md mục 6
-      - Chạy `npx --yes -p @google/design.md -c "designmd lint DESIGN.md"`
-- [ ] **T9** — Frontend: `attachmentsApi.ts` (presign/confirm/list/delete
+      - Lint: 0 errors/0 warnings
+- [x] **T9** — Frontend: `attachmentsApi.ts` (presign/confirm/list/delete
       + upload PUT trực tiếp lên presigned URL)
-      - File dự kiến: `frontend/src/lib/attachmentsApi.ts`
-- [ ] **T10** — Frontend: `AttachmentManager.tsx` (2 mode `staged`/`live`,
-      Paste Zone 3 trạng thái, Lightbox dùng lại `Modal.tsx`) + test (TDD)
+      - File: `frontend/src/lib/attachmentsApi.ts`
+- [x] **T10** — Frontend: `AttachmentManager.tsx` (2 mode `staged`/`live`,
+      Paste Zone 3 trạng thái, Lightbox tự viết riêng thay vì dùng
+      `Modal.tsx` — lý do: `Modal` bắt buộc có confirm/cancel, không
+      hợp cho popup chỉ xem ảnh) + test (TDD)
       - Liên quan: UI-PROJ-05-1..6
+      - File: `frontend/src/components/AttachmentManager.tsx`
       - File dự kiến: `frontend/src/components/AttachmentManager.tsx`
 - [ ] **T11** — Frontend: đổi contract `ProjectForm.tsx` (`onSubmit`
       trả `Project`, thêm `onSuccess`), tích hợp `AttachmentManager`

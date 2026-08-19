@@ -298,6 +298,26 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   WCAG chỉ vừa đạt ngưỡng (phát hiện thật từ feedback CHANGE-010). Tự ẩn
   sau 3 giây.
 
+### Thumbnail Grid
+- **Cấu trúc:** ô vuông cố định kích thước ~96x96px, ảnh dùng
+  `object-fit: cover` để lấp đầy khung không méo tỉ lệ. Border 1px
+  `outline-variant`, bo góc `rounded.DEFAULT`.
+- **Nút xoá:** nút tròn nhỏ đè lên góc trên-phải mỗi thumbnail, nền
+  `error` (`#ba1a1a`), icon "×" màu trắng.
+
+### Paste Zone
+- **Cấu trúc:** khối `tabIndex=0` (khi ở trạng thái nhận được paste),
+  nhận sự kiện `onPaste` để dán ảnh từ clipboard. 3 trạng thái phân
+  biệt rõ, chỉ dùng lại token màu đã có, KHÔNG thêm màu mới:
+- **Bình thường:** border nét đứt 1px `outline-variant`.
+- **Focus (sẵn sàng paste):** border đổi sang `secondary` (`#1960a3`)
+  kèm box-shadow nhẹ — y hệt style `:focus` của **Input Field** (xem
+  mục Components ở trên), không định nghĩa lại giá trị CSS cụ thể ở
+  đây.
+- **Đủ giới hạn (không thể paste):** border vẫn nét đứt `outline-variant`
+  nhưng làm mờ đi bằng opacity thấp hơn, `cursor: not-allowed`, bỏ
+  `tabIndex` (không nhận focus).
+
 ## Do's and Don'ts
 
 - ✅ Dùng đúng token trong `colors`/`typography`/`rounded`/`spacing` ở

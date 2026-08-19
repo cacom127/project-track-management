@@ -54,9 +54,15 @@ export function ProjectEdit() {
     };
   }, [id]);
 
-  async function handleSubmit(input: ProjectCreateInput) {
-    const updated = await updateProject(Number(id), input);
-    // UI-PROJ-04-2: kèm toast thành công sau khi điều hướng về Detail.
+  // UI-PROJ-02-11: chỉ update project — projectId đã tồn tại (Edit) nên
+  // ProjectForm dùng AttachmentManager mode "live" (upload/xoá ngay, không
+  // qua staged), không cần chờ ảnh ở đây.
+  async function handleSubmit(input: ProjectCreateInput): Promise<Project> {
+    return updateProject(Number(id), input);
+  }
+
+  // UI-PROJ-04-2: điều hướng về Detail + toast thành công.
+  function handleSuccess(updated: Project) {
     navigate(`/projects/${updated.id}`, {
       state: { successMessage: `「${updated.project_name}」を更新しました` },
     });
@@ -94,7 +100,9 @@ export function ProjectEdit() {
       <h1>プロジェクトを編集</h1>
       <ProjectForm
         initialValues={toFormValues(project)}
+        projectId={project.id}
         onSubmit={handleSubmit}
+        onSuccess={handleSuccess}
         submitLabel="更新する"
         serverErrorMessage={SERVER_ERROR_MESSAGE}
         cancelTo={`/projects/${project.id}`}

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const getProjectMock = vi.fn();
 const deleteProjectMock = vi.fn();
 const navigateMock = vi.fn();
+const listAttachmentsMock = vi.fn();
 
 // KHÔNG dùng importOriginal: module thật ("../lib/projectsApi") import
 // tới "../lib/auth" -> khởi tạo CognitoUserPool ngay lúc load module,
@@ -14,6 +15,17 @@ vi.mock("../lib/projectsApi", () => ({
   getProject: (...args: unknown[]) => getProjectMock(...args),
   deleteProject: (...args: unknown[]) => deleteProjectMock(...args),
   ProjectNotFoundError: class ProjectNotFoundError extends Error {},
+}));
+
+// Detail render AttachmentManager mode "live" -> cần mock riêng, cùng
+// lý do CognitoUserPool ở trên.
+vi.mock("../lib/attachmentsApi", () => ({
+  ALLOWED_ATTACHMENT_TYPES: ["image/jpeg", "image/png", "image/webp"],
+  MAX_ATTACHMENTS: 10,
+  MAX_ATTACHMENT_SIZE_BYTES: 5 * 1024 * 1024,
+  listAttachments: (...args: unknown[]) => listAttachmentsMock(...args),
+  uploadAttachment: vi.fn(),
+  deleteAttachment: vi.fn(),
 }));
 
 vi.mock("react-router", async (importOriginal) => {
@@ -56,6 +68,8 @@ describe("ProjectDetail", () => {
     getProjectMock.mockReset();
     deleteProjectMock.mockReset();
     navigateMock.mockReset();
+    listAttachmentsMock.mockReset();
+    listAttachmentsMock.mockResolvedValue([]);
   });
 
   it("calls getProject on mount and shows loaded fields (UI-PROJ-03-1)", async () => {

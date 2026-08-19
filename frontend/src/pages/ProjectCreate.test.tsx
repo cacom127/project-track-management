@@ -11,6 +11,19 @@ vi.mock("../lib/projectsApi", () => ({
   listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
 }));
 
+// KHÔNG dùng importOriginal: ProjectForm render AttachmentManager (mode
+// "staged" ở Create) -> import tĩnh "../lib/attachmentsApi" ->
+// "./apiClient" -> "./auth" khởi tạo CognitoUserPool ngay lúc import,
+// lỗi ở CI (không có env Cognito) dù mode staged không gọi API nào.
+vi.mock("../lib/attachmentsApi", () => ({
+  ALLOWED_ATTACHMENT_TYPES: ["image/jpeg", "image/png", "image/webp"],
+  MAX_ATTACHMENTS: 10,
+  MAX_ATTACHMENT_SIZE_BYTES: 5 * 1024 * 1024,
+  listAttachments: vi.fn(),
+  uploadAttachment: vi.fn(),
+  deleteAttachment: vi.fn(),
+}));
+
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>();
   return { ...actual, useNavigate: () => navigateMock };

@@ -6,6 +6,7 @@ const getProjectMock = vi.fn();
 const updateProjectMock = vi.fn();
 const listTechTagsMock = vi.fn();
 const navigateMock = vi.fn();
+const listAttachmentsMock = vi.fn();
 
 // KHÔNG dùng importOriginal: module thật ("../lib/projectsApi") import
 // tới "../lib/auth" -> khởi tạo CognitoUserPool ngay lúc load module,
@@ -15,6 +16,17 @@ vi.mock("../lib/projectsApi", () => ({
   updateProject: (...args: unknown[]) => updateProjectMock(...args),
   listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
   ProjectNotFoundError: class ProjectNotFoundError extends Error {},
+}));
+
+// ProjectForm render AttachmentManager mode "live" (projectId đã tồn tại
+// ở Edit) -> cần mock riêng, cùng lý do CognitoUserPool ở trên.
+vi.mock("../lib/attachmentsApi", () => ({
+  ALLOWED_ATTACHMENT_TYPES: ["image/jpeg", "image/png", "image/webp"],
+  MAX_ATTACHMENTS: 10,
+  MAX_ATTACHMENT_SIZE_BYTES: 5 * 1024 * 1024,
+  listAttachments: (...args: unknown[]) => listAttachmentsMock(...args),
+  uploadAttachment: vi.fn(),
+  deleteAttachment: vi.fn(),
 }));
 
 vi.mock("react-router", async (importOriginal) => {
@@ -58,7 +70,9 @@ describe("ProjectEdit", () => {
     updateProjectMock.mockReset();
     listTechTagsMock.mockReset();
     navigateMock.mockReset();
+    listAttachmentsMock.mockReset();
     listTechTagsMock.mockResolvedValue([]);
+    listAttachmentsMock.mockResolvedValue([]);
   });
 
   it("pre-fills the form with fetched values (UI-PROJ-04-1)", async () => {

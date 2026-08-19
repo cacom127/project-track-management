@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import AttachmentManager from "../components/AttachmentManager";
 import Badge from "../components/Badge";
 import Modal from "../components/Modal";
 import { deleteProject, getProject, ProjectNotFoundError, type Project } from "../lib/projectsApi";
@@ -127,6 +128,11 @@ export function ProjectDetail() {
               </Badge>
             ))}
           </p>
+        </section>
+
+        <section className="form-group-card">
+          <h2 className="form-group-card-title">画像添付（最大10枚）</h2>
+          <AttachmentManager mode="live" projectId={project.id} />
         </section>
 
         <p>確認元メモ: {project.source_note || "—"}</p>
