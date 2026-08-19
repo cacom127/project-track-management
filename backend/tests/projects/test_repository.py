@@ -1,8 +1,15 @@
 from datetime import date
 from decimal import Decimal
 
-from app.projects.repository import create_project, list_projects, search_tech_tags
-from app.projects.schemas import ProjectCreate
+from app.projects.repository import (
+    create_project,
+    delete_project,
+    get_project,
+    list_projects,
+    search_tech_tags,
+    update_project,
+)
+from app.projects.schemas import ProjectCreate, ProjectUpdate
 
 
 def _make_project(db, **overrides):
@@ -46,9 +53,7 @@ def test_create_project_reuses_existing_tag_case_insensitive(db_session):
     _make_project(db_session, project_name="Project A", technologies=["React"])
     _make_project(db_session, project_name="Project B", technologies=["react"])
 
-    rows = db_session.execute(
-        "SELECT count(*) AS c FROM tech_tags WHERE lower(name) = 'react'"
-    )
+    rows = db_session.execute("SELECT count(*) AS c FROM tech_tags WHERE lower(name) = 'react'")
     assert rows[0]["c"] == 1
 
 
@@ -101,6 +106,111 @@ def test_list_projects_filters_by_project_type_or_semantics(db_session):
     names = {item.project_name for item in items}
     assert total == 2
     assert names == {"Alpha", "Beta"}
+
+
+def test_get_project_returns_full_record(db_session):
+    created = _make_project(db_session)
+
+    result = get_project(db_session, created.id)
+
+    assert result is not None
+    assert result.id == created.id
+    assert set(result.technologies) == {"React", "AWS"}
+    assert set(result.project_types) == {"offshore", "new_dev"}
+
+
+def test_get_project_returns_none_when_not_found(db_session):
+    assert get_project(db_session, 999999) is None
+
+
+def test_get_project_returns_none_when_soft_deleted(db_session):
+    created = _make_project(db_session)
+
+    assert delete_project(db_session, created.id) is True
+    assert get_project(db_session, created.id) is None
+
+
+def test_update_project_replaces_scalar_fields_and_associations(db_session):
+    created = _make_project(db_session, technologies=["React"], project_types=["offshore"])
+
+    update_data = ProjectUpdate(
+        customer_name="New Customer",
+        project_name="New Project",
+        description="New description",
+        start_date=date(2024, 3, 1),
+        end_date=None,
+        is_ongoing=True,
+        team_size=3,
+        total_man_month=Decimal("4.5"),
+        source_note="note",
+        technologies=["Vue"],
+        project_types=["lab"],
+    )
+
+    result = update_project(db_session, created.id, update_data)
+
+    assert result is not None
+    assert result.customer_name == "New Customer"
+    assert result.project_name == "New Project"
+    assert result.technologies == ["Vue"]
+    assert result.project_types == ["lab"]
+
+    reloaded = get_project(db_session, created.id)
+    assert reloaded is not None
+    assert reloaded.technologies == ["Vue"]
+    assert reloaded.project_types == ["lab"]
+
+
+def test_update_project_returns_none_when_not_found(db_session):
+    update_data = ProjectUpdate(
+        customer_name="X",
+        project_name="Y",
+        start_date=date(2024, 1, 1),
+    )
+
+    assert update_project(db_session, 999999, update_data) is None
+
+
+def test_update_project_returns_none_when_soft_deleted(db_session):
+    created = _make_project(db_session)
+    assert delete_project(db_session, created.id) is True
+
+    update_data = ProjectUpdate(
+        customer_name="X",
+        project_name="Y",
+        start_date=date(2024, 1, 1),
+    )
+
+    assert update_project(db_session, created.id, update_data) is None
+
+
+def test_delete_project_sets_deleted_at_and_returns_true(db_session):
+    created = _make_project(db_session)
+
+    assert delete_project(db_session, created.id) is True
+    assert get_project(db_session, created.id) is None
+
+
+def test_delete_project_returns_false_when_not_found(db_session):
+    assert delete_project(db_session, 999999) is False
+
+
+def test_delete_project_returns_false_when_already_deleted(db_session):
+    created = _make_project(db_session)
+
+    assert delete_project(db_session, created.id) is True
+    assert delete_project(db_session, created.id) is False
+
+
+def test_list_projects_excludes_soft_deleted(db_session):
+    kept = _make_project(db_session, project_name="Kept")
+    deleted = _make_project(db_session, project_name="Deleted")
+    delete_project(db_session, deleted.id)
+
+    items, total = list_projects(db_session)
+
+    assert total == 1
+    assert [item.project_name for item in items] == [kept.project_name]
 
 
 def test_search_tech_tags_matches_case_insensitive(db_session):

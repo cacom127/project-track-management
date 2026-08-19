@@ -78,6 +78,42 @@ export async function createProject(input: ProjectCreateInput): Promise<Project>
   return response.json();
 }
 
+/** UI-PROJ-03-2: phân biệt 404 (not-found) với lỗi API khác. */
+export class ProjectNotFoundError extends Error {}
+
+/** PROJ-14: xem chi tiết 1 dự án. */
+export async function getProject(id: number): Promise<Project> {
+  const response = await apiFetch(`/projects/${id}`);
+  if (response.status === 404) {
+    throw new ProjectNotFoundError("プロジェクトが見つかりません");
+  }
+  if (!response.ok) {
+    throw new Error("プロジェクトの取得に失敗しました");
+  }
+  return response.json();
+}
+
+/** PROJ-15: sửa toàn bộ (full-replace) 1 dự án. */
+export async function updateProject(id: number, input: ProjectCreateInput): Promise<Project> {
+  const response = await apiFetch(`/projects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error("プロジェクトの更新に失敗しました");
+  }
+  return response.json();
+}
+
+/** PROJ-16: xoá (soft delete) 1 dự án. */
+export async function deleteProject(id: number): Promise<void> {
+  const response = await apiFetch(`/projects/${id}`, { method: "DELETE" });
+  if (!response.ok) {
+    throw new Error("プロジェクトの削除に失敗しました");
+  }
+}
+
 /** UI-PROJ-02-3: autocomplete tag công nghệ. */
 export async function listTechTags(q?: string): Promise<string[]> {
   const query = q ? `?${new URLSearchParams({ q }).toString()}` : "";

@@ -1,9 +1,16 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import get_current_user_id
 from app.core.db import DBSession, get_db_session
-from app.projects.repository import create_project, list_projects, search_tech_tags
-from app.projects.schemas import ProjectCreate, ProjectListResponse, ProjectOut
+from app.projects.repository import (
+    create_project,
+    delete_project,
+    get_project,
+    list_projects,
+    search_tech_tags,
+    update_project,
+)
+from app.projects.schemas import ProjectCreate, ProjectListResponse, ProjectOut, ProjectUpdate
 
 router = APIRouter()
 
@@ -36,6 +43,45 @@ def list_projects_route(
         project_types=project_type,
     )
     return ProjectListResponse(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/projects/{project_id}", response_model=ProjectOut)
+def get_project_route(
+    project_id: int,
+    db: DBSession = Depends(get_db_session),
+    user_id: str = Depends(get_current_user_id),
+) -> ProjectOut:
+    # PROJ-14
+    project = get_project(db, project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return project
+
+
+@router.put("/projects/{project_id}", response_model=ProjectOut)
+def update_project_route(
+    project_id: int,
+    payload: ProjectUpdate,
+    db: DBSession = Depends(get_db_session),
+    user_id: str = Depends(get_current_user_id),
+) -> ProjectOut:
+    # PROJ-15
+    project = update_project(db, project_id, payload)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    return project
+
+
+@router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project_route(
+    project_id: int,
+    db: DBSession = Depends(get_db_session),
+    user_id: str = Depends(get_current_user_id),
+) -> None:
+    # PROJ-16
+    deleted = delete_project(db, project_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
 
 @router.get("/tech-tags", response_model=list[str])

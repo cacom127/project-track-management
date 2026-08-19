@@ -235,6 +235,9 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
 - **Primary:** nền đặc `secondary` (`#1960a3`), text trắng, bo góc 4px.
 - **Secondary/Ghost:** border 1px `secondary` (`#1960a3`), text cùng
   màu.
+- **Destructive:** nền đặc `error` (`#ba1a1a`), border cùng màu, text
+  `on-error` (`#ffffff`). Dùng cho hành động không thể hoàn tác (vd xác
+  nhận xoá trong Modal).
 - **Kích thước:** chiều cao chuẩn 32px cho layout mật độ cao; 40px cho
   action chính của trang.
 
@@ -272,6 +275,29 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   mục Elevation & Depth). Danh sách checkbox bên trong, không giới hạn
   số lượng.
 
+### Modal / Confirm Dialog
+- **Cấu trúc:** backdrop phủ toàn màn hình + panel căn giữa chứa title +
+  body text + 2 action button (Cancel / Confirm).
+- **Backdrop:** `primary` ở độ mờ 40% — xem mục Elevation & Depth.
+- **Panel:** nền `surface-container-lowest`, border 1px `outline-variant`,
+  bo góc `rounded.DEFAULT`.
+- **Tương tác:** đóng khi click backdrop hoặc nút Cancel. KHÔNG đóng khi
+  click bên trong panel.
+- **Action button:** nút Cancel dùng biến thể Secondary/Ghost, nút
+  Confirm dùng biến thể Primary hoặc Destructive (xem mục Action Button)
+  tuỳ hành động — hành động không thể hoàn tác (vd xoá) dùng Destructive.
+
+### Toast
+- **Cấu trúc:** banner full-width bên trong `.app-page`, gồm icon + text.
+- **Error (`.toast-error`):** nền `error-container` (`#ffdad6`), text
+  `on-error-container` (`#93000a`). Giữ nguyên cho tới khi user dismiss
+  hoặc thử lại — không tự ẩn.
+- **Success (`.toast-success`):** nền `tertiary-container` (`#003f25`),
+  text `on-tertiary` (`#ffffff`) — KHÔNG dùng `on-tertiary-container`
+  (`#5caf81`): 2 tông xanh gần nhau cho tương phản thực tế kém dù số đo
+  WCAG chỉ vừa đạt ngưỡng (phát hiện thật từ feedback CHANGE-010). Tự ẩn
+  sau 3 giây.
+
 ## Do's and Don'ts
 
 - ✅ Dùng đúng token trong `colors`/`typography`/`rounded`/`spacing` ở
@@ -286,6 +312,10 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   filter — trải nghiệm kém (phải giữ Ctrl/Cmd để chọn nhiều, không có
   gợi ý cách dùng, không style được). Dùng component **Dropdown /
   Filter** đã định nghĩa ở mục Components.
+- ❌ Không dùng `confirm()`/`alert()` gốc trình duyệt cho hành động phá
+  huỷ (vd xoá) — không style được, không nhất quán cross-browser. Dùng
+  component **Modal / Confirm Dialog** với nút Action Button biến thể
+  Destructive.
 - ✅ Nội dung chính (form, bảng dữ liệu) căn giữa theo chiều ngang khi
   còn dư không gian (`margin: 0 auto` kèm `max-width` phù hợp) — không
   để dính sát 1 lề khi màn hình rộng hơn nội dung.

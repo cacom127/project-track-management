@@ -15,12 +15,14 @@
   --color-secondary: #1960a3;
   --color-on-secondary: #ffffff;
   --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
   --color-secondary-container: #7db6ff;
   --color-on-secondary-container: #00477f;
   --color-tertiary-container: #003f25;
   --color-on-tertiary-container: #5caf81;
+  --color-on-tertiary: #ffffff;
 
   /* Typography */
   --font-family: "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -100,6 +102,16 @@ h1 {
   border-color: var(--color-error);
 }
 
+/* Trạng thái disabled rõ ràng hơn mặc định trình duyệt (feedback
+   CHANGE-010: 終了日 disabled khi 進行中 trông không khác gì bình
+   thường) — cùng tông với Action Button disabled. */
+.input-field input:disabled,
+.input-field textarea:disabled {
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
 .input-field input[type="checkbox"] {
   height: auto;
   width: auto;
@@ -123,7 +135,9 @@ h1 {
   margin: 0;
 }
 
-/* Action Button > Primary (DESIGN.md) */
+/* Action Button > Primary (DESIGN.md) — display:inline-flex + căn giữa
+   để chữ không bị lệch khi dùng cho <Link> (feedback CHANGE-010: nút
+   編集 ở màn Detail bị lệch chữ vì <a> không tự căn giữa như <button>). */
 .button-primary {
   width: 100%;
   height: 40px;
@@ -136,6 +150,10 @@ h1 {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button-primary:disabled {
@@ -151,6 +169,89 @@ h1 {
   border-radius: var(--radius-default);
   margin-bottom: var(--space-md);
   font-size: 14px;
+}
+
+/* Toast > success (DESIGN.md mục Components > Toast, UI-SHELL-04) —
+   nổi ở góc dưới-phải màn hình thay vì banner đầu trang (feedback
+   CHANGE-010), tự ẩn sau 3s (ToastHost). */
+.toast-success {
+  position: fixed;
+  right: var(--space-lg);
+  bottom: var(--space-lg);
+  z-index: 40;
+  max-width: 360px;
+  background: var(--color-tertiary-container);
+  /* on-tertiary (trắng), KHÔNG phải on-tertiary-container (#5caf81) —
+     2 tông xanh gần nhau cho tương phản kém (feedback CHANGE-010). */
+  color: var(--color-on-tertiary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-default);
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Action Button > Destructive (DESIGN.md mục Components > Action
+   Button) — dùng cho nút xác nhận xoá trong Modal. */
+.button-destructive {
+  width: auto;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-default);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button-destructive:disabled {
+  background: var(--color-outline-variant);
+  border-color: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+/* Modal / Confirm Dialog (DESIGN.md mục Components > Modal, UI-PROJ-03-4/5) —
+   backdrop primary 40% opacity phủ toàn màn hình, panel căn giữa. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 32, 69, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-default);
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 var(--space-sm);
+  color: var(--color-on-surface);
+}
+
+.modal-body {
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-lg);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
 }
 
 /* Layout màn login/đổi mật khẩu — single-column, max-width 360px
@@ -276,10 +377,6 @@ h1 {
 .page-header-row .button-primary {
   width: auto;
   white-space: nowrap;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Toolbar List (chỉ search + filter — nút tạo mới đã chuyển sang
@@ -414,6 +511,28 @@ h1 {
   color: var(--color-on-tertiary-container);
 }
 
+/* Icon "詳細" thay cho link chữ trên List row (feedback CHANGE-010) —
+   accessible name giữ nguyên "詳細" qua aria-label. */
+.row-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-on-surface-variant);
+  border-radius: var(--radius-default);
+}
+
+.row-action-link:hover {
+  background: var(--color-surface-container-low);
+  color: var(--color-secondary);
+}
+
+.row-action-link svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* Bảng cuộn ngang trên màn hẹp — DESIGN.md không định nghĩa breakpoint
    riêng cho bảng nhưng để tránh vỡ layout khi thiếu overflow wrapper. */
 .table-scroll {
@@ -515,13 +634,27 @@ tbody tr:hover {
   padding: 0;
 }
 
+/* Bọc input 技術 để dropdown gợi ý bám sát ngay dưới input (feedback
+   CHANGE-010: trước đó bị hint text chen giữa). */
+.tech-input-wrapper {
+  position: relative;
+}
+
 .tag-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 10;
   list-style: none;
   padding: var(--space-xs);
-  margin: var(--space-xs) 0 0;
+  margin: 0;
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-default);
-  background: var(--color-surface-container-lowest);
+  /* Nền khác input/panel xung quanh cho đỡ đơn điệu (feedback
+     CHANGE-010), vẫn dùng token có sẵn trong DESIGN.md. */
+  background: var(--color-surface-container-low);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .tag-suggestions button {
@@ -537,7 +670,11 @@ tbody tr:hover {
 }
 
 .tag-suggestions button:hover {
-  background: var(--color-surface-container-low);
+  /* Nền panel đã đổi sang surface-container-low (feedback CHANGE-010),
+     hover phải khác màu đó mới thấy được — dùng secondary-container
+     (cùng tông hover/active đã dùng ở Sidebar/FilterDropdown). */
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
 }
 
 /* 種別 checkbox group */
