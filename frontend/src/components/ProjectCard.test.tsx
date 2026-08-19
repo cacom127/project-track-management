@@ -2,8 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import ProjectCard from "./ProjectCard";
+import type { Project } from "../lib/projectsApi";
 
-const BASE_PROJECT = {
+const BASE_PROJECT: Project = {
   id: 42,
   customer_name: "ABC商事",
   project_name: "基幹システム刷新",
@@ -25,7 +26,7 @@ const BASE_PROJECT = {
   team_composition_note: null,
 };
 
-function renderCard(overrides: Partial<typeof BASE_PROJECT> = {}) {
+function renderCard(overrides: Partial<Project> = {}) {
   return render(
     <MemoryRouter>
       <ProjectCard project={{ ...BASE_PROJECT, ...overrides }} />
