@@ -297,7 +297,9 @@ describe("ProjectList", () => {
     fireEvent.click(screen.getByRole("button", { name: "すべてクリア" }));
 
     await waitFor(() =>
-      expect(listProjectsMock).toHaveBeenLastCalledWith(expect.objectContaining({ q: undefined, technology: undefined })),
+      expect(listProjectsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: undefined, technology: undefined }),
+      ),
     );
     expect(screen.queryByRole("button", { name: "すべてクリア" })).not.toBeInTheDocument();
   });
