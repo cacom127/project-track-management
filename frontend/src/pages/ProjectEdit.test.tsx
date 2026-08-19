@@ -7,15 +7,15 @@ const updateProjectMock = vi.fn();
 const listTechTagsMock = vi.fn();
 const navigateMock = vi.fn();
 
-vi.mock("../lib/projectsApi", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/projectsApi")>();
-  return {
-    ...actual,
-    getProject: (...args: unknown[]) => getProjectMock(...args),
-    updateProject: (...args: unknown[]) => updateProjectMock(...args),
-    listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
-  };
-});
+// KHÔNG dùng importOriginal: module thật ("../lib/projectsApi") import
+// tới "../lib/auth" -> khởi tạo CognitoUserPool ngay lúc load module,
+// lỗi ở CI (không có env Cognito) dù local có .env.
+vi.mock("../lib/projectsApi", () => ({
+  getProject: (...args: unknown[]) => getProjectMock(...args),
+  updateProject: (...args: unknown[]) => updateProjectMock(...args),
+  listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
+  ProjectNotFoundError: class ProjectNotFoundError extends Error {},
+}));
 
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>();

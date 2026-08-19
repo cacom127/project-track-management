@@ -6,14 +6,15 @@ const getProjectMock = vi.fn();
 const deleteProjectMock = vi.fn();
 const navigateMock = vi.fn();
 
-vi.mock("../lib/projectsApi", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/projectsApi")>();
-  return {
-    ...actual,
-    getProject: (...args: unknown[]) => getProjectMock(...args),
-    deleteProject: (...args: unknown[]) => deleteProjectMock(...args),
-  };
-});
+// KHÔNG dùng importOriginal: module thật ("../lib/projectsApi") import
+// tới "../lib/auth" -> khởi tạo CognitoUserPool ngay lúc load module,
+// lỗi ở CI (không có env Cognito) dù local có .env. Định nghĩa
+// ProjectNotFoundError riêng trong factory, không cần class gốc.
+vi.mock("../lib/projectsApi", () => ({
+  getProject: (...args: unknown[]) => getProjectMock(...args),
+  deleteProject: (...args: unknown[]) => deleteProjectMock(...args),
+  ProjectNotFoundError: class ProjectNotFoundError extends Error {},
+}));
 
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router")>();
