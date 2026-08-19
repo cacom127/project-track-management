@@ -168,6 +168,23 @@ Kiến trúc chi tiết: xem `specs/architecture.md`, `specs/data-model.md`.
    npx cdk deploy
    ```
 4. Sau khi deploy xong, CDK in ra `Outputs` gồm `ApiUrl` (API Gateway),
-   `FrontendUrl` (CloudFront), `UserPoolId`, `UserPoolClientId` — dùng
-   `aws rds-data` (không cần VPC) để xem/sửa dữ liệu Aurora trực tiếp
-   nếu cần, hoặc dùng RDS Query Editor trên AWS Console.
+   `FrontendUrl` (CloudFront), `UserPoolId`, `UserPoolClientId`,
+   `DbClusterArn`, `DbSecretArn` — dùng `aws rds-data` (không cần VPC)
+   để xem/sửa dữ liệu Aurora trực tiếp nếu cần, hoặc dùng RDS Query
+   Editor trên AWS Console.
+5. **Nếu ticket có thêm/sửa migration** (bảng mới, thêm cột...): Aurora
+   production không có kết nối trực tiếp (không VPC/bastion), `alembic
+   upgrade head` thường không chạy được nhắm vào production — phải chạy
+   qua RDS Data API:
+   ```bash
+   cd backend
+   export AWS_PROFILE=project-track       # PowerShell: $env:AWS_PROFILE = "project-track"
+   export AWS_DEFAULT_REGION=ap-northeast-1
+   export DB_CLUSTER_ARN=<DbClusterArn ở bước 4>
+   export DB_SECRET_ARN=<DbSecretArn ở bước 4>
+   export DB_NAME=app
+   uv run python -m scripts.apply_migration_via_data_api
+   ```
+   PHẢI chạy dạng module (`-m scripts...`), không chạy trực tiếp file
+   `.py` — xem chi tiết/lý do trong docstring đầu file
+   `backend/scripts/apply_migration_via_data_api.py`.
