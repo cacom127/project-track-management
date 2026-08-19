@@ -258,66 +258,66 @@ export function ProjectList() {
 
       {status === "loaded" && total > 0 && viewMode === "list" && (
         <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>顧客名</th>
-                  <th>プロジェクト名</th>
-                  <th>概要</th>
-                  <th>期間</th>
-                  <th>種別</th>
-                  <th>技術</th>
-                  <th>人数</th>
-                  <th>総人月</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((project) => (
-                  <tr key={project.id}>
-                    <td>{project.customer_name}</td>
-                    <td>{project.project_name}</td>
-                    <td className="project-list-description">{project.description}</td>
-                    <td>{formatPeriod(project)}</td>
-                    <td>
-                      {/* UI-PROJ-01-9: mỗi giá trị 1 badge riêng, không nối chuỗi */}
-                      {project.project_types.map((t) => (
-                        <Badge key={t} variant="type">
-                          {PROJECT_TYPE_LABELS[t] ?? t}
-                        </Badge>
-                      ))}
-                    </td>
-                    <td>
-                      {project.technologies.map((tech) => (
-                        <Badge key={tech} variant="tech">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </td>
-                    <td>{project.team_size ?? "—"}</td>
-                    <td>{project.total_man_month ?? "—"}</td>
-                    <td>
-                      {/* UI-PROJ-01-10 — icon thay cho link chữ (feedback
+          <table>
+            <thead>
+              <tr>
+                <th>顧客名</th>
+                <th>プロジェクト名</th>
+                <th>概要</th>
+                <th>期間</th>
+                <th>種別</th>
+                <th>技術</th>
+                <th>人数</th>
+                <th>総人月</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((project) => (
+                <tr key={project.id}>
+                  <td>{project.customer_name}</td>
+                  <td>{project.project_name}</td>
+                  <td className="project-list-description">{project.description}</td>
+                  <td>{formatPeriod(project)}</td>
+                  <td>
+                    {/* UI-PROJ-01-9: mỗi giá trị 1 badge riêng, không nối chuỗi */}
+                    {project.project_types.map((t) => (
+                      <Badge key={t} variant="type">
+                        {PROJECT_TYPE_LABELS[t] ?? t}
+                      </Badge>
+                    ))}
+                  </td>
+                  <td>
+                    {project.technologies.map((tech) => (
+                      <Badge key={tech} variant="tech">
+                        {tech}
+                      </Badge>
+                    ))}
+                  </td>
+                  <td>{project.team_size ?? "—"}</td>
+                  <td>{project.total_man_month ?? "—"}</td>
+                  <td>
+                    {/* UI-PROJ-01-10 — icon thay cho link chữ (feedback
                           CHANGE-010), accessible name giữ nguyên "詳細". */}
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="row-action-link"
-                        aria-label="詳細"
-                      >
-                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path
-                            d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
-                            stroke="currentColor"
-                            strokeWidth="1.3"
-                          />
-                          <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
-                        </svg>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    <Link
+                      to={`/projects/${project.id}`}
+                      className="row-action-link"
+                      aria-label="詳細"
+                    >
+                      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                          d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                        />
+                        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
+                      </svg>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
