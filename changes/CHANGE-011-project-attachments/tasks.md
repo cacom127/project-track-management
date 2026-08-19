@@ -1,0 +1,73 @@
+# Tasks — Ảnh đính kèm cho dự án
+
+- **Ticket ID**: CHANGE-011
+- **Dựa trên**: `delta-spec.md`, `ui-delta-spec.md`
+
+## Checklist
+
+- [ ] **T1** — Infra: CORS rule cho `attachments_bucket`, env var
+      `ATTACHMENTS_BUCKET_NAME`, `CfnOutput` tên bucket
+      - Liên quan: delta-spec.md mục 1d
+      - File dự kiến: `infra/stacks/main_stack.py`
+- [ ] **T2** — Migration: bảng `attachments`
+      - Liên quan: DM-PROJ-06
+      - File dự kiến: `backend/migrations/versions/<new>.py`
+- [ ] **T3** — Backend: `app/core/s3.py` (presign PUT/GET, delete
+      object) — bọc riêng để test mock được, không gọi S3 thật
+      - File dự kiến: `backend/app/core/s3.py`
+- [ ] **T4** — Backend: schemas `AttachmentOut`, `AttachmentPresignRequest`,
+      `AttachmentPresignResponse`, `AttachmentConfirmRequest`
+      - File dự kiến: `backend/app/projects/schemas.py`
+- [ ] **T5** — Backend: repository `presign_attachment`,
+      `confirm_attachment`, `list_attachments`, `delete_attachment`,
+      `count_attachments`
+      - Liên quan: PROJ-18..21
+      - File dự kiến: `backend/app/projects/repository.py`
+- [ ] **T6** — Backend: routes
+      `POST/GET /projects/{id}/attachments`,
+      `POST /projects/{id}/attachments/presign`,
+      `DELETE /projects/{id}/attachments/{attachment_id}`
+      - Liên quan: PROJ-18..21
+      - File dự kiến: `backend/app/projects/routes.py`
+- [ ] **T7** — Backend tests (TDD — viết test trước, mock `app/core/s3.py`)
+      - Liên quan: xem bảng Test mapping trong `delta-spec.md`
+      - File dự kiến: `backend/tests/projects/test_attachments.py`
+- [ ] **T8** — DESIGN.md: thêm component "Thumbnail Grid", "Paste Zone"
+      (3 trạng thái: bình thường/focus/đủ giới hạn)
+      - Liên quan: ui-delta-spec.md mục 6
+      - Chạy `npx --yes -p @google/design.md -c "designmd lint DESIGN.md"`
+- [ ] **T9** — Frontend: `attachmentsApi.ts` (presign/confirm/list/delete
+      + upload PUT trực tiếp lên presigned URL)
+      - File dự kiến: `frontend/src/lib/attachmentsApi.ts`
+- [ ] **T10** — Frontend: `AttachmentManager.tsx` (2 mode `staged`/`live`,
+      Paste Zone 3 trạng thái, Lightbox dùng lại `Modal.tsx`) + test (TDD)
+      - Liên quan: UI-PROJ-05-1..6
+      - File dự kiến: `frontend/src/components/AttachmentManager.tsx`
+- [ ] **T11** — Frontend: đổi contract `ProjectForm.tsx` (`onSubmit`
+      trả `Project`, thêm `onSuccess`), tích hợp `AttachmentManager`
+      mode `staged`
+      - Liên quan: UI-PROJ-02-11, UI-PROJ-05-4
+      - File dự kiến: `frontend/src/components/ProjectForm.tsx`
+- [ ] **T12** — Frontend: cập nhật `ProjectCreate.tsx`/`ProjectEdit.tsx`
+      theo contract mới (`ProjectEdit` truyền `projectId` cho
+      `AttachmentManager` mode `live`)
+      - File dự kiến: `frontend/src/pages/ProjectCreate.tsx`,
+        `frontend/src/pages/ProjectEdit.tsx`
+- [ ] **T13** — Frontend: tích hợp `AttachmentManager` mode `live` vào
+      `ProjectDetail.tsx`
+      - File dự kiến: `frontend/src/pages/ProjectDetail.tsx`
+- [ ] **T14** — Chạy full test suite (backend + frontend), lint, build,
+      **và `prettier --check` trong git worktree sạch (không CRLF)** —
+      bài học từ CI fail ở CHANGE-010, KHÔNG chỉ tin kết quả local có
+      autocrlf
+- [ ] **T15** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
+      `specs/architecture.md`, di chuyển ticket vào `changes/_archive/`
+- [ ] **T16** — Nhắc user: chạy migration script trên production
+      (`apply_migration_via_data_api.py`) VÀ `cdk deploy` lại (CORS/env
+      var/output mới) sau khi merge
+
+## Trạng thái
+
+| Trạng thái | Ngày cập nhật | Ghi chú |
+|-------------|----------------|----------|
+| Đang làm    | 2026-08-19     | Bắt đầu implement trên branch `feature/change-011-project-attachments` |
