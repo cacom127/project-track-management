@@ -37,6 +37,9 @@ const SAMPLE_PROJECT = {
   updated_at: "2024-01-01T00:00:00Z",
   technologies: ["React", "AWS"],
   project_types: ["offshore"],
+  industry: null,
+  outcome_note: null,
+  dev_process_phases: [],
 };
 
 describe("ProjectList", () => {
@@ -183,6 +186,33 @@ describe("ProjectList", () => {
     expect(screen.getByText("React")).toHaveClass("badge-tech");
     expect(screen.getByText("AWS")).toHaveClass("badge-tech");
     expect(screen.getByText("オフショア")).toHaveClass("badge-type");
+  });
+
+  it("renders a 開発工程 filter dropdown and wires dev_process_phase into listProjects, resetting to page 1 (UI-PROJ-01-11)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 30,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(await screen.findByRole("button", { name: "次へ" }));
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })),
+    );
+
+    listProjectsMock.mockClear();
+    fireEvent.click(screen.getByRole("button", { name: "開発工程" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "要件定義" }));
+
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, dev_process_phase: ["requirements"] }),
+      ),
+    );
   });
 
   it("renders title row separate from the toolbar row (UI-PROJ-01-6)", async () => {

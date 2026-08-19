@@ -6,6 +6,16 @@ from pydantic import BaseModel, Field, model_validator
 # DM-PROJ-04 — catalog cố định, KHÔNG cho tạo thêm qua app.
 PROJECT_TYPE_CODES = ("offshore", "ses", "lab", "new_dev", "maintenance")
 
+# DM-PROJ-08 — catalog cố định, KHÔNG cho tạo thêm qua app.
+DEV_PROCESS_PHASE_CODES = (
+    "requirements",
+    "design",
+    "implementation",
+    "testing",
+    "release",
+    "maintenance_ops",
+)
+
 # CHANGE-011 (PROJ-18/19) — giới hạn ảnh đính kèm cho mỗi dự án.
 ALLOWED_ATTACHMENT_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
 MAX_ATTACHMENTS_PER_PROJECT = 10
@@ -24,6 +34,9 @@ class ProjectCreate(BaseModel):
     source_note: str | None = None
     technologies: list[str] = Field(default_factory=list)
     project_types: list[str] = Field(default_factory=list)
+    industry: str | None = None
+    outcome_note: str | None = None
+    dev_process_phases: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _validate_ongoing_end_date(self) -> "ProjectCreate":
@@ -38,6 +51,14 @@ class ProjectCreate(BaseModel):
         invalid = [t for t in self.project_types if t not in PROJECT_TYPE_CODES]
         if invalid:
             raise ValueError(f"project_types không hợp lệ: {invalid}")
+        return self
+
+    @model_validator(mode="after")
+    def _validate_dev_process_phases(self) -> "ProjectCreate":
+        # PROJ-23
+        invalid = [p for p in self.dev_process_phases if p not in DEV_PROCESS_PHASE_CODES]
+        if invalid:
+            raise ValueError(f"dev_process_phases không hợp lệ: {invalid}")
         return self
 
 
@@ -64,6 +85,9 @@ class ProjectOut(BaseModel):
     updated_at: datetime
     technologies: list[str]
     project_types: list[str]
+    industry: str | None
+    outcome_note: str | None
+    dev_process_phases: list[str]
 
 
 class ProjectListResponse(BaseModel):

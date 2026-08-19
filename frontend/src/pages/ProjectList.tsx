@@ -4,6 +4,7 @@ import Badge from "../components/Badge";
 import FilterDropdown from "../components/FilterDropdown";
 import { listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
+import { DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -24,6 +25,7 @@ export function ProjectList() {
   const [debouncedQ, setDebouncedQ] = useState("");
   const [technology, setTechnology] = useState<string[]>([]);
   const [projectType, setProjectType] = useState<string[]>([]);
+  const [devProcessPhase, setDevProcessPhase] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [techOptions, setTechOptions] = useState<string[]>([]);
 
@@ -52,6 +54,7 @@ export function ProjectList() {
       q: debouncedQ || undefined,
       technology: technology.length ? technology : undefined,
       project_type: projectType.length ? projectType : undefined,
+      dev_process_phase: devProcessPhase.length ? devProcessPhase : undefined,
     })
       .then((response) => {
         if (cancelled) return;
@@ -65,7 +68,7 @@ export function ProjectList() {
     return () => {
       cancelled = true;
     };
-  }, [page, debouncedQ, technology, projectType]);
+  }, [page, debouncedQ, technology, projectType, devProcessPhase]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -76,6 +79,11 @@ export function ProjectList() {
 
   function handleProjectTypeChange(selected: string[]) {
     setProjectType(selected);
+    setPage(1);
+  }
+
+  function handleDevProcessPhaseChange(selected: string[]) {
+    setDevProcessPhase(selected);
     setPage(1);
   }
 
@@ -117,6 +125,12 @@ export function ProjectList() {
           options={PROJECT_TYPE_OPTIONS.map(({ code, label }) => ({ value: code, label }))}
           value={projectType}
           onChange={handleProjectTypeChange}
+        />
+        <FilterDropdown
+          label="開発工程"
+          options={DEV_PROCESS_PHASE_OPTIONS.map(({ code, label }) => ({ value: code, label }))}
+          value={devProcessPhase}
+          onChange={handleDevProcessPhaseChange}
         />
       </div>
 

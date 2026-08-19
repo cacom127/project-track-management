@@ -44,6 +44,7 @@ def list_projects_route(
     q: str | None = Query(None),
     technology: list[str] | None = Query(None),
     project_type: list[str] | None = Query(None),
+    dev_process_phase: list[str] | None = Query(None),
     db: DBSession = Depends(get_db_session),
     user_id: str = Depends(get_current_user_id),
 ) -> ProjectListResponse:
@@ -54,6 +55,7 @@ def list_projects_route(
         q=q,
         technologies=technology,
         project_types=project_type,
+        dev_process_phases=dev_process_phase,
     )
     return ProjectListResponse(items=items, total=total, page=page, page_size=page_size)
 
