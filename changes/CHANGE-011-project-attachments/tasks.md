@@ -45,26 +45,32 @@
       hợp cho popup chỉ xem ảnh) + test (TDD)
       - Liên quan: UI-PROJ-05-1..6
       - File: `frontend/src/components/AttachmentManager.tsx`
-      - File dự kiến: `frontend/src/components/AttachmentManager.tsx`
-- [ ] **T11** — Frontend: đổi contract `ProjectForm.tsx` (`onSubmit`
+- [x] **T11** — Frontend: đổi contract `ProjectForm.tsx` (`onSubmit`
       trả `Project`, thêm `onSuccess`), tích hợp `AttachmentManager`
       mode `staged`
       - Liên quan: UI-PROJ-02-11, UI-PROJ-05-4
-      - File dự kiến: `frontend/src/components/ProjectForm.tsx`
-- [ ] **T12** — Frontend: cập nhật `ProjectCreate.tsx`/`ProjectEdit.tsx`
+      - File: `frontend/src/components/ProjectForm.tsx`
+- [x] **T12** — Frontend: cập nhật `ProjectCreate.tsx`/`ProjectEdit.tsx`
       theo contract mới (`ProjectEdit` truyền `projectId` cho
       `AttachmentManager` mode `live`)
-      - File dự kiến: `frontend/src/pages/ProjectCreate.tsx`,
+      - File: `frontend/src/pages/ProjectCreate.tsx`,
         `frontend/src/pages/ProjectEdit.tsx`
-- [ ] **T13** — Frontend: tích hợp `AttachmentManager` mode `live` vào
+- [x] **T13** — Frontend: tích hợp `AttachmentManager` mode `live` vào
       `ProjectDetail.tsx`
-      - File dự kiến: `frontend/src/pages/ProjectDetail.tsx`
-- [ ] **T14** — Chạy full test suite (backend + frontend), lint, build,
-      **và `prettier --check` trong git worktree sạch (không CRLF)** —
-      bài học từ CI fail ở CHANGE-010, KHÔNG chỉ tin kết quả local có
-      autocrlf
+      - File: `frontend/src/pages/ProjectDetail.tsx`
+- [x] **T14** — Chạy full test suite (backend + frontend), lint, build,
+      và `prettier --check` trong git worktree sạch (không CRLF)
+      - Backend: 83/83 pass (17/17 riêng attachments/s3), ruff sạch,
+        `cdk synth` OK. 10 fail còn lại ở `tests/projects/` là do 25
+        project mẫu seed thủ công trước đó trong Postgres local — không
+        phải regression, CI dùng Postgres mới hoàn toàn nên không ảnh
+        hưởng.
+      - Frontend: 125/125 pass (kể cả tắt `.env`, mô phỏng CI), lint/
+        build sạch, prettier sạch trong worktree không CRLF.
 - [ ] **T15** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
       `specs/architecture.md`, di chuyển ticket vào `changes/_archive/`
+      — CHỜ user deploy + chạy thử OK trước (quyết định Product owner,
+      khác thứ tự các ticket trước)
 - [ ] **T16** — Nhắc user: chạy migration script trên production
       (`apply_migration_via_data_api.py`) VÀ `cdk deploy` lại (CORS/env
       var/output mới) sau khi merge
@@ -73,4 +79,4 @@
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
-| Đang làm    | 2026-08-19     | Bắt đầu implement trên branch `feature/change-011-project-attachments` |
+| Đang làm    | 2026-08-19     | T1-T14 xong (backend/infra/frontend implement + test đầy đủ). T15 (fold spec + archive) và T16 (migration + cdk deploy) chờ user deploy + test OK trên production trước |
