@@ -215,6 +215,95 @@ describe("ProjectList", () => {
     );
   });
 
+  it("shows the total result count (UI-PROJ-01-13)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 42,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    expect(screen.getByText("42件")).toBeInTheDocument();
+  });
+
+  it("does not show a filter chip row when no filter is active (UI-PROJ-01-14)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    expect(screen.queryByRole("button", { name: "すべてクリア" })).not.toBeInTheDocument();
+  });
+
+  it("shows a removable chip per selected value and clears just that one (UI-PROJ-01-14)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "React" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "AWS" }));
+
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ technology: ["React", "AWS"] }),
+      ),
+    );
+
+    const reactChip = screen.getByText("React", { selector: ".filter-chip" });
+    expect(reactChip).toHaveClass("filter-chip-tech");
+    listProjectsMock.mockClear();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reactを解除" }));
+
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ technology: ["AWS"] }),
+      ),
+    );
+    expect(screen.queryByText("React", { selector: ".filter-chip" })).not.toBeInTheDocument();
+    expect(screen.getByText("AWS", { selector: ".filter-chip" })).toBeInTheDocument();
+  });
+
+  it("clears every filter at once via すべてクリア (UI-PROJ-01-14)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "React" }));
+    await waitFor(() => expect(listProjectsMock).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: "すべてクリア" }));
+
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: undefined, technology: undefined }),
+      ),
+    );
+    expect(screen.queryByRole("button", { name: "すべてクリア" })).not.toBeInTheDocument();
+  });
+
   it("renders title row separate from the toolbar row (UI-PROJ-01-6)", async () => {
     listProjectsMock.mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20 });
 

@@ -73,6 +73,30 @@ describe("FilterDropdown", () => {
     expect(screen.getByRole("checkbox", { name: "AWS" })).toBeInTheDocument();
   });
 
+  it("does not show a search box when there are few options (UI-PROJ-01-12)", () => {
+    render(<FilterDropdown label="技術" options={OPTIONS} value={[]} onChange={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+
+    expect(screen.queryByLabelText("技術を検索")).not.toBeInTheDocument();
+  });
+
+  it("shows a search box that filters options when there are many (UI-PROJ-01-12)", () => {
+    const manyOptions = Array.from({ length: 10 }, (_, i) => ({
+      value: `Tech${i}`,
+      label: `Tech${i}`,
+    }));
+    render(<FilterDropdown label="技術" options={manyOptions} value={[]} onChange={() => {}} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+    expect(screen.getByRole("checkbox", { name: "Tech5" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("技術を検索"), { target: { value: "Tech1" } });
+
+    expect(screen.getByRole("checkbox", { name: "Tech1" })).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Tech5" })).not.toBeInTheDocument();
+  });
+
   it("closes the panel when clicking outside the component (UI-PROJ-01-8)", () => {
     render(
       <div>

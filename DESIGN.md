@@ -46,6 +46,10 @@ colors:
   tertiary-fixed-dim: '#83d8a6'
   on-tertiary-fixed: '#002111'
   on-tertiary-fixed-variant: '#005231'
+  phase-container: '#6b4a00'
+  on-phase-container: '#ffcf6b'
+  phase-fixed: '#ffe4a8'
+  on-phase-fixed-variant: '#6b4a00'
   background: '#f9f9ff'
   on-background: '#121c2c'
   surface-variant: '#d9e3f9'
@@ -155,6 +159,28 @@ phần tương tác.
   trong thời gian dài.
 - **Error (`#ba1a1a`, container `#ffdad6`):** Dùng cho lỗi/validation
   fail — không dùng cho mục đích nhấn mạnh thông thường.
+
+## Badge & Filter Chip (CHANGE-014)
+
+Badge (giá trị dữ liệu, hiển thị đậm — List/Detail) và filter chip
+(điều kiện đang lọc, hiển thị nhạt — List) dùng CÙNG hệ màu theo
+category nhưng KHÁC độ đậm, để phân biệt 2 ngữ cảnh (dữ liệu vs.
+điều kiện tìm kiếm đang bật):
+
+| Category | Badge (đậm) | Filter chip (nhạt) |
+|---|---|---|
+| 技術 | `tertiary-container` `#003f25` / `on-tertiary-container` `#5caf81` | `tertiary-fixed` `#9ff5c1` / `on-tertiary-fixed-variant` `#005231` |
+| 種別 | `secondary-container` `#7db6ff` / `on-secondary-container` `#00477f` | `secondary-fixed` `#d3e4ff` / `on-secondary-fixed-variant` `#004881` |
+| 開発工程 | `phase-container` `#6b4a00` / `on-phase-container` `#ffcf6b` (variant `phase`, mới) | `phase-fixed` `#ffe4a8` / `on-phase-fixed-variant` `#6b4a00` |
+| 検索 (search, không thuộc category) | — (không có badge) | `surface-container-high` `#dee8ff` / `on-surface` `#121c2c` |
+
+Badge variant `phase` (開発工程) dùng cùng công thức với `type`/`tech`
+đã có (container đậm + on-container). Dùng hệ màu **hổ phách/vàng nâu**
+riêng (`phase-container`/`phase-fixed`, không tái dùng `primary`) —
+`primary`/`secondary` đều thuộc dải xanh dương trong bảng màu này nên
+2 tông "-fixed" của chúng quá giống nhau khi đặt cạnh nhau ở filter
+chip (phát hiện qua feedback thực tế sau khi triển khai lần đầu); hổ
+phách tách biệt hẳn khỏi cả xanh dương (種別) và xanh lá (技術).
 
 ## Typography
 

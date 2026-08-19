@@ -197,6 +197,21 @@ describe("ProjectCreate", () => {
     );
   });
 
+  it("calls preventDefault on Enter keydown inside a text input, so the browser cannot auto-submit (UI-PROJ-02-15, CHANGE-014)", () => {
+    renderCreate();
+    fillRequiredFields();
+
+    // jsdom không tự implicit-submit form khi Enter (khác browser thật),
+    // nên assert qua giá trị trả về của dispatchEvent (fireEvent) — false
+    // nghĩa là preventDefault() đã được gọi, đúng hành vi cần kiểm tra.
+    const notCancelled = fireEvent.keyDown(screen.getByLabelText("顧客名 *"), {
+      key: "Enter",
+      code: "Enter",
+    });
+
+    expect(notCancelled).toBe(false);
+  });
+
   it("renders チーム体制の詳細 textarea and submits it (CHANGE-013)", async () => {
     createProjectMock.mockResolvedValue({ id: 1, project_name: "基幹システム刷新" });
     renderCreate();

@@ -206,7 +206,18 @@ export function ProjectForm({
           {serverError}
         </p>
       )}
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={(event) => {
+          // UI-PROJ-02-15 (CHANGE-014): Enter trong <input> (顧客名, 業種,
+          // ngày tháng, 人数...) không được submit form ngoài ý muốn.
+          // <textarea> không bị ảnh hưởng (Enter vốn chỉ xuống dòng, HTML
+          // không tự submit form khi Enter trong textarea).
+          if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
+            event.preventDefault();
+          }
+        }}
+      >
         {/* UI-PROJ-02-6: nhóm 1 — 基本情報 */}
         <section className="form-group-card">
           <h2 className="form-group-card-title">基本情報</h2>

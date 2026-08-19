@@ -1,0 +1,38 @@
+# Tasks — CHANGE-014-project-list-detail-ui-improvements
+
+| # | Task | Trạng thái |
+|---|---|---|
+| T1 | Backend: tăng `LIMIT` `search_tech_tags` (20→200) khi `q` rỗng, thêm test | [x] |
+| T2 | `DESIGN.md`: thêm mô tả filter chip (`-fixed` tokens) + badge variant `phase` | [x] |
+| T3 | `FilterDropdown.tsx`: thêm search input lọc client-side + `max-height`/scroll cho panel | [x] |
+| T4 | `Badge.tsx`: thêm variant `"phase"`, `ProjectDetail.tsx` đổi badge 開発工程 sang `phase` | [x] |
+| T5 | `MultilineText.tsx` (component mới) + test riêng | [x] |
+| T6 | `ProjectDetail.tsx`: áp `MultilineText` cho 概要/成果・課題・解決策/確認元メモ/チーム体制の詳細, gộp 2 field vào section `その他` | [x] |
+| T7 | `ProjectList.tsx`: hiện `{total}件`, chip filter theo từng giá trị (search/tech/type/phase) + nút xoá riêng + "すべてクリア" | [x] |
+| T8 | `index.css`: style chip filter (4 màu theo mục 1c), `.multiline-list`, `.form-group-card` cho その他 (tái dùng class có sẵn) | [x] |
+| T9 | `ProjectForm.tsx`: chặn Enter submit trên `<input>` (không ảnh hưởng `<textarea>`/nút submit) | [x] |
+| T10 | Test toàn bộ frontend: `npx vitest run` | [x] |
+| T11 | Test toàn bộ backend: `pytest` (loại trừ 10 fail đã biết do data mẫu local, xem ghi chú CHANGE-012) | [x] |
+| T12 | `prettier --check` trong git worktree sạch (không CRLF) | [x] |
+| T13 | Verify local: chạy `.env` bỏ Cognito 1 lần để chắc test không phụ thuộc CognitoUserPool import-time | [x] |
+| T14 | Báo user deploy + test production OK, rồi mới fold spec vào `specs/`/`DESIGN.md` và archive ticket | [x] |
+| T15 | Feedback: chip 種別/開発工程 quá giống màu → đổi 開発工程 sang hệ hổ phách riêng (`phase-container`/`phase-fixed`, token mới) | [x] |
+| T16 | Feedback: bỏ bullet list cho multiline text (chỉ giữ xuống dòng qua `white-space: pre-wrap`) | [x] |
+| T17 | Feedback: thêm `DetailField` (label trên/giá trị dưới + border phân tách) cho mọi field trong block Detail | [x] |
+
+## Ghi chú
+
+- Baseline trước ticket: 16 fail/93 pass (backend, data pollution do
+  ~45+ project mẫu trong local DB — pagination test + import PPTX).
+  Sau ticket: **15 fail/95 pass** — giảm 1 fail (PROJ-30 fix limit giúp
+  `test_tech_tags_without_query_returns_all` pass lại) + tăng đúng 1
+  test mới (`test_search_tech_tags_without_q_returns_more_than_20`).
+  Không có regression mới, đúng 15 fail còn lại đều là data pollution
+  đã biết.
+- Frontend: sau T15-T17, 149/149 pass (149 tests kể cả `DetailField.test.tsx`
+  mới), kể cả khi bỏ `.env`. Prettier sạch, verify trong git worktree
+  `core.autocrlf=false` sau mỗi vòng sửa.
+
+| Trạng thái | Ngày | Ghi chú |
+|---|---|---|
+| Hoàn tất | 2026-08-19 | T1-T17 xong, đã deploy + test production OK, đã fold vào `specs/projects.md`, `specs/projects-ui.md` (`DESIGN.md` đã cập nhật trực tiếp trong lúc implement) |

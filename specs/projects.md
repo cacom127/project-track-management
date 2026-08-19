@@ -12,8 +12,11 @@ mục 2). Ticket đầu tiên (`CHANGE-007-projects-list-create`) chỉ làm
 bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án);
 `CHANGE-012-project-extra-fields` bổ sung `industry`/`outcome_note`/
 `dev_process_phases`; `CHANGE-013-team-composition-note` bổ sung
-`team_composition_note` — để phục vụ import dữ liệu thật. Phân quyền
-theo role vẫn để dành ticket sau.
+`team_composition_note` — để phục vụ import dữ liệu thật;
+`CHANGE-014-project-list-detail-ui-improvements` tăng limit
+`tech-tags` (backend) + cải thiện UI List/Detail (filter chip, hiển
+thị số lượng kết quả, xuống dòng, phân tách field, phân biệt màu
+badge). Phân quyền theo role vẫn để dành ticket sau.
 
 ## 2. Yêu cầu hiện tại (Requirements — EARS notation)
 
@@ -127,6 +130,10 @@ theo role vẫn để dành ticket sau.
 - **[PROJ-29]** `GET /projects` (list) shall include
   `team_composition_note` in the `q` keyword search (ILIKE, cùng nhóm
   với PROJ-24).
+- **[PROJ-30]** `GET /projects/tech-tags` (không có query `q`) shall
+  trả tối đa 200 tag (tăng từ 20) — đủ cho toàn bộ catalog tech tag
+  thực tế, tránh dropdown filter ở FE thiếu giá trị (autocomplete có
+  `q` vẫn giữ limit 20).
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -247,5 +254,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm ảnh đính kèm (PROJ-18..21), bảng `attachments` (DM-PROJ-06), presigned URL S3 |
 | 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `industry`/`outcome_note`/`dev_process_phases` (PROJ-22..26), bảng `dev_process_phases` (DM-PROJ-08); đổi filter `project_type` từ OR sang AND semantics (PROJ-04 sửa) |
 | 2026-08-19 | CHANGE-013-team-composition-note | Thêm `team_composition_note` (PROJ-27..29, DM-PROJ-09) |
+| 2026-08-19 | CHANGE-014-project-list-detail-ui-improvements | Tăng limit `tech-tags` không có `q` (PROJ-30); List: search box trong dropdown filter, hiển thị số kết quả, filter chip xoá riêng từng giá trị; Detail: bỏ bullet list multiline, phân tách field bằng `DetailField`, badge `開発工程` đổi màu riêng (khỏi dùng chung `種別`) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

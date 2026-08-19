@@ -222,3 +222,13 @@ def test_search_tech_tags_matches_case_insensitive(db_session):
 
     results_all = search_tech_tags(db_session, q=None)
     assert set(results_all) >= {"React", "Ruby on Rails"}
+
+
+def test_search_tech_tags_without_q_returns_more_than_20(db_session):
+    # PROJ-30 — dropdown filter cần TOÀN BỘ catalog, không chỉ 20 đầu.
+    for i in range(25):
+        _make_project(db_session, technologies=[f"ZZZ-Tag-{i:02d}"])
+
+    results = search_tech_tags(db_session, q=None)
+
+    assert sum(1 for name in results if name.startswith("ZZZ-Tag-")) == 25
