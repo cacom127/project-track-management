@@ -26,11 +26,14 @@
   --color-surface-container-high: #dee8ff;
 
   /* CHANGE-014 — filter chip (nhạt hơn badge, cùng hệ màu — xem
-     DESIGN.md mục "Badge & Filter Chip") + badge variant "phase". */
-  --color-primary-container: #1a365d;
-  --color-on-primary-container: #86a0cd;
-  --color-primary-fixed: #d6e3ff;
-  --color-on-primary-fixed-variant: #2d476f;
+     DESIGN.md mục "Badge & Filter Chip") + badge variant "phase".
+     開発工程 dùng hệ hổ phách riêng (phase-*), KHÔNG dùng primary —
+     primary/secondary cùng dải xanh dương, 2 tông "-fixed" của chúng
+     quá giống nhau khi đặt cạnh nhau ở filter chip. */
+  --color-phase-container: #6b4a00;
+  --color-on-phase-container: #ffcf6b;
+  --color-phase-fixed: #ffe4a8;
+  --color-on-phase-fixed-variant: #6b4a00;
   --color-secondary-fixed: #d3e4ff;
   --color-on-secondary-fixed-variant: #004881;
   --color-tertiary-fixed: #9ff5c1;
@@ -544,8 +547,8 @@ h1 {
 }
 
 .badge-phase {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
+  background: var(--color-phase-container);
+  color: var(--color-on-phase-container);
 }
 
 /* Multiline free-text (UI-PROJ-03-8, CHANGE-014) — ≥2 dòng render bullet
@@ -600,8 +603,8 @@ h1 {
 }
 
 .filter-chip-phase {
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed-variant);
+  background: var(--color-phase-fixed);
+  color: var(--color-on-phase-fixed-variant);
 }
 
 .filter-chip-search {

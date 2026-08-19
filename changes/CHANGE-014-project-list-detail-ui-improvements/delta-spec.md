@@ -69,17 +69,23 @@ Không có — ticket này không thêm/sửa field/bảng.
 |---|---|---|
 | 技術 | `tertiary-fixed` (`#9ff5c1`) | `on-tertiary-fixed-variant` (`#005231`) |
 | 種別 | `secondary-fixed` (`#d3e4ff`) | `on-secondary-fixed-variant` (`#004881`) |
-| 開発工程 | `primary-fixed` (`#d6e3ff`) | `on-primary-fixed-variant` (`#2d476f`) |
+| 開発工程 | `phase-fixed` (`#ffe4a8`) | `on-phase-fixed-variant` (`#6b4a00`) |
 | 検索 (search) | `surface-container-high` (`#dee8ff`) | `on-surface` (`#121c2c`) |
 
+> **(SỬA)** Ban đầu 開発工程 dùng `primary-fixed`/`on-primary-fixed-variant`
+> (tái dùng token có sẵn), nhưng `primary-fixed` (`#d6e3ff`) và
+> `secondary-fixed` (`#d3e4ff`) quá giống nhau — phát hiện qua feedback
+> thực tế sau khi triển khai. Đổi sang hệ hổ phách/vàng nâu riêng
+> (`phase-container`/`phase-fixed`, token MỚI, không tái dùng
+> `primary`) để tách biệt hẳn khỏi cả 種別 (xanh dương) và 技術 (xanh lá).
+
 Badge variant mới `"phase"` (dùng ở Detail cho 開発工程, KHÁC với chip
-filter ở trên — badge dùng màu đậm `primary-container`/
-`on-primary-container` giống cách `type`/`tech` badge hiện có, còn chip
-filter dùng bản `-fixed` nhạt hơn để phân biệt 2 ngữ cảnh):
+filter ở trên — badge dùng màu đậm, còn chip filter dùng bản `-fixed`
+nhạt hơn để phân biệt 2 ngữ cảnh, cùng hệ hổ phách):
 
 | Badge variant | Background | Text |
 |---|---|---|
-| `phase` (mới) | `primary-container` (`#1a365d`) | `on-primary-container` (`#86a0cd`) |
+| `phase` (mới) | `phase-container` (`#6b4a00`) | `on-phase-container` (`#ffcf6b`) |
 
 `MultilineText` component (mới, `frontend/src/components/MultilineText.tsx`):
 - Input: `value: string | null | undefined`.
