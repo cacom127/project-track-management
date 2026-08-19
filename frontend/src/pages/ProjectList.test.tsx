@@ -51,6 +51,7 @@ describe("ProjectList", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    window.localStorage.clear();
   });
 
   it("calls listProjects on mount and shows loaded rows (UI-PROJ-01-1)", async () => {
@@ -90,6 +91,7 @@ describe("ProjectList", () => {
       page: 1,
       page_size: 20,
     });
+    window.localStorage.setItem("projectListViewMode", "list");
 
     renderList();
 
@@ -108,6 +110,7 @@ describe("ProjectList", () => {
       page: 1,
       page_size: 20,
     });
+    window.localStorage.setItem("projectListViewMode", "list");
 
     renderList();
     await screen.findByText("基幹システム刷新");
@@ -179,6 +182,7 @@ describe("ProjectList", () => {
       page: 1,
       page_size: 20,
     });
+    window.localStorage.setItem("projectListViewMode", "list");
 
     renderList();
     await screen.findByText("基幹システム刷新");
@@ -302,6 +306,50 @@ describe("ProjectList", () => {
       ),
     );
     expect(screen.queryByRole("button", { name: "すべてクリア" })).not.toBeInTheDocument();
+  });
+
+  it("defaults to card mode and switches to list mode via the toggle (UI-PROJ-01-15/16/17)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    expect(screen.getByRole("button", { name: "カード表示" })).toHaveClass("active");
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /基幹システム刷新/ })).toHaveAttribute(
+      "href",
+      "/projects/1",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "リスト表示" }));
+
+    expect(screen.getByRole("button", { name: "リスト表示" })).toHaveClass("active");
+    expect(screen.getByRole("table")).toBeInTheDocument();
+  });
+
+  it("persists the selected view mode to localStorage and restores it on next mount (UI-PROJ-01-16)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+
+    const { unmount } = renderList();
+    await screen.findByText("基幹システム刷新");
+    fireEvent.click(screen.getByRole("button", { name: "リスト表示" }));
+    expect(window.localStorage.getItem("projectListViewMode")).toBe("list");
+    unmount();
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+    expect(screen.getByRole("button", { name: "リスト表示" })).toHaveClass("active");
+    expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
   it("renders title row separate from the toolbar row (UI-PROJ-01-6)", async () => {

@@ -9,6 +9,7 @@
   --color-surface-container-low: #f0f3ff;
   --color-on-surface: #121c2c;
   --color-on-surface-variant: #43474e;
+  --color-outline: #74777f;
   --color-outline-variant: #c4c6cf;
   --color-primary: #002045;
   --color-on-primary: #ffffff;
@@ -1081,4 +1082,191 @@ fieldset label {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* View mode toggle (UI-PROJ-01-15, CHANGE-015) — 2 nút list/card cuối
+   toolbar, nút active có nền highlight. */
+.view-mode-toggle {
+  display: inline-flex;
+  margin-left: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+.view-mode-button {
+  width: 36px;
+  height: 40px;
+  border: none;
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.view-mode-button.active {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+/* ProjectCard (UI-PROJ-01-17/18, CHANGE-015) — grid responsive, mỗi
+   card là 1 <Link> tới Detail. */
+.project-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+.project-card {
+  display: block;
+  padding: var(--space-md);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.project-card:hover {
+  background: var(--color-surface-container-low);
+}
+
+/* Đường kẻ phân cách giữa các block trong card (feedback: プロジェクト名
+   ↔ 人数・総人月, 技術 ↔ 種別) — tái dùng outline-variant như
+   .detail-field ở Detail (CHANGE-014), spacing 2 bên đường kẻ. */
+.project-card-divider {
+  border-top: 1px solid var(--color-outline-variant);
+  margin: var(--space-sm) 0;
+}
+
+.project-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.project-card-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-card-customer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.project-card-customer-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.project-card-industry {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.project-card-status {
+  flex-shrink: 0;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-lg);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.project-card-status-ongoing {
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+.project-card-status-ended {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+.project-card-dev-process {
+  margin: 0 0 var(--space-xs);
+}
+
+.project-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 var(--space-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card-stats {
+  display: flex;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-default);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.project-card-stats > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.project-card-stats > div:first-child {
+  border-right: 1px solid var(--color-outline-variant);
+}
+
+.project-card-stats-label {
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}
+
+.project-card-stats-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.project-card-period {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  margin: 0 0 var(--space-sm);
+}
+
+.project-card-badges {
+  margin-bottom: var(--space-xs);
+}
+
+.project-card-more-badge {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+}
+
+.project-card-dot-badge {
+  display: inline-block;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px 4px 2px 0;
+  /* Cùng màu badge-type (secondary-container) như List/Detail — chỉ
+     khác kiểu hiển thị (chấm tròn thay vì pill đặc), giữ nhất quán ý
+     nghĩa màu theo category trong toàn app (feedback: card đang dùng
+     màu xám trung tính, không khớp Detail). */
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
 }

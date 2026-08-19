@@ -8,14 +8,9 @@ import MultilineText from "../components/MultilineText";
 import { deleteProject, getProject, ProjectNotFoundError, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS } from "../lib/projectTypes";
 import { DEV_PROCESS_PHASE_LABELS } from "../lib/devProcessPhases";
+import { formatPeriod } from "../lib/formatPeriod";
 
 type Status = "loading" | "loaded" | "not-found" | "error";
-
-function formatPeriod(project: Project): string {
-  const start = project.start_date;
-  if (project.is_ongoing) return `${start} 〜 進行中`;
-  return project.end_date ? `${start} 〜 ${project.end_date}` : start;
-}
 
 /** UI-PROJ-03-1..5: màn Detail — xem specs/projects-ui.md (sau khi fold). */
 export function ProjectDetail() {
