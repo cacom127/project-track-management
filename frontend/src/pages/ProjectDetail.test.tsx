@@ -147,6 +147,36 @@ describe("ProjectDetail", () => {
     expect(screen.getByText("チーム体制の詳細: PM 1名、開発者 3名")).toBeInTheDocument();
   });
 
+  it("groups 成果・課題・解決策/確認元メモ into a その他 section (UI-PROJ-03-9, CHANGE-014)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByText("その他")).toBeInTheDocument();
+  });
+
+  it("renders multi-line free-text fields as a bullet list (UI-PROJ-03-8, CHANGE-014)", async () => {
+    getProjectMock.mockResolvedValue({
+      ...SAMPLE_PROJECT,
+      outcome_note: "課題：A\n解決策：B\n成果：C",
+    });
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByRole("list")).toBeInTheDocument();
+    expect(screen.getByText("課題：A")).toBeInTheDocument();
+    expect(screen.getByText("成果：C")).toBeInTheDocument();
+  });
+
+  it("renders 開発工程 badge with a distinct color from 種別 (UI-PROJ-03-10, CHANGE-014)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByText("要件定義")).toHaveClass("badge-phase");
+    expect(screen.getByText("要件定義")).not.toHaveClass("badge-type");
+  });
+
   it("deletes and navigates to /projects with a success toast on confirm (UI-PROJ-03-5)", async () => {
     getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
     deleteProjectMock.mockResolvedValue(undefined);

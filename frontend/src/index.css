@@ -23,6 +23,18 @@
   --color-tertiary-container: #003f25;
   --color-on-tertiary-container: #5caf81;
   --color-on-tertiary: #ffffff;
+  --color-surface-container-high: #dee8ff;
+
+  /* CHANGE-014 — filter chip (nhạt hơn badge, cùng hệ màu — xem
+     DESIGN.md mục "Badge & Filter Chip") + badge variant "phase". */
+  --color-primary-container: #1a365d;
+  --color-on-primary-container: #86a0cd;
+  --color-primary-fixed: #d6e3ff;
+  --color-on-primary-fixed-variant: #2d476f;
+  --color-secondary-fixed: #d3e4ff;
+  --color-on-secondary-fixed-variant: #004881;
+  --color-tertiary-fixed: #9ff5c1;
+  --color-on-tertiary-fixed-variant: #005231;
 
   /* Typography */
   --font-family: "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -480,6 +492,26 @@ h1 {
   gap: var(--space-xs);
 }
 
+/* UI-PROJ-01-12 (CHANGE-014) — panel dài (nhiều option) cần scroll thay
+   vì tràn xuống dưới màn hình; ô search đứng riêng ngoài vùng scroll. */
+.filter-dropdown-search {
+  height: 32px;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  font-family: inherit;
+  font-size: 13px;
+  margin-bottom: var(--space-xs);
+}
+
+.filter-dropdown-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
 .filter-dropdown-panel label {
   display: flex;
   align-items: center;
@@ -509,6 +541,89 @@ h1 {
 .badge-tech {
   background: var(--color-tertiary-container);
   color: var(--color-on-tertiary-container);
+}
+
+.badge-phase {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+/* Multiline free-text (UI-PROJ-03-8, CHANGE-014) — ≥2 dòng render bullet
+   list, giữ đúng thứ tự dòng gốc trong DB. */
+.multiline-list {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-md);
+}
+
+.multiline-list li {
+  margin-bottom: var(--space-xs);
+}
+
+/* Filter chip (UI-PROJ-01-14, CHANGE-014) — nhạt hơn badge, cùng hệ màu
+   theo category (xem DESIGN.md mục "Badge & Filter Chip"). */
+.filter-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-xs) 2px var(--space-sm);
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-chip button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  color: inherit;
+  padding: 2px;
+}
+
+.filter-chip-tech {
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+.filter-chip-type {
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed-variant);
+}
+
+.filter-chip-phase {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+}
+
+.filter-chip-search {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.filter-clear-all {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-secondary);
+  text-decoration: underline;
+  padding: 0;
+  margin-left: var(--space-xs);
+}
+
+.project-list-count {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  margin: var(--space-sm) 0 0;
 }
 
 /* Icon "詳細" thay cho link chữ trên List row (feedback CHANGE-010) —

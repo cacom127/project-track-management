@@ -4,7 +4,7 @@ import Badge from "../components/Badge";
 import FilterDropdown from "../components/FilterDropdown";
 import { listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
-import { DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
+import { DEV_PROCESS_PHASE_LABELS, DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -87,6 +87,51 @@ export function ProjectList() {
     setPage(1);
   }
 
+  // UI-PROJ-01-14: 1 chip / giá trị đơn lẻ (không phải 1 chip / nhóm),
+  // để xoá riêng từng điều kiện mà không mất các điều kiện khác.
+  type FilterChip = { key: string; label: string; colorClass: string; onRemove: () => void };
+  const chips: FilterChip[] = [];
+  if (q) {
+    chips.push({
+      key: "q",
+      label: `"${q}"`,
+      colorClass: "filter-chip-search",
+      onRemove: () => setQ(""),
+    });
+  }
+  technology.forEach((tech) => {
+    chips.push({
+      key: `tech-${tech}`,
+      label: tech,
+      colorClass: "filter-chip-tech",
+      onRemove: () => handleTechnologyChange(technology.filter((v) => v !== tech)),
+    });
+  });
+  projectType.forEach((code) => {
+    chips.push({
+      key: `type-${code}`,
+      label: PROJECT_TYPE_LABELS[code] ?? code,
+      colorClass: "filter-chip-type",
+      onRemove: () => handleProjectTypeChange(projectType.filter((v) => v !== code)),
+    });
+  });
+  devProcessPhase.forEach((code) => {
+    chips.push({
+      key: `phase-${code}`,
+      label: DEV_PROCESS_PHASE_LABELS[code] ?? code,
+      colorClass: "filter-chip-phase",
+      onRemove: () => handleDevProcessPhaseChange(devProcessPhase.filter((v) => v !== code)),
+    });
+  });
+
+  function clearAllFilters() {
+    setQ("");
+    setTechnology([]);
+    setProjectType([]);
+    setDevProcessPhase([]);
+    setPage(1);
+  }
+
   return (
     <main className="app-page">
       {/* UI-PROJ-01-6: title + nút hành động chính tách riêng khỏi toolbar */}
@@ -133,6 +178,24 @@ export function ProjectList() {
           onChange={handleDevProcessPhaseChange}
         />
       </div>
+
+      {chips.length > 0 && (
+        <div className="filter-chip-row">
+          {chips.map((chip) => (
+            <span key={chip.key} className={`filter-chip ${chip.colorClass}`}>
+              {chip.label}
+              <button type="button" onClick={chip.onRemove} aria-label={`${chip.label}を解除`}>
+                ✕
+              </button>
+            </span>
+          ))}
+          <button type="button" className="filter-clear-all" onClick={clearAllFilters}>
+            すべてクリア
+          </button>
+        </div>
+      )}
+
+      {status === "loaded" && total > 0 && <p className="project-list-count">{total}件</p>}
 
       {status === "error" && (
         <p className="toast-error" role="alert">

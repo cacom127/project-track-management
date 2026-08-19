@@ -156,6 +156,25 @@ phần tương tác.
 - **Error (`#ba1a1a`, container `#ffdad6`):** Dùng cho lỗi/validation
   fail — không dùng cho mục đích nhấn mạnh thông thường.
 
+## Badge & Filter Chip (CHANGE-014)
+
+Badge (giá trị dữ liệu, hiển thị đậm — List/Detail) và filter chip
+(điều kiện đang lọc, hiển thị nhạt — List) dùng CÙNG hệ màu theo
+category nhưng KHÁC độ đậm, để phân biệt 2 ngữ cảnh (dữ liệu vs.
+điều kiện tìm kiếm đang bật):
+
+| Category | Badge (đậm) | Filter chip (nhạt, dùng token `-fixed`) |
+|---|---|---|
+| 技術 | `tertiary-container` `#003f25` / `on-tertiary-container` `#5caf81` | `tertiary-fixed` `#9ff5c1` / `on-tertiary-fixed-variant` `#005231` |
+| 種別 | `secondary-container` `#7db6ff` / `on-secondary-container` `#00477f` | `secondary-fixed` `#d3e4ff` / `on-secondary-fixed-variant` `#004881` |
+| 開発工程 | `primary-container` `#1a365d` / `on-primary-container` `#86a0cd` (variant `phase`, mới) | `primary-fixed` `#d6e3ff` / `on-primary-fixed-variant` `#2d476f` |
+| 検索 (search, không thuộc category) | — (không có badge) | `surface-container-high` `#dee8ff` / `on-surface` `#121c2c` |
+
+Badge variant `phase` (開発工程) dùng cùng công thức với `type`/`tech`
+đã có (container đậm + on-container) — chỉ khác cặp màu (primary thay
+vì secondary), để 開発工程 không còn dùng chung màu với 種別 như trước
+CHANGE-014.
+
 ## Typography
 
 Hệ thống dùng duy nhất **Noto Sans** (đảm bảo hiển thị tốt ký tự tiếng

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import AttachmentManager from "../components/AttachmentManager";
 import Badge from "../components/Badge";
 import Modal from "../components/Modal";
+import MultilineText from "../components/MultilineText";
 import { deleteProject, getProject, ProjectNotFoundError, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS } from "../lib/projectTypes";
 import { DEV_PROCESS_PHASE_LABELS } from "../lib/devProcessPhases";
@@ -100,7 +101,9 @@ export function ProjectDetail() {
           <h2 className="form-group-card-title">基本情報</h2>
           <p>顧客名: {project.customer_name}</p>
           <p>プロジェクト名: {project.project_name}</p>
-          <p>概要: {project.description || "—"}</p>
+          <p>
+            概要: <MultilineText value={project.description} />
+          </p>
           <p>業種: {project.industry || "—"}</p>
         </section>
 
@@ -110,7 +113,9 @@ export function ProjectDetail() {
           <p>
             人数: {project.team_size ?? "—"}名 / 総人月: {project.total_man_month ?? "—"}人月
           </p>
-          <p>チーム体制の詳細: {project.team_composition_note || "—"}</p>
+          <p>
+            チーム体制の詳細: <MultilineText value={project.team_composition_note} />
+          </p>
         </section>
 
         <section className="form-group-card">
@@ -134,7 +139,7 @@ export function ProjectDetail() {
           <p>
             開発工程:{" "}
             {project.dev_process_phases.map((p) => (
-              <Badge key={p} variant="type">
+              <Badge key={p} variant="phase">
                 {DEV_PROCESS_PHASE_LABELS[p] ?? p}
               </Badge>
             ))}
@@ -146,8 +151,15 @@ export function ProjectDetail() {
           <AttachmentManager mode="live" projectId={project.id} readOnly />
         </section>
 
-        <p>成果・課題・解決策: {project.outcome_note || "—"}</p>
-        <p>確認元メモ: {project.source_note || "—"}</p>
+        <section className="form-group-card">
+          <h2 className="form-group-card-title">その他</h2>
+          <p>
+            成果・課題・解決策: <MultilineText value={project.outcome_note} />
+          </p>
+          <p>
+            確認元メモ: <MultilineText value={project.source_note} />
+          </p>
+        </section>
 
         <div className="form-actions">
           <Link to={`/projects/${project.id}/edit`} className="button-primary">

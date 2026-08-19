@@ -393,13 +393,16 @@ def list_projects(
 
 
 def search_tech_tags(db: DBSession, q: str | None = None) -> list[str]:
+    # PROJ-30 — không có `q` (dropdown filter cần TOÀN BỘ catalog để
+    # không thiếu giá trị) dùng limit rộng hơn (200) so với autocomplete
+    # có `q` (20, đủ cho gợi ý khi đang gõ).
     if q:
         rows = db.execute(
             "SELECT name FROM tech_tags WHERE name ILIKE :q ORDER BY name LIMIT 20",
             {"q": f"%{q}%"},
         )
     else:
-        rows = db.execute("SELECT name FROM tech_tags ORDER BY name LIMIT 20")
+        rows = db.execute("SELECT name FROM tech_tags ORDER BY name LIMIT 200")
     return [row["name"] for row in rows]
 
 
