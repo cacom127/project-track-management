@@ -110,6 +110,7 @@ export function ProjectDetail() {
           <p>
             人数: {project.team_size ?? "—"}名 / 総人月: {project.total_man_month ?? "—"}人月
           </p>
+          <p>チーム体制の詳細: {project.team_composition_note || "—"}</p>
         </section>
 
         <section className="form-group-card">

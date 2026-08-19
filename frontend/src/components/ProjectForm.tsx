@@ -27,6 +27,7 @@ export type ProjectFormValues = {
   industry: string;
   outcome_note: string;
   dev_process_phases: DevProcessPhaseCode[];
+  team_composition_note: string;
 };
 
 const EMPTY_VALUES: ProjectFormValues = {
@@ -44,6 +45,7 @@ const EMPTY_VALUES: ProjectFormValues = {
   industry: "",
   outcome_note: "",
   dev_process_phases: [],
+  team_composition_note: "",
 };
 
 interface ProjectFormProps {
@@ -90,6 +92,7 @@ export function ProjectForm({
   const [devProcessPhases, setDevProcessPhases] = useState<DevProcessPhaseCode[]>(
     values.dev_process_phases,
   );
+  const [teamCompositionNote, setTeamCompositionNote] = useState(values.team_composition_note);
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
@@ -168,6 +171,7 @@ export function ProjectForm({
         industry: industry || null,
         outcome_note: outcomeNote || null,
         dev_process_phases: devProcessPhases,
+        team_composition_note: teamCompositionNote || null,
       });
 
       // UI-PROJ-05-4: project vừa tạo xong mới upload ảnh staged (chưa
@@ -347,6 +351,16 @@ export function ProjectForm({
                 <span className="input-unit">人月</span>
               </div>
             </div>
+          </div>
+
+          <div className="input-field">
+            <label htmlFor="team-composition-note">チーム体制の詳細</label>
+            <textarea
+              id="team-composition-note"
+              value={teamCompositionNote}
+              onChange={(event) => setTeamCompositionNote(event.target.value)}
+              disabled={submitting}
+            />
           </div>
         </section>
 

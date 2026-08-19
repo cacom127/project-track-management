@@ -54,6 +54,7 @@ const SAMPLE_PROJECT = {
   industry: "製造業",
   outcome_note: "納期通りリリースできた",
   dev_process_phases: ["requirements", "testing"],
+  team_composition_note: "PM 1名、開発者 3名",
 };
 
 function renderDetail(id = "1") {
@@ -136,6 +137,14 @@ describe("ProjectDetail", () => {
     expect(screen.getByText("要件定義")).toBeInTheDocument();
     expect(screen.getByText("テスト")).toBeInTheDocument();
     expect(screen.getByText("成果・課題・解決策: 納期通りリリースできた")).toBeInTheDocument();
+  });
+
+  it("renders team_composition_note read-only (CHANGE-013)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByText("チーム体制の詳細: PM 1名、開発者 3名")).toBeInTheDocument();
   });
 
   it("deletes and navigates to /projects with a success toast on confirm (UI-PROJ-03-5)", async () => {

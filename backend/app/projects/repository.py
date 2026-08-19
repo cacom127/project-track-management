@@ -79,15 +79,15 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
         INSERT INTO projects (
             customer_name, project_name, description, start_date, end_date,
             is_ongoing, team_size, total_man_month, source_note, created_by,
-            industry, outcome_note
+            industry, outcome_note, team_composition_note
         ) VALUES (
             :customer_name, :project_name, :description, :start_date ::date,
             :end_date ::date, :is_ongoing, :team_size, :total_man_month ::numeric,
-            :source_note, :created_by, :industry, :outcome_note
+            :source_note, :created_by, :industry, :outcome_note, :team_composition_note
         )
         RETURNING id, customer_name, project_name, description, start_date, end_date,
                   is_ongoing, team_size, total_man_month, source_note, created_by,
-                  created_at, updated_at, industry, outcome_note
+                  created_at, updated_at, industry, outcome_note, team_composition_note
         """,
         {
             "customer_name": data.customer_name,
@@ -104,6 +104,7 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
             "created_by": created_by,
             "industry": data.industry,
             "outcome_note": data.outcome_note,
+            "team_composition_note": data.team_composition_note,
         },
     )
     project_row = rows[0]
@@ -145,6 +146,7 @@ def get_project(db: DBSession, project_id: int) -> ProjectOut | None:
         SELECT p.id, p.customer_name, p.project_name, p.description, p.start_date, p.end_date,
                p.is_ongoing, p.team_size, p.total_man_month, p.source_note, p.created_by,
                p.created_at, p.updated_at, p.industry, p.outcome_note,
+               p.team_composition_note,
                COALESCE(array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL), '{}')
                    AS technologies,
                COALESCE(array_agg(DISTINCT pt.code) FILTER (WHERE pt.code IS NOT NULL), '{}')
@@ -185,11 +187,12 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
             source_note = :source_note,
             industry = :industry,
             outcome_note = :outcome_note,
+            team_composition_note = :team_composition_note,
             updated_at = now()
         WHERE id = :project_id AND deleted_at IS NULL
         RETURNING id, customer_name, project_name, description, start_date, end_date,
                   is_ongoing, team_size, total_man_month, source_note, created_by,
-                  created_at, updated_at, industry, outcome_note
+                  created_at, updated_at, industry, outcome_note, team_composition_note
         """,
         {
             "project_id": project_id,
@@ -206,6 +209,7 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
             "source_note": data.source_note,
             "industry": data.industry,
             "outcome_note": data.outcome_note,
+            "team_composition_note": data.team_composition_note,
         },
     )
     if not rows:
@@ -283,6 +287,7 @@ def _build_where(
         clauses.append(
             "(p.customer_name ILIKE :q OR p.project_name ILIKE :q OR p.description ILIKE :q "
             "OR p.industry ILIKE :q OR p.outcome_note ILIKE :q "
+            "OR p.team_composition_note ILIKE :q "
             "OR EXISTS ("
             "  SELECT 1 FROM project_tech_tags ptt_q "
             "  JOIN tech_tags t_q ON t_q.id = ptt_q.tag_id "
@@ -362,6 +367,7 @@ def list_projects(
         SELECT p.id, p.customer_name, p.project_name, p.description, p.start_date, p.end_date,
                p.is_ongoing, p.team_size, p.total_man_month, p.source_note, p.created_by,
                p.created_at, p.updated_at, p.industry, p.outcome_note,
+               p.team_composition_note,
                COALESCE(array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL), '{{}}')
                    AS technologies,
                COALESCE(array_agg(DISTINCT pt.code) FILTER (WHERE pt.code IS NOT NULL), '{{}}')

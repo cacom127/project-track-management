@@ -30,6 +30,7 @@ function toFormValues(project: Project): Partial<ProjectFormValues> {
     outcome_note: project.outcome_note ?? "",
     dev_process_phases: (project.dev_process_phases ??
       []) as ProjectFormValues["dev_process_phases"],
+    team_composition_note: project.team_composition_note ?? "",
   };
 }
 
