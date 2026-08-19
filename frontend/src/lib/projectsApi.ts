@@ -3,12 +3,7 @@ import { apiFetch } from "./apiClient";
 export type ProjectTypeCode = "offshore" | "ses" | "lab" | "new_dev" | "maintenance";
 
 export type DevProcessPhaseCode =
-  | "requirements"
-  | "design"
-  | "implementation"
-  | "testing"
-  | "release"
-  | "maintenance_ops";
+  "requirements" | "design" | "implementation" | "testing" | "release" | "maintenance_ops";
 
 export type Project = {
   id: number;
