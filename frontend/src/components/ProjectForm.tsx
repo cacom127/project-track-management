@@ -4,11 +4,13 @@ import AttachmentManager from "./AttachmentManager";
 import { uploadAttachment } from "../lib/attachmentsApi";
 import {
   listTechTags,
+  type DevProcessPhaseCode,
   type Project,
   type ProjectCreateInput,
   type ProjectTypeCode,
 } from "../lib/projectsApi";
 import { PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
+import { DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
 
 export type ProjectFormValues = {
   customer_name: string;
@@ -22,6 +24,9 @@ export type ProjectFormValues = {
   source_note: string;
   technologies: string[];
   project_types: ProjectTypeCode[];
+  industry: string;
+  outcome_note: string;
+  dev_process_phases: DevProcessPhaseCode[];
 };
 
 const EMPTY_VALUES: ProjectFormValues = {
@@ -36,6 +41,9 @@ const EMPTY_VALUES: ProjectFormValues = {
   source_note: "",
   technologies: [],
   project_types: [],
+  industry: "",
+  outcome_note: "",
+  dev_process_phases: [],
 };
 
 interface ProjectFormProps {
@@ -77,6 +85,11 @@ export function ProjectForm({
   const [tagInput, setTagInput] = useState("");
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [projectTypes, setProjectTypes] = useState<ProjectTypeCode[]>(values.project_types);
+  const [industry, setIndustry] = useState(values.industry);
+  const [outcomeNote, setOutcomeNote] = useState(values.outcome_note);
+  const [devProcessPhases, setDevProcessPhases] = useState<DevProcessPhaseCode[]>(
+    values.dev_process_phases,
+  );
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
@@ -126,6 +139,12 @@ export function ProjectForm({
     );
   }
 
+  function toggleDevProcessPhase(code: DevProcessPhaseCode) {
+    setDevProcessPhases((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
+    );
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setTouched(true);
@@ -146,6 +165,9 @@ export function ProjectForm({
         source_note: sourceNote || null,
         technologies,
         project_types: projectTypes,
+        industry: industry || null,
+        outcome_note: outcomeNote || null,
+        dev_process_phases: devProcessPhases,
       });
 
       // UI-PROJ-05-4: project vừa tạo xong mới upload ảnh staged (chưa
@@ -229,6 +251,16 @@ export function ProjectForm({
               id="description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
+              disabled={submitting}
+            />
+          </div>
+
+          <div className="input-field">
+            <label htmlFor="industry">業種</label>
+            <input
+              id="industry"
+              value={industry}
+              onChange={(event) => setIndustry(event.target.value)}
               disabled={submitting}
             />
           </div>
@@ -381,6 +413,20 @@ export function ProjectForm({
               </label>
             ))}
           </fieldset>
+
+          <fieldset disabled={submitting}>
+            <legend>開発工程</legend>
+            {DEV_PROCESS_PHASE_OPTIONS.map(({ code, label }) => (
+              <label key={code}>
+                <input
+                  type="checkbox"
+                  checked={devProcessPhases.includes(code)}
+                  onChange={() => toggleDevProcessPhase(code)}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
         </section>
 
         {/* UI-PROJ-05-1..6: mode "live" khi đã có projectId (Edit) — upload/xoá
@@ -397,6 +443,16 @@ export function ProjectForm({
             />
           )}
         </section>
+
+        <div className="input-field">
+          <label htmlFor="outcome-note">成果・課題・解決策</label>
+          <textarea
+            id="outcome-note"
+            value={outcomeNote}
+            onChange={(event) => setOutcomeNote(event.target.value)}
+            disabled={submitting}
+          />
+        </div>
 
         <div className="input-field">
           <label htmlFor="source-note">確認元メモ</label>

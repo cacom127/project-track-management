@@ -52,6 +52,9 @@ const SAMPLE_PROJECT = {
   updated_at: "2024-01-01T00:00:00Z",
   technologies: ["React"],
   project_types: ["offshore"],
+  industry: null,
+  outcome_note: null,
+  dev_process_phases: [],
 };
 
 function renderEdit() {

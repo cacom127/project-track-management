@@ -172,4 +172,28 @@ describe("ProjectCreate", () => {
     expect(cancelLink).toHaveAttribute("href", "/projects");
     expect(createProjectMock).not.toHaveBeenCalled();
   });
+
+  it("renders 業種 input, 開発工程 checkboxes and 成果・課題・解決策 textarea, and submits them (UI-PROJ-02-12/13)", async () => {
+    createProjectMock.mockResolvedValue({ id: 1, project_name: "基幹システム刷新" });
+    renderCreate();
+    fillRequiredFields();
+
+    fireEvent.change(screen.getByLabelText("業種"), { target: { value: "製造業" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: "要件定義" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "テスト" }));
+    fireEvent.change(screen.getByLabelText("成果・課題・解決策"), {
+      target: { value: "納期通りリリースできた" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "作成する" }));
+
+    await waitFor(() => expect(createProjectMock).toHaveBeenCalled());
+    expect(createProjectMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        industry: "製造業",
+        dev_process_phases: ["requirements", "testing"],
+        outcome_note: "納期通りリリースできた",
+      }),
+    );
+  });
 });

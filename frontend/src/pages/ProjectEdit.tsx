@@ -26,6 +26,10 @@ function toFormValues(project: Project): Partial<ProjectFormValues> {
     source_note: project.source_note ?? "",
     technologies: project.technologies,
     project_types: project.project_types,
+    industry: project.industry ?? "",
+    outcome_note: project.outcome_note ?? "",
+    dev_process_phases: (project.dev_process_phases ??
+      []) as ProjectFormValues["dev_process_phases"],
   };
 }
 

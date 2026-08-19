@@ -62,20 +62,32 @@ def _fetch_project_type_ids(db: DBSession, codes: list[str]) -> list[int]:
     return [row["id"] for row in rows]
 
 
+def _fetch_dev_process_phase_ids(db: DBSession, codes: list[str]) -> list[int]:
+    if not codes:
+        return []
+    params = {f"code{i}": code for i, code in enumerate(codes)}
+    placeholders = ", ".join(f":{key}" for key in params)
+    rows = db.execute(
+        f"SELECT id FROM dev_process_phases WHERE code IN ({placeholders})", params
+    )
+    return [row["id"] for row in rows]
+
+
 def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> ProjectOut:
     rows = db.execute(
         """
         INSERT INTO projects (
             customer_name, project_name, description, start_date, end_date,
-            is_ongoing, team_size, total_man_month, source_note, created_by
+            is_ongoing, team_size, total_man_month, source_note, created_by,
+            industry, outcome_note
         ) VALUES (
             :customer_name, :project_name, :description, :start_date ::date,
             :end_date ::date, :is_ongoing, :team_size, :total_man_month ::numeric,
-            :source_note, :created_by
+            :source_note, :created_by, :industry, :outcome_note
         )
         RETURNING id, customer_name, project_name, description, start_date, end_date,
                   is_ongoing, team_size, total_man_month, source_note, created_by,
-                  created_at, updated_at
+                  created_at, updated_at, industry, outcome_note
         """,
         {
             "customer_name": data.customer_name,
@@ -90,6 +102,8 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
             ),
             "source_note": data.source_note,
             "created_by": created_by,
+            "industry": data.industry,
+            "outcome_note": data.outcome_note,
         },
     )
     project_row = rows[0]
@@ -107,12 +121,20 @@ def create_project(db: DBSession, data: ProjectCreate, created_by: str) -> Proje
             {"pid": project_id, "tid": type_id},
         )
 
+    for phase_id in _fetch_dev_process_phase_ids(db, data.dev_process_phases):
+        db.execute(
+            "INSERT INTO project_dev_process_phases (project_id, dev_process_phase_id) "
+            "VALUES (:pid, :tid)",
+            {"pid": project_id, "tid": phase_id},
+        )
+
     db.commit()
 
     return ProjectOut(
         **project_row,
         technologies=list(data.technologies),
         project_types=list(data.project_types),
+        dev_process_phases=list(data.dev_process_phases),
     )
 
 
@@ -122,16 +144,20 @@ def get_project(db: DBSession, project_id: int) -> ProjectOut | None:
         """
         SELECT p.id, p.customer_name, p.project_name, p.description, p.start_date, p.end_date,
                p.is_ongoing, p.team_size, p.total_man_month, p.source_note, p.created_by,
-               p.created_at, p.updated_at,
+               p.created_at, p.updated_at, p.industry, p.outcome_note,
                COALESCE(array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL), '{}')
                    AS technologies,
                COALESCE(array_agg(DISTINCT pt.code) FILTER (WHERE pt.code IS NOT NULL), '{}')
-                   AS project_types
+                   AS project_types,
+               COALESCE(array_agg(DISTINCT dpp.code) FILTER (WHERE dpp.code IS NOT NULL), '{}')
+                   AS dev_process_phases
         FROM projects p
         LEFT JOIN project_tech_tags ptt ON ptt.project_id = p.id
         LEFT JOIN tech_tags t ON t.id = ptt.tag_id
         LEFT JOIN project_project_types ppt ON ppt.project_id = p.id
         LEFT JOIN project_types pt ON pt.id = ppt.project_type_id
+        LEFT JOIN project_dev_process_phases pdpp ON pdpp.project_id = p.id
+        LEFT JOIN dev_process_phases dpp ON dpp.id = pdpp.dev_process_phase_id
         WHERE p.id = :project_id AND p.deleted_at IS NULL
         GROUP BY p.id
         """,
@@ -157,11 +183,13 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
             team_size = :team_size,
             total_man_month = :total_man_month ::numeric,
             source_note = :source_note,
+            industry = :industry,
+            outcome_note = :outcome_note,
             updated_at = now()
         WHERE id = :project_id AND deleted_at IS NULL
         RETURNING id, customer_name, project_name, description, start_date, end_date,
                   is_ongoing, team_size, total_man_month, source_note, created_by,
-                  created_at, updated_at
+                  created_at, updated_at, industry, outcome_note
         """,
         {
             "project_id": project_id,
@@ -176,6 +204,8 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
                 float(data.total_man_month) if data.total_man_month is not None else None
             ),
             "source_note": data.source_note,
+            "industry": data.industry,
+            "outcome_note": data.outcome_note,
         },
     )
     if not rows:
@@ -187,6 +217,10 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
     )
     db.execute(
         "DELETE FROM project_project_types WHERE project_id = :project_id",
+        {"project_id": project_id},
+    )
+    db.execute(
+        "DELETE FROM project_dev_process_phases WHERE project_id = :project_id",
         {"project_id": project_id},
     )
 
@@ -202,12 +236,20 @@ def update_project(db: DBSession, project_id: int, data: ProjectUpdate) -> Proje
             {"pid": project_id, "tid": type_id},
         )
 
+    for phase_id in _fetch_dev_process_phase_ids(db, data.dev_process_phases):
+        db.execute(
+            "INSERT INTO project_dev_process_phases (project_id, dev_process_phase_id) "
+            "VALUES (:pid, :tid)",
+            {"pid": project_id, "tid": phase_id},
+        )
+
     db.commit()
 
     return ProjectOut(
         **project_row,
         technologies=list(data.technologies),
         project_types=list(data.project_types),
+        dev_process_phases=list(data.dev_process_phases),
     )
 
 
@@ -227,7 +269,10 @@ def delete_project(db: DBSession, project_id: int) -> bool:
 
 
 def _build_where(
-    q: str | None, technologies: list[str] | None, project_types: list[str] | None
+    q: str | None,
+    technologies: list[str] | None,
+    project_types: list[str] | None,
+    dev_process_phases: list[str] | None = None,
 ) -> tuple[str, dict]:
     # PROJ-17 — loại bỏ project đã soft-delete khỏi list (items + total).
     clauses: list[str] = ["p.deleted_at IS NULL"]
@@ -237,6 +282,7 @@ def _build_where(
         params["q"] = f"%{q}%"
         clauses.append(
             "(p.customer_name ILIKE :q OR p.project_name ILIKE :q OR p.description ILIKE :q "
+            "OR p.industry ILIKE :q OR p.outcome_note ILIKE :q "
             "OR EXISTS ("
             "  SELECT 1 FROM project_tech_tags ptt_q "
             "  JOIN tech_tags t_q ON t_q.id = ptt_q.tag_id "
@@ -259,6 +305,8 @@ def _build_where(
         )
 
     if project_types:
+        # PROJ-04 (SỬA — CHANGE-012): đổi từ OR sang AND semantics, giống
+        # `technologies` — dự án phải có ĐỦ tất cả giá trị đã chọn.
         type_params = {f"ptype_{i}": code for i, code in enumerate(project_types)}
         placeholders = ", ".join(f":{key}" for key in type_params)
         params.update(type_params)
@@ -267,6 +315,23 @@ def _build_where(
             f"  SELECT ppt2.project_id FROM project_project_types ppt2"
             f"  JOIN project_types pt2 ON pt2.id = ppt2.project_type_id"
             f"  WHERE pt2.code IN ({placeholders})"
+            f"  GROUP BY ppt2.project_id"
+            f"  HAVING COUNT(DISTINCT pt2.code) = {len(project_types)}"
+            f")"
+        )
+
+    if dev_process_phases:
+        # PROJ-25 (SỬA — CHANGE-012): AND semantics, giống `technologies`.
+        phase_params = {f"phase_{i}": code for i, code in enumerate(dev_process_phases)}
+        placeholders = ", ".join(f":{key}" for key in phase_params)
+        params.update(phase_params)
+        clauses.append(
+            f"p.id IN ("
+            f"  SELECT pdpp2.project_id FROM project_dev_process_phases pdpp2"
+            f"  JOIN dev_process_phases dpp2 ON dpp2.id = pdpp2.dev_process_phase_id"
+            f"  WHERE dpp2.code IN ({placeholders})"
+            f"  GROUP BY pdpp2.project_id"
+            f"  HAVING COUNT(DISTINCT dpp2.code) = {len(dev_process_phases)}"
             f")"
         )
 
@@ -281,8 +346,9 @@ def list_projects(
     q: str | None = None,
     technologies: list[str] | None = None,
     project_types: list[str] | None = None,
+    dev_process_phases: list[str] | None = None,
 ) -> tuple[list[ProjectOut], int]:
-    where_sql, params = _build_where(q, technologies, project_types)
+    where_sql, params = _build_where(q, technologies, project_types, dev_process_phases)
 
     total_rows = db.execute(f"SELECT COUNT(*) AS total FROM projects p WHERE {where_sql}", params)
     total = total_rows[0]["total"]
@@ -295,16 +361,20 @@ def list_projects(
         f"""
         SELECT p.id, p.customer_name, p.project_name, p.description, p.start_date, p.end_date,
                p.is_ongoing, p.team_size, p.total_man_month, p.source_note, p.created_by,
-               p.created_at, p.updated_at,
+               p.created_at, p.updated_at, p.industry, p.outcome_note,
                COALESCE(array_agg(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL), '{{}}')
                    AS technologies,
                COALESCE(array_agg(DISTINCT pt.code) FILTER (WHERE pt.code IS NOT NULL), '{{}}')
-                   AS project_types
+                   AS project_types,
+               COALESCE(array_agg(DISTINCT dpp.code) FILTER (WHERE dpp.code IS NOT NULL), '{{}}')
+                   AS dev_process_phases
         FROM projects p
         LEFT JOIN project_tech_tags ptt ON ptt.project_id = p.id
         LEFT JOIN tech_tags t ON t.id = ptt.tag_id
         LEFT JOIN project_project_types ppt ON ppt.project_id = p.id
         LEFT JOIN project_types pt ON pt.id = ppt.project_type_id
+        LEFT JOIN project_dev_process_phases pdpp ON pdpp.project_id = p.id
+        LEFT JOIN dev_process_phases dpp ON dpp.id = pdpp.dev_process_phase_id
         WHERE {where_sql}
         GROUP BY p.id
         ORDER BY p.created_at DESC, p.id DESC

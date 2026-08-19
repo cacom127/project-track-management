@@ -75,10 +75,11 @@ def test_list_filters_by_technology_and_semantics(client):
     assert body["items"][0]["project_name"] == "Alpha"
 
 
-def test_list_filters_by_project_type_or_semantics(client):
-    _create(client, project_name="Alpha", project_types=["offshore"])
-    _create(client, project_name="Beta", project_types=["lab"])
-    _create(client, project_name="Gamma", project_types=["maintenance"])
+def test_list_filters_by_project_type_and_semantics(client):
+    # PROJ-04 (SỬA — CHANGE-012): AND semantics, giống `technologies`.
+    _create(client, project_name="Alpha", project_types=["offshore", "lab"])
+    _create(client, project_name="Beta", project_types=["offshore"])
+    _create(client, project_name="Gamma", project_types=["lab"])
 
     response = client.get(
         "/projects",
@@ -88,8 +89,8 @@ def test_list_filters_by_project_type_or_semantics(client):
 
     body = response.json()
     names = {item["project_name"] for item in body["items"]}
-    assert body["total"] == 2
-    assert names == {"Alpha", "Beta"}
+    assert body["total"] == 1
+    assert names == {"Alpha"}
 
 
 def test_list_without_auth_returns_401(client):

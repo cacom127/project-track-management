@@ -5,6 +5,7 @@ import Badge from "../components/Badge";
 import Modal from "../components/Modal";
 import { deleteProject, getProject, ProjectNotFoundError, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS } from "../lib/projectTypes";
+import { DEV_PROCESS_PHASE_LABELS } from "../lib/devProcessPhases";
 
 type Status = "loading" | "loaded" | "not-found" | "error";
 
@@ -100,6 +101,7 @@ export function ProjectDetail() {
           <p>顧客名: {project.customer_name}</p>
           <p>プロジェクト名: {project.project_name}</p>
           <p>概要: {project.description || "—"}</p>
+          <p>業種: {project.industry || "—"}</p>
         </section>
 
         <section className="form-group-card">
@@ -128,6 +130,14 @@ export function ProjectDetail() {
               </Badge>
             ))}
           </p>
+          <p>
+            開発工程:{" "}
+            {project.dev_process_phases.map((p) => (
+              <Badge key={p} variant="type">
+                {DEV_PROCESS_PHASE_LABELS[p] ?? p}
+              </Badge>
+            ))}
+          </p>
         </section>
 
         <section className="form-group-card">
@@ -135,6 +145,7 @@ export function ProjectDetail() {
           <AttachmentManager mode="live" projectId={project.id} readOnly />
         </section>
 
+        <p>成果・課題・解決策: {project.outcome_note || "—"}</p>
         <p>確認元メモ: {project.source_note || "—"}</p>
 
         <div className="form-actions">

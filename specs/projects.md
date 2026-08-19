@@ -9,8 +9,10 @@ CRUD thông tin dự án đã/đang thực hiện với khách hàng Nhật (`sp
 mục 2). Ticket đầu tiên (`CHANGE-007-projects-list-create`) chỉ làm
 **List + Create**; `CHANGE-010-project-detail-edit-delete` bổ sung
 **Detail/Edit/Delete** (soft delete); `CHANGE-011-project-attachments`
-bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền theo role vẫn
-để dành ticket sau.
+bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án);
+`CHANGE-012-project-extra-fields` bổ sung `industry`/`outcome_note`/
+`dev_process_phases` để phục vụ import dữ liệu thật. Phân quyền theo
+role vẫn để dành ticket sau.
 
 ## 2. Yêu cầu hiện tại (Requirements — EARS notation)
 
@@ -20,13 +22,16 @@ bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền the
 - **[PROJ-02]** When `GET /projects` includes query param `q`, the
   system shall filter to projects whose `customer_name`, `project_name`,
   `description`, or any associated tech tag name contains `q`
-  (case-insensitive).
+  (case-insensitive). Mở rộng thêm `industry`/`outcome_note` ở PROJ-24
+  (`CHANGE-012`).
 - **[PROJ-03]** When `GET /projects` includes one or more `technology`
   query params, the system shall filter to projects that have ALL of
   the specified tech tags (AND semantics).
 - **[PROJ-04]** When `GET /projects` includes one or more `project_type`
-  query params, the system shall filter to projects that have ANY of
-  the specified project types (OR semantics).
+  query params, the system shall filter to projects that have ALL of
+  the specified project types (AND semantics, giống `technology` ở
+  PROJ-03 — sửa từ OR sang AND ở `CHANGE-012` để đồng nhất hành vi filter
+  đa chọn trên toàn màn List).
 - **[PROJ-05]** When an authenticated user submits `POST /projects`
   with valid data, the system shall create a new project record and
   return `201` with the created object.
@@ -95,6 +100,23 @@ bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền the
   `DELETE /projects/{id}/attachments/{attachment_id}`, the system shall
   delete both the S3 object and the DB record (hard delete). Trả `404`
   nếu attachment không tồn tại hoặc không thuộc `project_id`.
+- **[PROJ-22]** `POST /projects`/`PUT /projects/{id}` shall accept
+  optional `industry` and `outcome_note` (free text, no validation
+  catalog), stored as-is.
+- **[PROJ-23]** `POST /projects`/`PUT /projects/{id}` shall accept an
+  optional `dev_process_phases` list, validated against the fixed
+  catalog (`requirements`, `design`, `implementation`, `testing`,
+  `release`, `maintenance_ops`) — trả `400` nếu có giá trị ngoài
+  catalog (giống PROJ-08).
+- **[PROJ-24]** `GET /projects` (list) shall include `industry` and
+  `outcome_note` in the `q` keyword search (ILIKE, cùng nhóm với
+  PROJ-02).
+- **[PROJ-25]** `GET /projects` shall accept one or more
+  `dev_process_phase` query params, filtering to projects that have ALL
+  of the specified phases (AND semantics, giống `technology` ở PROJ-03).
+- **[PROJ-26]** `GET /projects/{id}`, list item, và response của
+  create/update shall include `industry`, `outcome_note`,
+  `dev_process_phases`.
 
 ## 3. Ràng buộc kỹ thuật đã chốt
 
@@ -106,8 +128,9 @@ bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền the
   không có API tạo thêm dòng. `tech_tags` tự tạo record mới khi user
   nhập tag chưa tồn tại (side-effect của `POST /projects`, không có
   endpoint `POST /tech-tags` riêng).
-- Filter `technology`: AND giữa nhiều giá trị. Filter `project_type`:
-  OR giữa nhiều giá trị.
+- Filter `technology`/`project_type`/`dev_process_phase`: AND giữa
+  nhiều giá trị (đồng nhất từ `CHANGE-012` — `project_type` trước đó
+  dùng OR, đã sửa lại).
 - Query DB bằng raw SQL string qua `DBSession`/`get_db_session`
   (`app/core/db.py`) — KHÔNG dùng SQLAlchemy ORM model, vì production
   chạy qua RDS Data API (không có ORM tương thích cả 2 nhánh
@@ -153,6 +176,11 @@ bổ sung **ảnh đính kèm** (tối đa 10 ảnh/dự án). Phân quyền the
   ảnh, jpg/png/webp — validate cả lúc presign lẫn lúc confirm (chống
   race condition upload đồng thời). Màn Detail chỉ xem ảnh (read-only),
   chỉ Edit mới thêm/xoá được.
+- **Field bổ sung (CHANGE-012)**: `industry`/`outcome_note` là free
+  text (không catalog) vì dữ liệu nguồn (import PPTX thực tế) đa dạng,
+  không quy về hữu hạn giá trị được. `dev_process_phases` dùng catalog
+  cố định + bảng nối N-N — tái dùng đúng pattern code của
+  `project_types` (`_fetch_project_type_ids`-style helper).
 
 ## 4. Data Model
 
@@ -166,7 +194,9 @@ mục 1/2 cho ER diagram tổng quan/bảng mapping):
   nullable), `total_man_month` (decimal, nullable), `source_note` (text,
   nullable), `created_by` (string — Cognito `sub`, not null),
   `created_at`/`updated_at` (timestamp, theo `DM-G02`), `deleted_at`
-  (timestamptz, nullable — soft delete, `CHANGE-010`).
+  (timestamptz, nullable — soft delete, `CHANGE-010`), `industry`
+  (string, nullable, free text — `CHANGE-012`), `outcome_note` (text,
+  nullable, free text — `CHANGE-012`).
 - **`tech_tags`**: `id` (PK), `name` (string, unique case-insensitive
   qua index `lower(name)`).
 - **`project_tech_tags`** (bảng nối N-N `projects`↔`tech_tags`):
@@ -181,6 +211,12 @@ mục 1/2 cho ER diagram tổng quan/bảng mapping):
   `content_type` (string), `size_bytes` (int), `created_by` (string —
   Cognito `sub`), `created_at` (timestamp). Hard delete (không có
   `deleted_at`) — khác `projects`.
+- **`dev_process_phases`** (`CHANGE-012`): `id` (PK), `code` (string,
+  unique) — catalog cố định, seed đúng 6 dòng: `requirements`, `design`,
+  `implementation`, `testing`, `release`, `maintenance_ops`.
+- **`project_dev_process_phases`** (bảng nối N-N
+  `projects`↔`dev_process_phases`, `CHANGE-012`): `project_id` (FK),
+  `dev_process_phase_id` (FK).
 
 ## 5. UI
 
@@ -194,5 +230,6 @@ Layout, state, hành vi tương tác chi tiết: xem `specs/projects-ui.md`.
 | 2026-08-18 | CHANGE-008-fix-db-resume-and-tech-hint | Fix bug thật: `POST /projects` thiếu cast `date`/`numeric` tường minh cho Data API (PROJ-13) |
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm Detail/Edit/Delete (PROJ-14..17), soft delete qua `deleted_at` (DM-PROJ-05) |
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm ảnh đính kèm (PROJ-18..21), bảng `attachments` (DM-PROJ-06), presigned URL S3 |
+| 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `industry`/`outcome_note`/`dev_process_phases` (PROJ-22..26), bảng `dev_process_phases` (DM-PROJ-08); đổi filter `project_type` từ OR sang AND semantics (PROJ-04 sửa) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ proposal/plan gốc -->

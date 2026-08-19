@@ -97,15 +97,16 @@ def test_list_projects_filters_by_technology_and_semantics(db_session):
     assert items[0].project_name == "Alpha"
 
 
-def test_list_projects_filters_by_project_type_or_semantics(db_session):
-    _make_project(db_session, project_name="Alpha", project_types=["offshore"])
-    _make_project(db_session, project_name="Beta", project_types=["lab"])
-    _make_project(db_session, project_name="Gamma", project_types=["maintenance"])
+def test_list_projects_filters_by_project_type_and_semantics(db_session):
+    # PROJ-04 (SỬA — CHANGE-012): AND semantics, giống `technologies`.
+    _make_project(db_session, project_name="Alpha", project_types=["offshore", "lab"])
+    _make_project(db_session, project_name="Beta", project_types=["offshore"])
+    _make_project(db_session, project_name="Gamma", project_types=["lab"])
 
     items, total = list_projects(db_session, project_types=["offshore", "lab"])
     names = {item.project_name for item in items}
-    assert total == 2
-    assert names == {"Alpha", "Beta"}
+    assert total == 1
+    assert names == {"Alpha"}
 
 
 def test_get_project_returns_full_record(db_session):

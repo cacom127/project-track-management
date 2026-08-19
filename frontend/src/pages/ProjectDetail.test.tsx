@@ -51,6 +51,9 @@ const SAMPLE_PROJECT = {
   updated_at: "2024-01-01T00:00:00Z",
   technologies: ["React"],
   project_types: ["offshore"],
+  industry: "製造業",
+  outcome_note: "納期通りリリースできた",
+  dev_process_phases: ["requirements", "testing"],
 };
 
 function renderDetail(id = "1") {
@@ -122,6 +125,17 @@ describe("ProjectDetail", () => {
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(deleteProjectMock).not.toHaveBeenCalled();
+  });
+
+  it("renders industry/dev_process_phases/outcome_note read-only (UI-PROJ-03-6)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByText("業種: 製造業")).toBeInTheDocument();
+    expect(screen.getByText("要件定義")).toBeInTheDocument();
+    expect(screen.getByText("テスト")).toBeInTheDocument();
+    expect(screen.getByText("成果・課題・解決策: 納期通りリリースできた")).toBeInTheDocument();
   });
 
   it("deletes and navigates to /projects with a success toast on confirm (UI-PROJ-03-5)", async () => {

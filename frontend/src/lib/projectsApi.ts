@@ -2,6 +2,9 @@ import { apiFetch } from "./apiClient";
 
 export type ProjectTypeCode = "offshore" | "ses" | "lab" | "new_dev" | "maintenance";
 
+export type DevProcessPhaseCode =
+  "requirements" | "design" | "implementation" | "testing" | "release" | "maintenance_ops";
+
 export type Project = {
   id: number;
   customer_name: string;
@@ -18,6 +21,9 @@ export type Project = {
   updated_at: string;
   technologies: string[];
   project_types: ProjectTypeCode[];
+  industry: string | null;
+  outcome_note: string | null;
+  dev_process_phases: string[];
 };
 
 export type ProjectListResponse = {
@@ -39,6 +45,9 @@ export type ProjectCreateInput = {
   source_note?: string | null;
   technologies?: string[];
   project_types?: ProjectTypeCode[];
+  industry?: string | null;
+  outcome_note?: string | null;
+  dev_process_phases?: string[];
 };
 
 export type ListProjectsParams = {
@@ -47,6 +56,7 @@ export type ListProjectsParams = {
   q?: string;
   technology?: string[];
   project_type?: string[];
+  dev_process_phase?: string[];
 };
 
 /** UI-PROJ-01-1..3: List, search, filter — xem specs/projects-ui.md. */
@@ -57,6 +67,8 @@ export async function listProjects(params: ListProjectsParams = {}): Promise<Pro
   if (params.q) searchParams.set("q", params.q);
   for (const tech of params.technology ?? []) searchParams.append("technology", tech);
   for (const type of params.project_type ?? []) searchParams.append("project_type", type);
+  for (const phase of params.dev_process_phase ?? [])
+    searchParams.append("dev_process_phase", phase);
 
   const response = await apiFetch(`/projects?${searchParams.toString()}`);
   if (!response.ok) {
