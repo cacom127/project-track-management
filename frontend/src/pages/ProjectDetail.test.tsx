@@ -133,10 +133,12 @@ describe("ProjectDetail", () => {
     renderDetail();
 
     await screen.findByRole("heading", { name: "基幹システム刷新" });
-    expect(screen.getByText("業種: 製造業")).toBeInTheDocument();
+    expect(screen.getByText("業種")).toHaveClass("detail-field-label");
+    expect(screen.getByText("製造業")).toBeInTheDocument();
     expect(screen.getByText("要件定義")).toBeInTheDocument();
     expect(screen.getByText("テスト")).toBeInTheDocument();
-    expect(screen.getByText("成果・課題・解決策: 納期通りリリースできた")).toBeInTheDocument();
+    expect(screen.getByText("成果・課題・解決策")).toHaveClass("detail-field-label");
+    expect(screen.getByText("納期通りリリースできた")).toBeInTheDocument();
   });
 
   it("renders team_composition_note read-only (CHANGE-013)", async () => {
@@ -144,7 +146,8 @@ describe("ProjectDetail", () => {
     renderDetail();
 
     await screen.findByRole("heading", { name: "基幹システム刷新" });
-    expect(screen.getByText("チーム体制の詳細: PM 1名、開発者 3名")).toBeInTheDocument();
+    expect(screen.getByText("チーム体制の詳細")).toHaveClass("detail-field-label");
+    expect(screen.getByText("PM 1名、開発者 3名")).toBeInTheDocument();
   });
 
   it("groups 成果・課題・解決策/確認元メモ into a その他 section (UI-PROJ-03-9, CHANGE-014)", async () => {
@@ -155,7 +158,7 @@ describe("ProjectDetail", () => {
     expect(screen.getByText("その他")).toBeInTheDocument();
   });
 
-  it("renders multi-line free-text fields as a bullet list (UI-PROJ-03-8, CHANGE-014)", async () => {
+  it("preserves line breaks in free-text fields without turning them into a bullet list (UI-PROJ-03-8, CHANGE-014 SỬA)", async () => {
     getProjectMock.mockResolvedValue({
       ...SAMPLE_PROJECT,
       outcome_note: "課題：A\n解決策：B\n成果：C",
@@ -163,9 +166,18 @@ describe("ProjectDetail", () => {
     renderDetail();
 
     await screen.findByRole("heading", { name: "基幹システム刷新" });
-    expect(screen.getByRole("list")).toBeInTheDocument();
-    expect(screen.getByText("課題：A")).toBeInTheDocument();
-    expect(screen.getByText("成果：C")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(screen.getByText("課題：A", { exact: false })).toBeInTheDocument();
+  });
+
+  it("separates each field within a block with a label above its value (UI-PROJ-03-11, CHANGE-014)", async () => {
+    getProjectMock.mockResolvedValue(SAMPLE_PROJECT);
+    renderDetail();
+
+    await screen.findByRole("heading", { name: "基幹システム刷新" });
+    expect(screen.getByText("顧客名")).toHaveClass("detail-field-label");
+    expect(screen.getByText("ABC商事")).toHaveClass("detail-field-value");
+    expect(screen.getByText("概要")).toHaveClass("detail-field-label");
   });
 
   it("renders 開発工程 badge with a distinct color from 種別 (UI-PROJ-03-10, CHANGE-014)", async () => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import AttachmentManager from "../components/AttachmentManager";
 import Badge from "../components/Badge";
+import DetailField from "../components/DetailField";
 import Modal from "../components/Modal";
 import MultilineText from "../components/MultilineText";
 import { deleteProject, getProject, ProjectNotFoundError, type Project } from "../lib/projectsApi";
@@ -99,51 +100,48 @@ export function ProjectDetail() {
 
         <section className="form-group-card">
           <h2 className="form-group-card-title">基本情報</h2>
-          <p>顧客名: {project.customer_name}</p>
-          <p>プロジェクト名: {project.project_name}</p>
-          <p>
-            概要: <MultilineText value={project.description} />
-          </p>
-          <p>業種: {project.industry || "—"}</p>
+          <DetailField label="顧客名">{project.customer_name}</DetailField>
+          <DetailField label="プロジェクト名">{project.project_name}</DetailField>
+          <DetailField label="概要">
+            <MultilineText value={project.description} />
+          </DetailField>
+          <DetailField label="業種">{project.industry || "—"}</DetailField>
         </section>
 
         <section className="form-group-card">
           <h2 className="form-group-card-title">期間・規模</h2>
-          <p>期間: {formatPeriod(project)}</p>
-          <p>
-            人数: {project.team_size ?? "—"}名 / 総人月: {project.total_man_month ?? "—"}人月
-          </p>
-          <p>
-            チーム体制の詳細: <MultilineText value={project.team_composition_note} />
-          </p>
+          <DetailField label="期間">{formatPeriod(project)}</DetailField>
+          <DetailField label="人数 / 総人月">
+            {project.team_size ?? "—"}名 / {project.total_man_month ?? "—"}人月
+          </DetailField>
+          <DetailField label="チーム体制の詳細">
+            <MultilineText value={project.team_composition_note} />
+          </DetailField>
         </section>
 
         <section className="form-group-card">
           <h2 className="form-group-card-title">分類</h2>
-          <p>
-            技術:{" "}
+          <DetailField label="技術">
             {project.technologies.map((tech) => (
               <Badge key={tech} variant="tech">
                 {tech}
               </Badge>
             ))}
-          </p>
-          <p>
-            種別:{" "}
+          </DetailField>
+          <DetailField label="種別">
             {project.project_types.map((t) => (
               <Badge key={t} variant="type">
                 {PROJECT_TYPE_LABELS[t] ?? t}
               </Badge>
             ))}
-          </p>
-          <p>
-            開発工程:{" "}
+          </DetailField>
+          <DetailField label="開発工程">
             {project.dev_process_phases.map((p) => (
               <Badge key={p} variant="phase">
                 {DEV_PROCESS_PHASE_LABELS[p] ?? p}
               </Badge>
             ))}
-          </p>
+          </DetailField>
         </section>
 
         <section className="form-group-card">
@@ -153,12 +151,12 @@ export function ProjectDetail() {
 
         <section className="form-group-card">
           <h2 className="form-group-card-title">その他</h2>
-          <p>
-            成果・課題・解決策: <MultilineText value={project.outcome_note} />
-          </p>
-          <p>
-            確認元メモ: <MultilineText value={project.source_note} />
-          </p>
+          <DetailField label="成果・課題・解決策">
+            <MultilineText value={project.outcome_note} />
+          </DetailField>
+          <DetailField label="確認元メモ">
+            <MultilineText value={project.source_note} />
+          </DetailField>
         </section>
 
         <div className="form-actions">

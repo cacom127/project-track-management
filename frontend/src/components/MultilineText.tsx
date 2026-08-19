@@ -2,25 +2,16 @@ type MultilineTextProps = {
   value: string | null | undefined;
 };
 
-/** UI-PROJ-03-8 (CHANGE-014) — giữ nguyên xuống dòng của giá trị lưu
- * trong DB khi hiển thị read-only: ≥2 dòng render dạng bullet list, 1
- * dòng (hoặc rỗng) render text thường — tránh 1 bullet đơn độc vô nghĩa. */
+/** UI-PROJ-03-8 (CHANGE-014, SỬA sau feedback thực tế) — giữ nguyên
+ * xuống dòng của giá trị lưu trong DB khi hiển thị read-only, KHÔNG
+ * chuyển thành bullet list (đã thử — trông sai với field dạng đoạn
+ * văn tự do như 概要). Dùng CSS `white-space: pre-wrap` qua class
+ * `.multiline-text` — xuống dòng giữ nguyên, không có dấu •. */
 export function MultilineText({ value }: MultilineTextProps) {
-  const lines = (value ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return <>—</>;
 
-  if (lines.length === 0) return <>—</>;
-  if (lines.length === 1) return <>{lines[0]}</>;
-
-  return (
-    <ul className="multiline-list">
-      {lines.map((line, index) => (
-        <li key={index}>{line}</li>
-      ))}
-    </ul>
-  );
+  return <span className="multiline-text">{trimmed}</span>;
 }
 
 export default MultilineText;

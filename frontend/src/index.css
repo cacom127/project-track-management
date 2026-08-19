@@ -551,15 +551,39 @@ h1 {
   color: var(--color-on-phase-container);
 }
 
-/* Multiline free-text (UI-PROJ-03-8, CHANGE-014) — ≥2 dòng render bullet
-   list, giữ đúng thứ tự dòng gốc trong DB. */
-.multiline-list {
-  margin: var(--space-xs) 0 0;
-  padding-left: var(--space-md);
+/* Multiline free-text (UI-PROJ-03-8, CHANGE-014) — giữ xuống dòng gốc
+   trong DB, KHÔNG chuyển thành bullet list (sửa sau feedback thực tế:
+   list gây hiểu nhầm với field dạng đoạn văn tự do như 概要). */
+.multiline-text {
+  white-space: pre-wrap;
 }
 
-.multiline-list li {
-  margin-bottom: var(--space-xs);
+/* Field label/value tách rời (UI-PROJ-03-11, CHANGE-014) — label nhỏ/mờ
+   phía trên, giá trị rõ phía dưới, đường kẻ mảnh ngăn cách giữa các
+   field trong cùng 1 block (feedback: khó nhận biết ranh giới field). */
+.detail-field {
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.detail-field:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 2px;
+}
+
+.detail-field-value {
+  font-size: 14px;
+  color: var(--color-on-surface);
 }
 
 /* Filter chip (UI-PROJ-01-14, CHANGE-014) — nhạt hơn badge, cùng hệ màu
