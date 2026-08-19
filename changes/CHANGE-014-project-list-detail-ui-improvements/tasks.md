@@ -19,7 +19,13 @@
 
 ## Ghi chú
 
-- 10 test backend fail sẵn có do ~45+ project mẫu trong local DB
-  (pagination test + import PPTX) — verify KHÔNG tăng số lượng fail so
-  với trước khi bắt đầu ticket này (chỉ tăng số test PASS theo số test
-  mới viết ở T1/T5).
+- Baseline trước ticket: 16 fail/93 pass (backend, data pollution do
+  ~45+ project mẫu trong local DB — pagination test + import PPTX).
+  Sau ticket: **15 fail/95 pass** — giảm 1 fail (PROJ-30 fix limit giúp
+  `test_tech_tags_without_query_returns_all` pass lại) + tăng đúng 1
+  test mới (`test_search_tech_tags_without_q_returns_more_than_20`).
+  Không có regression mới, đúng 15 fail còn lại đều là data pollution
+  đã biết.
+- Frontend: 146/146 pass, kể cả khi bỏ `.env` (không phụ thuộc
+  CognitoUserPool import-time — T13 xác nhận OK).
+- Prettier: sạch, verify trong git worktree `core.autocrlf=false`.
