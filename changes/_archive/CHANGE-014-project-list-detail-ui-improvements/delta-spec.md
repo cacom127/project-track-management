@@ -55,8 +55,8 @@
 - **[UI-PROJ-03-10] (SỬA)**
   - Cũ: badge `開発工程` dùng `variant="type"` (cùng màu `種別`).
   - Mới: badge `開発工程` dùng variant mới `"phase"`
-    (`primary-container`/`on-primary-container`) — phân biệt màu với
-    `種別` trên cả List (nếu có) và Detail.
+    (`phase-container`/`on-phase-container`, hệ hổ phách riêng) — phân
+    biệt màu với `種別` trên cả List (nếu có) và Detail.
 
 - **[UI-PROJ-02-15] (MỚI)** `ProjectForm` (dùng chung cho Create/Edit)
   shall prevent the native Enter-key submit behavior when focus is on

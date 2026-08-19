@@ -26,6 +26,8 @@
 │┌───────────────────────────────────────────────────┐│
 ││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾] [開発工程 ▾]  ││  ← toolbar (border riêng, thêm filter CHANGE-012)
 │└───────────────────────────────────────────────────┘│
+│["React" ✕] [ラボ ✕] [要件定義 ✕]      すべてクリア    │  ← filter chip row, chỉ hiện khi có filter (CHANGE-014)
+│24件                                                   │  ← số kết quả (CHANGE-014)
 ├─────────────────────────────────────────────────────┤
 │顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|
 │ ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | .. |👁|
@@ -51,6 +53,20 @@
   (`DESIGN.md`) — button + mũi tên ▾ + panel checkbox, KHÔNG dùng
   `<select multiple>` gốc trình duyệt. Cả 3 filter đều AND semantics
   (`CHANGE-012` — 種別 trước đó OR, đã đổi để đồng nhất với 技術).
+  Panel filter 技術 có thêm ô tìm kiếm (lọc client-side) + `max-height`/
+  scroll khi >8 option (`CHANGE-014`, tránh dropdown quá dài/thiếu giá
+  trị khi catalog nhiều tag).
+- **Filter chip row**: hiện ngay dưới toolbar, chỉ khi có ≥1 điều kiện
+  filter đang bật (search text hoặc ≥1 giá trị ở 1 trong 3 dropdown) —
+  1 chip / giá trị đơn lẻ (không phải 1 chip / nhóm), mỗi chip có nút
+  ✕ xoá đúng giá trị đó, kèm nút "すべてクリア" xoá hết 1 lần
+  (`CHANGE-014`). Chip tô màu nhạt (`-fixed` token) theo category —
+  技術 xanh lá, 種別 xanh dương, 開発工程 hổ phách, search trung tính
+  (`surface-container-high`) — KHÁC tông đậm của badge trong bảng, để
+  phân biệt "điều kiện đang lọc" với "dữ liệu hiển thị".
+- Số kết quả (`{total}件`) hiện ngay dưới chip row (hoặc ngay dưới
+  toolbar nếu không có chip nào) khi đã load xong và `total > 0`
+  (`CHANGE-014`).
 - **種別/技術**: mỗi giá trị 1 badge riêng (không nối chuỗi bằng dấu
   phẩy) — 種別 dùng tông `secondary-container`, 技術 dùng tông
   `tertiary-container` (phân biệt theo NHÓM, không theo từng giá trị).
@@ -108,6 +124,21 @@
 - **[UI-PROJ-01-11]** The List toolbar shall render an additional
   `FilterDropdown` for `開発工程` (AND semantics, giống 技術), alongside
   技術/種別 (`CHANGE-012`).
+- **[UI-PROJ-01-12]** The technology filter dropdown panel shall render
+  a text search input at the top that filters the option list
+  client-side (case-insensitive substring match) when there are more
+  than 8 options, and the panel shall have a fixed `max-height` with
+  vertical scroll when options overflow (`CHANGE-014`).
+- **[UI-PROJ-01-13]** The List screen shall render the current result
+  count (`{total}件`) below the toolbar whenever `status === "loaded"`
+  and `total > 0` (`CHANGE-014`).
+- **[UI-PROJ-01-14]** The List screen shall render a row of removable
+  filter chips below the toolbar whenever at least one filter condition
+  (search text, technology, project_type, or dev_process_phase) is
+  active — one chip per individual value (not one per group). Clicking
+  a chip's ✕ removes only that value from its filter (search chip
+  clears the search text). A "すべてクリア" button clears all active
+  conditions at once (`CHANGE-014`).
 
 ---
 
@@ -227,6 +258,12 @@
 - **[UI-PROJ-02-14]** The Create/Edit form shall render an optional
   `チーム体制の詳細` textarea in 期間・規模, cạnh `人数`/`総人月`
   (`CHANGE-013`).
+- **[UI-PROJ-02-15]** `ProjectForm` (dùng chung cho Create/Edit) shall
+  prevent the native Enter-key submit behavior when focus is on any
+  `<input>` element inside the form — không áp dụng cho `<textarea>`
+  (Enter vốn chỉ xuống dòng, không submit) và không áp dụng khi Enter
+  được nhấn trực tiếp trên nút submit (`CHANGE-014`, feedback: Enter
+  trong input số/ngày tháng vô tình submit form).
 
 ---
 
@@ -236,40 +273,62 @@
 
 ```
 ┌─ 基本情報 ──────────────────────┐
-│ 顧客名           ○○○           │
-│ プロジェクト名     ○○○           │
-│ 概要              ○○○           │
-│ 業種             ○○○           │  ← CHANGE-012
+│ 顧客名                           │  ← label nhỏ/mờ (DetailField)
+│  ABC商事                        │  ← giá trị rõ, dưới label
+│ ─────────────────────────────── │  ← border mảnh giữa field (CHANGE-014)
+│ プロジェクト名                    │
+│  ○○○                          │
+│ ─────────────────────────────── │
+│ 概要                             │
+│  ○○○（xuống dòng giữ nguyên,    │  ← pre-wrap, KHÔNG bullet (CHANGE-014)
+│  không có dấu •）                │
+│ ─────────────────────────────── │
+│ 業種                             │  ← CHANGE-012
+│  ○○○                          │
 └─────────────────────────────────┘
 ┌─ 期間・規模 ────────────────────┐
-│ 期間             2024-01-01〜進行中│
-│ 人数 / 総人月     5名 / 12.5人月  │
-│ チーム体制の詳細  ○○○           │  ← CHANGE-013
+│ 期間 / 2024-01-01〜進行中 / 人数・総人月 / チーム体制の詳細 (CHANGE-013) — mỗi field 1 khối như trên
 └─────────────────────────────────┘
 ┌─ 分類 ──────────────────────────┐
-│ 技術             [React][AWS]   │
-│ 種別             [オフショア]     │
-│ 開発工程          [要件定義]      │  ← CHANGE-012, Badge
+│ 技術  [React][AWS]              │
+│ ───────────────────────────     │
+│ 種別  [オフショア]                │
+│ ───────────────────────────     │
+│ 開発工程 [要件定義] ← màu hổ phách riêng, khác 種別 (CHANGE-014) │
 └─────────────────────────────────┘
 ┌─ 画像添付（最大10枚）──────────────┐
 │ ┌───┐┌───┐┌───┐              │
 │ │📷 ││📷 ││📷 │  ← thumbnail, click mở Lightbox, KHÔNG có nút thêm/xoá │
 └─────────────────────────────────┘
-成果・課題・解決策  ○○○           │  ← CHANGE-012
-確認元メモ         ○○○
+┌─ その他 ────────────────────────┐  ← CHANGE-014 (trước đó nằm ngoài card)
+│ 成果・課題・解決策  ○○○         │  ← CHANGE-012
+│ ───────────────────────────     │
+│ 確認元メモ         ○○○         │
+└─────────────────────────────────┘
            [編集]  [削除]
 ```
 
 - Cùng layout 3-card + max-width 640px căn giữa như màn Tạo (mục 3.1),
-  nhưng field hiển thị dạng text read-only (không phải input). 種別/技術
-  vẫn hiển thị Badge như List. Section "画像添付" (`AttachmentManager`
-  mode `live` + `readOnly`) đặt sau 分類 — **chỉ xem** (thumbnail +
-  Lightbox), KHÔNG có nút "+ 画像を選択"/Paste Zone/nút xoá, đúng tinh
-  thần Detail read-only; muốn thêm/xoá ảnh phải bấm "編集" sang màn Sửa
-  (`CHANGE-011`, sửa lại từ bản đầu cho Detail thêm/xoá được luôn).
-  `業種` hiển thị sau 概要 trong 基本情報, `開発工程` hiển thị dạng Badge
-  trong 分類 (sau 種別/技術), `成果・課題・解決策` hiển thị cạnh
-  確認元メモ (`CHANGE-012`).
+  nhưng field hiển thị dạng text read-only (không phải input). Mỗi
+  field trong mọi block dùng component `DetailField` (`CHANGE-014`):
+  label nhỏ/mờ (`on-surface-variant`, 12px) phía trên, giá trị rõ phía
+  dưới, đường kẻ mảnh (`outline-variant`) ngăn cách giữa các field liên
+  tiếp trong cùng block (không có border sau field cuối) — trước đó
+  label/giá trị nằm trên 1 dòng dạng "label: giá trị", khó nhận biết
+  ranh giới field khi giá trị dài nhiều dòng.
+  Giá trị nhiều dòng (概要/成果・課題・解決策/確認元メモ/
+  チーム体制の詳細) giữ nguyên xuống dòng qua CSS `white-space:
+  pre-wrap`, KHÔNG chuyển thành bullet list (`CHANGE-014` — đã thử
+  bullet trước, sửa lại vì gây hiểu nhầm với field dạng đoạn văn tự do
+  như 概要). 種別/技術/開発工程 vẫn hiển thị Badge như List, mỗi loại 1
+  màu riêng (種別 xanh dương, 技術 xanh lá, 開発工程 hổ phách — trước đó
+  開発工程 dùng chung màu 種別, sửa ở `CHANGE-014`).
+  Section "画像添付" (`AttachmentManager` mode `live` + `readOnly`) đặt
+  sau 分類 — **chỉ xem** (thumbnail + Lightbox), KHÔNG có nút "+ 画像を
+  選択"/Paste Zone/nút xoá, đúng tinh thần Detail read-only; muốn
+  thêm/xoá ảnh phải bấm "編集" sang màn Sửa (`CHANGE-011`).
+  `成果・課題・解決策`/`確認元メモ` gộp vào 1 section riêng "その他"
+  (`CHANGE-014` — trước đó nằm ngoài mọi card).
 - Nút "編集" (Action Button Primary, `.button-primary` — text luôn căn
   giữa kể cả khi render bằng `<Link>`) điều hướng `/projects/:id/edit`.
   Nút "削除" (Action Button Destructive) mở Modal xác nhận trước khi
@@ -308,6 +367,27 @@
   sections (`CHANGE-012`).
 - **[UI-PROJ-03-7]** The Detail screen shall render `チーム体制の詳細`
   read-only in 期間・規模, cạnh `人数`/`総人月` (`CHANGE-013`).
+- **[UI-PROJ-03-8] (SỬA — CHANGE-014)**
+  - Cũ: free-text fields (`概要`/`成果・課題・解決策`/`確認元メモ`/
+    `チーム体制の詳細`) với ≥2 dòng render dạng bullet list
+    (`<ul>`/`<li>`).
+  - Mới: preserve line breaks via CSS `white-space: pre-wrap`, KHÔNG
+    render bullet list — bullet gây hiểu nhầm với field dạng đoạn văn
+    tự do như `概要` (phát hiện qua feedback thực tế).
+- **[UI-PROJ-03-9]** The Detail screen shall group `成果・課題・解決策`
+  (`outcome_note`) and `確認元メモ` (`source_note`) into a 4th
+  `form-group-card` section titled `その他`, matching the visual style
+  of `基本情報`/`期間・規模`/`分類` (`CHANGE-014`).
+- **[UI-PROJ-03-10] (SỬA — CHANGE-014)**
+  - Cũ: badge `開発工程` dùng `variant="type"` (cùng màu `種別`).
+  - Mới: badge `開発工程` dùng variant riêng `"phase"`
+    (`phase-container`/`on-phase-container`, hệ hổ phách) — phân biệt
+    màu với `種別`.
+- **[UI-PROJ-03-11]** Each field within a Detail screen block
+  (基本情報/期間・規模/分類/その他) shall render its label above its
+  value (component `DetailField`), with a thin `outline-variant`
+  border between consecutive fields in the same block, không có border
+  sau field cuối (`CHANGE-014`).
 
 ---
 
@@ -449,5 +529,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm `AttachmentManager` dùng chung (mục 6, UI-PROJ-05-1..7) cho Tạo/Sửa/Chi tiết (Detail dùng `readOnly` — chỉ xem); `ProjectForm` đổi contract `onSubmit`/`onSuccess` (UI-PROJ-02-11) |
 | 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `業種`/`開発工程`/`成果・課題・解決策` vào Create/Edit/Detail (UI-PROJ-02-12/13, UI-PROJ-03-6); List thêm filter 開発工程 (UI-PROJ-01-11), đổi filter 種別 sang AND semantics |
 | 2026-08-19 | CHANGE-013-team-composition-note | Thêm `チーム体制の詳細` vào Create/Edit/Detail (UI-PROJ-02-14, UI-PROJ-03-7) |
+| 2026-08-19 | CHANGE-014-project-list-detail-ui-improvements | List: search box trong dropdown 技術 + scroll (UI-PROJ-01-12), hiện số kết quả (UI-PROJ-01-13), filter chip xoá riêng từng giá trị (UI-PROJ-01-14); Create/Edit: chặn Enter submit ngoài ý muốn (UI-PROJ-02-15); Detail: bỏ bullet list cho multiline (UI-PROJ-03-8 sửa), gộp その他 (UI-PROJ-03-9), badge 開発工程 đổi màu riêng (UI-PROJ-03-10 sửa), tách field bằng `DetailField` (UI-PROJ-03-11) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->
