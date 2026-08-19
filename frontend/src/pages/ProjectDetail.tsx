@@ -135,7 +135,11 @@ export function ProjectDetail() {
           <Link to={`/projects/${project.id}/edit`} className="button-primary">
             編集
           </Link>
-          <button type="button" className="button-destructive" onClick={() => setDeleteModalOpen(true)}>
+          <button
+            type="button"
+            className="button-destructive"
+            onClick={() => setDeleteModalOpen(true)}
+          >
             削除
           </button>
         </div>

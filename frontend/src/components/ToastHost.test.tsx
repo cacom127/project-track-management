@@ -5,9 +5,7 @@ import ToastHost from "./ToastHost";
 
 function renderToastHost(state?: Record<string, unknown>) {
   render(
-    <MemoryRouter
-      initialEntries={[{ pathname: "/projects", state }]}
-    >
+    <MemoryRouter initialEntries={[{ pathname: "/projects", state }]}>
       <ToastHost />
     </MemoryRouter>,
   );
