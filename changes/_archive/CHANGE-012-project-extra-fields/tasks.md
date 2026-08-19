@@ -47,15 +47,14 @@
       - File dự kiến: `frontend/src/pages/ProjectList.tsx`
 - [x] **T9** — Chạy full test suite (backend + frontend), lint, build,
       `prettier --check` trong git worktree sạch (không CRLF)
-- [ ] **T10** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
+- [x] **T10** — Fold vào `specs/projects.md`, `specs/projects-ui.md`,
       `specs/data-model.md` (bảng mới DM-PROJ-08), di chuyển ticket vào
-      `changes/_archive/` — LÀM SAU khi user deploy + test production
-      OK (theo quy trình mới từ CHANGE-011)
-- [ ] **T11** — Nhắc user: chạy migration script trên production sau
-      khi merge (`apply_migration_via_data_api.py`)
+      `changes/_archive/`
+- [x] **T11** — User đã tự chạy migration + deploy production, xác
+      nhận test OK
 
 ## Trạng thái
 
 | Trạng thái | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
-| Đang làm    | 2026-08-19     | T1-T9 xong (backend 94/94, frontend 130/130, lint/build/prettier sạch). T10 (fold spec) và T11 chờ user deploy + test production OK |
+| Hoàn tất    | 2026-08-19     | T1-T11 xong, đã deploy + test production OK. Bổ sung thêm 1 thay đổi ngoài kế hoạch ban đầu: đổi filter 種別/開発工程 sang AND semantics (PROJ-04 sửa) theo yêu cầu Product owner |

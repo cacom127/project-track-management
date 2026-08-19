@@ -24,7 +24,7 @@
 │ プロジェクト                      [+ 新規プロジェクト] │  ← hàng tiêu đề
 ├─────────────────────────────────────────────────────┤
 │┌───────────────────────────────────────────────────┐│
-││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾]              ││  ← toolbar (border riêng)
+││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾] [開発工程 ▾]  ││  ← toolbar (border riêng, thêm filter CHANGE-012)
 │└───────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────┤
 │顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|
@@ -47,9 +47,10 @@
   trong `DESIGN.md`).
 - **Ô tìm kiếm**: class riêng (KHÔNG dùng `.input-field` nguyên khối),
   width cố định 320px, icon kính lúp inline.
-- **Filter công nghệ/loại hình**: dùng component `Dropdown/Filter`
+- **Filter công nghệ/loại hình/開発工程**: dùng component `Dropdown/Filter`
   (`DESIGN.md`) — button + mũi tên ▾ + panel checkbox, KHÔNG dùng
-  `<select multiple>` gốc trình duyệt.
+  `<select multiple>` gốc trình duyệt. Cả 3 filter đều AND semantics
+  (`CHANGE-012` — 種別 trước đó OR, đã đổi để đồng nhất với 技術).
 - **種別/技術**: mỗi giá trị 1 badge riêng (không nối chuỗi bằng dấu
   phẩy) — 種別 dùng tông `secondary-container`, 技術 dùng tông
   `tertiary-container` (phân biệt theo NHÓM, không theo từng giá trị).
@@ -104,6 +105,9 @@
 - **[UI-PROJ-01-10]** The List table shall render a "詳細" icon
   (accessible name "詳細" qua `aria-label`) per row navigating to
   `/projects/:id` (`CHANGE-010`).
+- **[UI-PROJ-01-11]** The List toolbar shall render an additional
+  `FilterDropdown` for `開発工程` (AND semantics, giống 技術), alongside
+  技術/種別 (`CHANGE-012`).
 
 ---
 
@@ -116,6 +120,7 @@
 │ 顧客名 *        [___________]   │
 │ プロジェクト名 * [___________]   │
 │ 概要            [___________]   │
+│ 業種            [___________]   │  ← CHANGE-012
 └─────────────────────────────────┘
 ┌─ 期間・規模 ────────────────────┐
 │ 開始日 *        [__/__/____]    │
@@ -126,12 +131,14 @@
 ┌─ 分類 ──────────────────────────┐
 │ 技術            [tag input....] │
 │ 種別            [☐offshore ...] │
+│ 開発工程         [☐要件定義 ...] │  ← CHANGE-012, checkbox giống 種別
 └─────────────────────────────────┘
 ┌─ 画像添付（最大10枚）──────────────┐
 │ [+ 画像を選択]  [Paste Zone]      │  ← xem mục 6 (CHANGE-011)
 │ ┌───┐┌───┐┌───┐              │
 │ │📷 ││📷 ││📷 │  ← thumbnail        │
 └─────────────────────────────────┘
+成果・課題・解決策 [___________]   │  ← CHANGE-012, textarea
 確認元メモ        [___________]
            [作成する]  [キャンセル]
 ```
@@ -210,6 +217,12 @@
   AFTER attachment upload (if any staged) completes — tách "gửi dữ
   liệu form" khỏi "điều hướng/toast khi xong" để chỗ cho bước upload
   ảnh staged ở giữa (`CHANGE-011`).
+- **[UI-PROJ-02-12]** The Create/Edit form shall render an optional
+  `業種` text input in 基本情報, and an optional `成果・課題・解決策`
+  textarea near `確認元メモ` (`CHANGE-012`).
+- **[UI-PROJ-02-13]** The Create/Edit form shall render `開発工程` as a
+  checkbox group (fixed catalog: 要件定義/設計/実装/テスト/リリース/
+  保守運用) in 分類, giống cấu trúc `種別` (`CHANGE-012`).
 
 ---
 
@@ -222,6 +235,7 @@
 │ 顧客名           ○○○           │
 │ プロジェクト名     ○○○           │
 │ 概要              ○○○           │
+│ 業種             ○○○           │  ← CHANGE-012
 └─────────────────────────────────┘
 ┌─ 期間・規模 ────────────────────┐
 │ 期間             2024-01-01〜進行中│
@@ -230,11 +244,13 @@
 ┌─ 分類 ──────────────────────────┐
 │ 技術             [React][AWS]   │
 │ 種別             [オフショア]     │
+│ 開発工程          [要件定義]      │  ← CHANGE-012, Badge
 └─────────────────────────────────┘
 ┌─ 画像添付（最大10枚）──────────────┐
 │ ┌───┐┌───┐┌───┐              │
 │ │📷 ││📷 ││📷 │  ← thumbnail, click mở Lightbox, KHÔNG có nút thêm/xoá │
 └─────────────────────────────────┘
+成果・課題・解決策  ○○○           │  ← CHANGE-012
 確認元メモ         ○○○
            [編集]  [削除]
 ```
@@ -246,6 +262,9 @@
   Lightbox), KHÔNG có nút "+ 画像を選択"/Paste Zone/nút xoá, đúng tinh
   thần Detail read-only; muốn thêm/xoá ảnh phải bấm "編集" sang màn Sửa
   (`CHANGE-011`, sửa lại từ bản đầu cho Detail thêm/xoá được luôn).
+  `業種` hiển thị sau 概要 trong 基本情報, `開発工程` hiển thị dạng Badge
+  trong 分類 (sau 種別/技術), `成果・課題・解決策` hiển thị cạnh
+  確認元メモ (`CHANGE-012`).
 - Nút "編集" (Action Button Primary, `.button-primary` — text luôn căn
   giữa kể cả khi render bằng `<Link>`) điều hướng `/projects/:id/edit`.
   Nút "削除" (Action Button Destructive) mở Modal xác nhận trước khi
@@ -279,6 +298,9 @@
   system shall call `DELETE /projects/{id}` and, on success, navigate
   to `/projects` with a success toast message
   ("「{project_name}」を削除しました").
+- **[UI-PROJ-03-6]** The Detail screen shall render `業種`, `開発工程`
+  (dạng Badge), and `成果・課題・解決策` read-only in their respective
+  sections (`CHANGE-012`).
 
 ---
 
@@ -418,5 +440,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | App Shell (Sidebar, xem `specs/architecture.md` mục 1); List: tách title/toolbar, dropdown filter, badge (UI-PROJ-01-6..9); Create: phân nhóm card, dấu *, đơn vị ngang hàng, nút Huỷ (UI-PROJ-02-5..8) |
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Thêm màn Chi tiết (mục 4)/Sửa (mục 5); List: icon 詳細 thay link chữ (UI-PROJ-01-10); Create: toast thành công (UI-PROJ-02-4 sửa), input disabled rõ ràng hơn, dropdown gợi ý 技術 bám input + đổi màu nền (UI-PROJ-02-9/10); ToastHost dùng chung (mục 7, UI-SHELL-04) |
 | 2026-08-19 | CHANGE-011-project-attachments | Thêm `AttachmentManager` dùng chung (mục 6, UI-PROJ-05-1..7) cho Tạo/Sửa/Chi tiết (Detail dùng `readOnly` — chỉ xem); `ProjectForm` đổi contract `onSubmit`/`onSuccess` (UI-PROJ-02-11) |
+| 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `業種`/`開発工程`/`成果・課題・解決策` vào Create/Edit/Detail (UI-PROJ-02-12/13, UI-PROJ-03-6); List thêm filter 開発工程 (UI-PROJ-01-11), đổi filter 種別 sang AND semantics |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->

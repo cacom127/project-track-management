@@ -22,6 +22,7 @@ erDiagram
     PROJECT }o--o{ TECH_TAG : tagged_with
     PROJECT }o--o{ PROJECT_TYPE : classified_as
     PROJECT ||--o{ ATTACHMENT : has
+    PROJECT }o--o{ DEV_PROCESS_PHASE : went_through
 ```
 
 ## 2. Bảng entity → module sở hữu
@@ -38,11 +39,14 @@ erDiagram
 | TechTag     | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
 | ProjectType | projects       | `specs/projects.md` (chưa có — ticket riêng)   |
 | Attachment  | projects       | `specs/projects.md` mục Data Model             |
+| DevProcessPhase | projects   | `specs/projects.md` mục Data Model             |
 
-> Bảng nối (`project_tech_tags`, `project_project_types`) là chi tiết
-> triển khai của quan hệ N-N `Project ↔ TechTag` / `Project ↔ ProjectType`
-> — không phải entity nghiệp vụ riêng nên không có dòng riêng ở trên;
-> field-level của chúng vẫn định nghĩa trong `specs/projects.md`.
+> Bảng nối (`project_tech_tags`, `project_project_types`,
+> `project_dev_process_phases`) là chi tiết triển khai của quan hệ N-N
+> `Project ↔ TechTag` / `Project ↔ ProjectType` / `Project ↔
+> DevProcessPhase` — không phải entity nghiệp vụ riêng nên không có
+> dòng riêng ở trên; field-level của chúng vẫn định nghĩa trong
+> `specs/projects.md`.
 
 ## 3. Quy ước chung toàn hệ thống (áp dụng mọi bảng)
 
@@ -77,6 +81,7 @@ erDiagram
 | Ngày       | Ticket ID              | Thay đổi                                                        |
 |------------|--------------------------|----------------------------------------------------------------------|
 | 2026-08-14 | CHANGE-002-architecture | Khởi tạo: thêm User, Project, TechTag, ProjectType, Attachment + quy ước chung |
+| 2026-08-19 | CHANGE-012-project-extra-fields | Thêm bảng mới DevProcessPhase, quan hệ `Project }o--o{ DevProcessPhase` |
 
 <!-- Thêm field vào User/Project... KHÔNG log ở đây — xem lịch sử trong
      specs/<module>.md tương ứng. -->
