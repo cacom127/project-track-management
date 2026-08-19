@@ -16,6 +16,9 @@
 | T12 | `prettier --check` trong git worktree sạch (không CRLF) | [x] |
 | T13 | Verify local: chạy `.env` bỏ Cognito 1 lần để chắc test không phụ thuộc CognitoUserPool import-time | [x] |
 | T14 | Báo user deploy + test production OK, rồi mới fold spec vào `specs/`/`DESIGN.md` và archive ticket | [ ] |
+| T15 | Feedback: chip 種別/開発工程 quá giống màu → đổi 開発工程 sang hệ hổ phách riêng (`phase-container`/`phase-fixed`, token mới) | [x] |
+| T16 | Feedback: bỏ bullet list cho multiline text (chỉ giữ xuống dòng qua `white-space: pre-wrap`) | [x] |
+| T17 | Feedback: thêm `DetailField` (label trên/giá trị dưới + border phân tách) cho mọi field trong block Detail | [x] |
 
 ## Ghi chú
 

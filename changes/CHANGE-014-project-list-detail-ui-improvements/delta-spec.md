@@ -31,13 +31,21 @@
   the table/Detail screen. The search chip uses a neutral
   `surface-container-high` background (không thuộc category nào).
 
-- **[UI-PROJ-03-8] (MỚI)** Free-text fields rendered on the Detail
-  screen (`概要`, `成果・課題・解決策`, `確認元メモ`,
-  `チーム体制の詳細`) shall preserve line breaks from the stored value:
-  when the value contains 2+ non-empty lines, render as a bulleted list
-  (1 `<li>` per line); when it contains exactly 1 line (or is
-  empty/null), render as plain text (`—` if empty/null) — không hiện 1
-  bullet đơn độc cho giá trị 1 dòng.
+- **[UI-PROJ-03-8] (MỚI, SỬA sau feedback)** Free-text fields rendered
+  on the Detail screen (`概要`, `成果・課題・解決策`, `確認元メモ`,
+  `チーム体制の詳細`) shall preserve line breaks from the stored value
+  via CSS `white-space: pre-wrap` (`—` if empty/null).
+  - Cũ (thử đầu tiên): ≥2 dòng render dạng bullet list (`<ul>`/`<li>`).
+  - Mới: KHÔNG chuyển thành list — bullet gây hiểu nhầm với field dạng
+    đoạn văn tự do như `概要` (phát hiện qua feedback thực tế). Xuống
+    dòng giữ nguyên như văn bản thường, không có dấu `•`.
+
+- **[UI-PROJ-03-11] (MỚI)** Each field within a Detail screen block
+  (基本情報/期間・規模/分類/その他) shall render its label above its
+  value (component `DetailField`), with a thin `outline-variant`
+  border between consecutive fields in the same block (không có border
+  sau field cuối) — giúp nhận biết ranh giới từng field khi giá trị dài
+  nhiều dòng.
 
 - **[UI-PROJ-03-9] (MỚI)** The Detail screen shall group
   `成果・課題・解決策` (`outcome_note`) and `確認元メモ`
@@ -87,12 +95,19 @@ nhạt hơn để phân biệt 2 ngữ cảnh, cùng hệ hổ phách):
 |---|---|---|
 | `phase` (mới) | `phase-container` (`#6b4a00`) | `on-phase-container` (`#ffcf6b`) |
 
-`MultilineText` component (mới, `frontend/src/components/MultilineText.tsx`):
+`MultilineText` component (`frontend/src/components/MultilineText.tsx`):
 - Input: `value: string | null | undefined`.
-- Tách theo `\n`, `trim()` mỗi dòng, bỏ dòng rỗng.
-- 0 dòng → render `—`.
-- 1 dòng → render dòng đó dạng text thường (không bullet).
-- ≥2 dòng → render `<ul className="multiline-list">` với 1 `<li>`/dòng.
+- `trim()` toàn bộ giá trị, rỗng → render `—`.
+- Còn lại → render trong `<span className="multiline-text">` (CSS
+  `white-space: pre-wrap` giữ xuống dòng, không tạo `<ul>`/`<li>`).
+
+`DetailField` component (`frontend/src/components/DetailField.tsx`):
+- Props: `label: string`, `children: ReactNode`.
+- Render `<div className="detail-field"><span className="detail-field-label">{label}</span><div className="detail-field-value">{children}</div></div>`.
+- CSS: `.detail-field` có `border-bottom` mảnh (`outline-variant`) +
+  spacing, `:last-child` bỏ border/spacing dưới.
+- Dùng cho MỌI field ở `ProjectDetail.tsx` (kể cả field hiển thị badge
+  như 技術/種別/開発工程 — `children` nhận list `<Badge>`).
 
 ## 2. Acceptance criteria / Test mapping
 
@@ -102,8 +117,9 @@ nhạt hơn để phân biệt 2 ngữ cảnh, cùng hệ hổ phách):
 | UI-PROJ-01-12 | `ProjectList.test.tsx`: gõ vào ô search trong dropdown lọc đúng option, panel có scroll khi nhiều option |
 | UI-PROJ-01-13 | `ProjectList.test.tsx`: hiện `"N件"` khi có data |
 | UI-PROJ-01-14 | `ProjectList.test.tsx`: chip hiện đúng theo từng filter, click ✕ xoá đúng 1 value, nút "すべてクリア" xoá hết |
-| UI-PROJ-03-8 | `ProjectDetail.test.tsx`: giá trị nhiều dòng render `<li>`, giá trị 1 dòng không render bullet |
+| UI-PROJ-03-8 | `MultilineText.test.tsx` + `ProjectDetail.test.tsx`: giá trị nhiều dòng KHÔNG render `<ul>`/`<li>`, giữ nguyên xuống dòng |
 | UI-PROJ-03-9 | `ProjectDetail.test.tsx`: `その他` section chứa 成果・課題・解決策 + 確認元メモ |
+| UI-PROJ-03-11 | `DetailField.test.tsx` + `ProjectDetail.test.tsx`: label/value là 2 element riêng, có class `detail-field-label`/`detail-field-value` |
 | UI-PROJ-03-10 | `ProjectDetail.test.tsx`: badge 開発工程 có class `badge-phase`, khác `badge-type` |
 | UI-PROJ-02-15 | `ProjectCreate.test.tsx`/`ProjectEdit.test.tsx`: nhấn Enter trong input 顧客名 không gọi `createProject`/`updateProject` |
 
