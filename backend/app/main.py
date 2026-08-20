@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.export.routes import router as export_router
 from app.projects.routes import router as projects_router
 from app.routers.health import router as health_router
 
@@ -41,3 +42,4 @@ if not os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
 
 app.include_router(health_router)
 app.include_router(projects_router)
+app.include_router(export_router)

@@ -51,3 +51,30 @@ def delete_object(s3_key: str) -> None:
     `projects`)."""
     client = _get_client()
     client.delete_object(Bucket=settings.attachments_bucket_name, Key=s3_key)
+
+
+def get_object_bytes(s3_key: str) -> bytes:
+    """CHANGE-017 (EXPORT-07) — đọc nội dung nhị phân của 1 object (ảnh
+    đính kèm) để nhúng trực tiếp vào slide qua `io.BytesIO`, không qua
+    presigned URL/HTTP round-trip vì backend gọi S3 nội bộ."""
+    client = _get_client()
+    response = client.get_object(Bucket=settings.attachments_bucket_name, Key=s3_key)
+    return response["Body"].read()
+
+
+def upload_bytes(
+    s3_key: str, data: bytes, content_type: str, content_disposition: str | None = None
+) -> None:
+    """CHANGE-017 (EXPORT-09/10) — upload file kết quả export (không đi
+    qua presigned PUT như attachment, vì backend tự tạo nội dung, không
+    cần client upload trực tiếp)."""
+    client = _get_client()
+    params: dict[str, Any] = {
+        "Bucket": settings.attachments_bucket_name,
+        "Key": s3_key,
+        "Body": data,
+        "ContentType": content_type,
+    }
+    if content_disposition is not None:
+        params["ContentDisposition"] = content_disposition
+    client.put_object(**params)

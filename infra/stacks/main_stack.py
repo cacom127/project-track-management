@@ -187,6 +187,16 @@ class MainStack(Stack):
             "AttachmentsBucket",
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy=RemovalPolicy.RETAIN,
+            # CHANGE-017 (EXPORT-11) — file .pptx export chỉ dùng 1 lần để
+            # download qua presigned URL, không cần lưu lâu; tự xoá sau 1
+            # ngày để tránh tích tụ rác. Không ảnh hưởng prefix
+            # `attachments/` hiện có (rule chỉ áp dụng prefix `exports/`).
+            lifecycle_rules=[
+                s3.LifecycleRule(
+                    prefix="exports/",
+                    expiration=Duration.days(1),
+                ),
+            ],
         )
 
     def _add_attachments_bucket_cors(self) -> None:

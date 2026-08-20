@@ -499,6 +499,25 @@ def list_attachments(db: DBSession, project_id: int) -> list[AttachmentOut]:
     ]
 
 
+def list_attachment_s3_keys(db: DBSession, project_id: int, limit: int | None = None) -> list[str]:
+    """CHANGE-017 (EXPORT-07) — trả `s3_key` thô (không qua
+    `AttachmentOut`, vốn chỉ expose presigned `url` cho FE) để module
+    `export` đọc nội dung ảnh qua `app.core.s3.get_object_bytes`. Cùng
+    thứ tự (`created_at ASC, id ASC` — thứ tự upload) với
+    `list_attachments`."""
+    sql = """
+        SELECT s3_key FROM attachments
+        WHERE project_id = :project_id
+        ORDER BY created_at ASC, id ASC
+    """
+    params: dict = {"project_id": project_id}
+    if limit is not None:
+        sql += " LIMIT :limit"
+        params["limit"] = limit
+    rows = db.execute(sql, params)
+    return [row["s3_key"] for row in rows]
+
+
 def delete_attachment(db: DBSession, project_id: int, attachment_id: int) -> bool:
     """PROJ-21 — hard delete, cả S3 object lẫn record DB. Trả False nếu
     không tồn tại hoặc không thuộc project_id trong URL (route 404)."""
