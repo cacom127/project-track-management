@@ -5,16 +5,25 @@ import FilterDropdown from "../components/FilterDropdown";
 import { listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
 import { DEV_PROCESS_PHASE_LABELS, DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
+import { formatPeriod } from "../lib/formatPeriod";
+import ProjectCard from "../components/ProjectCard";
 
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
+const VIEW_MODE_STORAGE_KEY = "projectListViewMode";
 
 type Status = "loading" | "loaded" | "error";
+type ViewMode = "list" | "card";
 
-function formatPeriod(project: Project): string {
-  const start = project.start_date;
-  if (project.is_ongoing) return `${start} 〜 進行中`;
-  return project.end_date ? `${start} 〜 ${project.end_date}` : start;
+// UI-PROJ-01-16 (SỬA — CHANGE-015): mặc định "card" khi chưa có lựa
+// chọn lưu trong localStorage (trước đó mặc định "list").
+function readStoredViewMode(): ViewMode {
+  try {
+    const stored = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return stored === "list" ? "list" : "card";
+  } catch {
+    return "card";
+  }
 }
 
 export function ProjectList() {
@@ -28,6 +37,17 @@ export function ProjectList() {
   const [devProcessPhase, setDevProcessPhase] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [techOptions, setTechOptions] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>(readStoredViewMode);
+
+  function changeViewMode(mode: ViewMode) {
+    setViewMode(mode);
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch {
+      // localStorage không khả dụng (vd private mode) — bỏ qua, chỉ
+      // mất khả năng nhớ lựa chọn, không ảnh hưởng chức năng chính.
+    }
+  }
 
   // UI-PROJ-01-2: debounce 300ms trước khi cập nhật query search thật.
   useEffect(() => {
@@ -177,6 +197,27 @@ export function ProjectList() {
           value={devProcessPhase}
           onChange={handleDevProcessPhaseChange}
         />
+        {/* UI-PROJ-01-15: toggle hiển thị list/card */}
+        <div className="view-mode-toggle">
+          <button
+            type="button"
+            className={viewMode === "list" ? "view-mode-button active" : "view-mode-button"}
+            aria-label="リスト表示"
+            aria-pressed={viewMode === "list"}
+            onClick={() => changeViewMode("list")}
+          >
+            ☰
+          </button>
+          <button
+            type="button"
+            className={viewMode === "card" ? "view-mode-button active" : "view-mode-button"}
+            aria-label="カード表示"
+            aria-pressed={viewMode === "card"}
+            onClick={() => changeViewMode("card")}
+          >
+            ⊞
+          </button>
+        </div>
       </div>
 
       {chips.length > 0 && (
@@ -207,90 +248,99 @@ export function ProjectList() {
 
       {status === "loaded" && total === 0 && <p>プロジェクトが見つかりません</p>}
 
-      {status === "loaded" && total > 0 && (
-        <>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>顧客名</th>
-                  <th>プロジェクト名</th>
-                  <th>概要</th>
-                  <th>期間</th>
-                  <th>種別</th>
-                  <th>技術</th>
-                  <th>人数</th>
-                  <th>総人月</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((project) => (
-                  <tr key={project.id}>
-                    <td>{project.customer_name}</td>
-                    <td>{project.project_name}</td>
-                    <td className="project-list-description">{project.description}</td>
-                    <td>{formatPeriod(project)}</td>
-                    <td>
-                      {/* UI-PROJ-01-9: mỗi giá trị 1 badge riêng, không nối chuỗi */}
-                      {project.project_types.map((t) => (
-                        <Badge key={t} variant="type">
-                          {PROJECT_TYPE_LABELS[t] ?? t}
-                        </Badge>
-                      ))}
-                    </td>
-                    <td>
-                      {project.technologies.map((tech) => (
-                        <Badge key={tech} variant="tech">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </td>
-                    <td>{project.team_size ?? "—"}</td>
-                    <td>{project.total_man_month ?? "—"}</td>
-                    <td>
-                      {/* UI-PROJ-01-10 — icon thay cho link chữ (feedback
+      {status === "loaded" && total > 0 && viewMode === "card" && (
+        <div className="project-card-grid">
+          {items.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
+
+      {status === "loaded" && total > 0 && viewMode === "list" && (
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>顧客名</th>
+                <th>プロジェクト名</th>
+                <th>概要</th>
+                <th>期間</th>
+                <th>種別</th>
+                <th>技術</th>
+                <th>人数</th>
+                <th>総人月</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((project) => (
+                <tr key={project.id}>
+                  <td>{project.customer_name}</td>
+                  <td>{project.project_name}</td>
+                  <td className="project-list-description">{project.description}</td>
+                  <td>{formatPeriod(project)}</td>
+                  <td>
+                    {/* UI-PROJ-01-9: mỗi giá trị 1 badge riêng, không nối chuỗi */}
+                    {project.project_types.map((t) => (
+                      <Badge key={t} variant="type">
+                        {PROJECT_TYPE_LABELS[t] ?? t}
+                      </Badge>
+                    ))}
+                  </td>
+                  <td>
+                    {project.technologies.map((tech) => (
+                      <Badge key={tech} variant="tech">
+                        {tech}
+                      </Badge>
+                    ))}
+                  </td>
+                  <td>{project.team_size ?? "—"}</td>
+                  <td>{project.total_man_month ?? "—"}</td>
+                  <td>
+                    {/* UI-PROJ-01-10 — icon thay cho link chữ (feedback
                           CHANGE-010), accessible name giữ nguyên "詳細". */}
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="row-action-link"
-                        aria-label="詳細"
-                      >
-                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path
-                            d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
-                            stroke="currentColor"
-                            strokeWidth="1.3"
-                          />
-                          <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
-                        </svg>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="project-list-pagination">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              前へ
-            </button>
-            <span>
-              {page} / {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-            >
-              次へ
-            </button>
-          </div>
-        </>
+                    <Link
+                      to={`/projects/${project.id}`}
+                      className="row-action-link"
+                      aria-label="詳細"
+                    >
+                      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path
+                          d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                        />
+                        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
+                      </svg>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {status === "loaded" && total > 0 && (
+        <div className="project-list-pagination">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+          >
+            前へ
+          </button>
+          <span>
+            {page} / {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            次へ
+          </button>
+        </div>
       )}
     </main>
   );

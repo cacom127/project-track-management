@@ -24,17 +24,37 @@
 │ プロジェクト                      [+ 新規プロジェクト] │  ← hàng tiêu đề
 ├─────────────────────────────────────────────────────┤
 │┌───────────────────────────────────────────────────┐│
-││ [🔍 検索......] [技術 ▾ (2)] [種別 ▾] [開発工程 ▾]  ││  ← toolbar (border riêng, thêm filter CHANGE-012)
+││ [🔍 検索..] [技術 ▾(2)] [種別 ▾] [開発工程 ▾]  [☰][⊞]││  ← toolbar + toggle list/card căn phải (CHANGE-015)
 │└───────────────────────────────────────────────────┘│
 │["React" ✕] [ラボ ✕] [要件定義 ✕]      すべてクリア    │  ← filter chip row, chỉ hiện khi có filter (CHANGE-014)
 │24件                                                   │  ← số kết quả (CHANGE-014)
 ├─────────────────────────────────────────────────────┤
-│顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|
+│顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|   ← mode "list" (table, như cũ)
 │ ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | .. |👁|
 ├─────────────────────────────────────────────────────┤
-│              ‹ 1 2 3 4 ›  (pagination)                │
+│              ‹ 1 2 3 4 ›  (pagination — dùng chung cả 2 mode) │
 └─────────────────────────────────────────────────────┘
 ```
+
+Mode `card` (mặc định — CHANGE-015) thay bảng bằng grid `ProjectCard`:
+```
+┌─ ProjectCard ───────────────┐
+│ (A) 顧客名        [進行中]   │  ← avatar chữ đầu + trạng thái góc phải
+│     業種                    │
+│ 要件定義 テスト              │  ← badge 開発工程 (variant phase)
+│ プロジェクト名（tối đa 2 dòng）│
+│ ─────────────────────────── │  ← đường kẻ phân cách
+│  人数        │  総人月       │  ← khung nền, 2 cột căn giữa
+├─────────────────────────────┤
+│ 期間                         │
+│ [React][AWS][TS][Node]+1    │  ← 技術, tối đa 4 + "+n"
+│ ─────────────────────────── │  ← đường kẻ phân cách
+│ ● オフショア  ● ラボ         │  ← 種別 dạng chấm tròn, cùng màu badge-type
+└─────────────────────────────┘
+```
+Grid `repeat(auto-fill, minmax(280px, 1fr))`, click bất kỳ đâu trên card
+→ `/projects/:id` (không có icon hành động riêng trên card — Sửa/Xoá
+vẫn chỉ ở Detail).
 
 8 cột dữ liệu theo đúng thứ tự trên: `customer_name`, `project_name`,
 `description` (rút gọn 1 dòng bằng ellipsis, không tooltip),
@@ -80,6 +100,24 @@
   duy nhất chứa hành động Sửa/Xoá.
 - Search debounce 300ms trước khi gọi API, reset về page 1 khi đổi
   search/filter.
+- **Toggle list/card**: 2 nút icon (`☰`/`⊞`) cuối toolbar (`margin-left:
+  auto`), nút đang active có nền highlight (`secondary-container`).
+  Lựa chọn lưu vào `localStorage` (`projectListViewMode`), mặc định
+  `card` khi chưa có giá trị lưu (`CHANGE-015`). Cả 2 mode dùng chung
+  `items`/`total`/pagination/filter state — không gọi API riêng.
+- **ProjectCard** (mode `card`): mỗi project 1 card trong grid
+  responsive, gồm avatar (chữ cái đầu `customer_name`, nền `primary`),
+  `customer_name`/`industry`, badge trạng thái (`進行中` = tông
+  `tertiary-fixed`, `終了` = tông trung tính `surface-container-high`),
+  badge `開発工程` (variant `phase`), `project_name` (tối đa 2 dòng),
+  khung 2 cột `人数`/`総人月` (nội dung căn giữa, nền
+  `surface-container-high`), `期間`, badge `技術` (tối đa 4 + `+n`),
+  badge `種別` dạng chấm tròn (CÙNG màu `secondary-container` như
+  `badge-type` — không dùng tông xám riêng, để nhất quán ý nghĩa màu
+  theo category trong toàn app). Có đường kẻ phân cách
+  (`outline-variant`) giữa `project_name`↔khung số liệu, và giữa
+  `技術`↔`種別`. Card border `outline-variant` + `box-shadow` nhẹ để
+  nổi khối rõ hơn so với nền trang (`CHANGE-015`).
 
 ### 2.2 Trạng thái màn hình (state matrix)
 
@@ -139,6 +177,28 @@
   a chip's ✕ removes only that value from its filter (search chip
   clears the search text). A "すべてクリア" button clears all active
   conditions at once (`CHANGE-014`).
+- **[UI-PROJ-01-15]** The List screen shall render 2 icon buttons
+  (`☰` list / `⊞` card) right-aligned (`margin-left: auto`) at the end
+  of the toolbar row that toggle the display mode of the project
+  collection; the active mode's button shall render with a highlighted
+  background (`CHANGE-015`).
+- **[UI-PROJ-01-16]** The selected display mode (`list` | `card`) shall
+  persist across visits via `localStorage` (key
+  `projectListViewMode`), defaulting to `card` when unset/invalid
+  (`CHANGE-015`).
+- **[UI-PROJ-01-17]** In `card` mode, the List screen shall render each
+  project as a card (component `ProjectCard`) instead of a table row,
+  laid out in a responsive grid (`repeat(auto-fill, minmax(280px,
+  1fr))`), using the SAME `items`/`total`/pagination/filter state as
+  `list` mode — no separate API call (`CHANGE-015`).
+- **[UI-PROJ-01-18]** Each `ProjectCard` shall render an avatar
+  (`customer_name`'s first character), `customer_name`/`industry`, a
+  status badge (`進行中`/`終了` based on `is_ongoing`), `dev_process_phases`
+  badges, `project_name` (max 2 lines), a centered 2-column
+  `team_size`/`total_man_month` stat box, formatted period, up to 4
+  `technologies` badges (`+n` overflow), and `project_types` as
+  dot-style badges using the same color as `badge-type`. The entire
+  card shall be a single link to `/projects/:id` (`CHANGE-015`).
 
 ---
 
@@ -530,5 +590,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-012-project-extra-fields | Thêm `業種`/`開発工程`/`成果・課題・解決策` vào Create/Edit/Detail (UI-PROJ-02-12/13, UI-PROJ-03-6); List thêm filter 開発工程 (UI-PROJ-01-11), đổi filter 種別 sang AND semantics |
 | 2026-08-19 | CHANGE-013-team-composition-note | Thêm `チーム体制の詳細` vào Create/Edit/Detail (UI-PROJ-02-14, UI-PROJ-03-7) |
 | 2026-08-19 | CHANGE-014-project-list-detail-ui-improvements | List: search box trong dropdown 技術 + scroll (UI-PROJ-01-12), hiện số kết quả (UI-PROJ-01-13), filter chip xoá riêng từng giá trị (UI-PROJ-01-14); Create/Edit: chặn Enter submit ngoài ý muốn (UI-PROJ-02-15); Detail: bỏ bullet list cho multiline (UI-PROJ-03-8 sửa), gộp その他 (UI-PROJ-03-9), badge 開発工程 đổi màu riêng (UI-PROJ-03-10 sửa), tách field bằng `DetailField` (UI-PROJ-03-11) |
+| 2026-08-20 | CHANGE-015-project-list-card-view | List: thêm chế độ hiển thị card (`ProjectCard`), toggle list/card căn phải, mặc định card, nhớ lựa chọn qua `localStorage` (UI-PROJ-01-15..18) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->
