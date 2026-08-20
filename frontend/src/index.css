@@ -1,6 +1,6 @@
 /* Token lấy từ DESIGN.md — KHÔNG thêm giá trị màu/font/spacing ngoài
    những gì đã định nghĩa ở đó (CLAUDE.md mục 3). */
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap");
 
 :root {
   /* Colors */
@@ -40,8 +40,11 @@
   --color-tertiary-fixed: #9ff5c1;
   --color-on-tertiary-fixed-variant: #005231;
 
-  /* Typography */
-  --font-family: "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
+  /* Typography — CHANGE-016: Noto Sans (Latin-only) render lẫn với font
+     hệ thống tiếng Nhật (Yu Gothic/Hiragino Sans) trong cùng 1 dòng chữ
+     do 2 kiểu hint khác nhau -> nhìn mờ/không nhất quán. Noto Sans JP
+     phủ cả Latin lẫn tiếng Nhật trong cùng 1 web font -> render đồng bộ. */
+  --font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
 
   /* Spacing (lưới 8px) */
   --space-xs: 4px;
@@ -526,7 +529,10 @@ h1 {
 }
 
 /* Badge (UI-PROJ-01-9) — phân biệt màu theo NHÓM, không theo từng giá
-   trị: 種別 = secondary-container (nhạt), 技術 = tertiary-container. */
+   trị: 種別 = secondary, 技術 = tertiary, 開発工程 = phase.
+   CHANGE-016: chuyển từ *-container (đậm) sang *-fixed (nhạt, cùng tông
+   với filter chip) — badge đậm khiến dữ liệu này nổi bật hơn hẳn phần
+   còn lại của màn hình. */
 .badge {
   display: inline-block;
   padding: 2px var(--space-sm);
@@ -538,18 +544,18 @@ h1 {
 }
 
 .badge-type {
-  background: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed-variant);
 }
 
 .badge-tech {
-  background: var(--color-tertiary-container);
-  color: var(--color-on-tertiary-container);
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
 }
 
 .badge-phase {
-  background: var(--color-phase-container);
-  color: var(--color-on-phase-container);
+  background: var(--color-phase-fixed);
+  color: var(--color-on-phase-fixed-variant);
 }
 
 /* Multiline free-text (UI-PROJ-03-8, CHANGE-014) — giữ xuống dòng gốc
@@ -1263,10 +1269,11 @@ fieldset label {
   font-size: 12px;
   font-weight: 600;
   margin: 2px 4px 2px 0;
-  /* Cùng màu badge-type (secondary-container) như List/Detail — chỉ
-     khác kiểu hiển thị (chấm tròn thay vì pill đặc), giữ nhất quán ý
-     nghĩa màu theo category trong toàn app (feedback: card đang dùng
-     màu xám trung tính, không khớp Detail). */
-  background: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
+  /* Cùng màu badge-type như List/Detail — chỉ khác kiểu hiển thị (chấm
+     tròn thay vì pill đặc), giữ nhất quán ý nghĩa màu theo category
+     trong toàn app (feedback: card đang dùng màu xám trung tính, không
+     khớp Detail). CHANGE-016: badge-type đổi sang secondary-fixed (nhạt)
+     nên dot-badge cũng đổi theo để tiếp tục khớp màu. */
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed-variant);
 }
