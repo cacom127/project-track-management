@@ -58,13 +58,34 @@ SLIDE_HEIGHT_EMU = Inches(7.5)
 # --- Hằng số layout cascading (đơn vị EMU, 914400 EMU = 1 inch) ---
 HEADER_BADGES_TOP_EMU = Inches(1.05)  # cố định, ngay dưới title (title KHÔNG phình — xem docstring)
 HEADER_LEFT_EMU = Inches(0.4)  # trái của title/badge 種別+trạng thái
-ROW_LABEL_LEFT_EMU = Inches(0.4)  # trái của label "技術:"/"開発工程:"
-ROW_BADGE_LEFT_EMU = Inches(1.3)  # trái badge dòng đầu (sau label) VÀ mọi dòng wrap tiếp theo
 ROW_RIGHT_LIMIT_EMU = Inches(12.93)  # khớp mép phải divider (0.4 + 12.53)
+# 技術/開発工程 nằm NGANG NHAU thành 2 cột (feedback thực tế — trước đó
+# xếp trên-dưới) — mỗi cột rộng bằng nhau, có khoảng hở giữa 2 cột.
+_BADGE_ROW_LEFT_EMU = Inches(0.4)
+BADGE_COL_GAP_EMU = Inches(0.3)
+_BADGE_COL_WIDTH_EMU = (ROW_RIGHT_LIMIT_EMU - _BADGE_ROW_LEFT_EMU - BADGE_COL_GAP_EMU) // 2
+BADGE_COL_LEFT_EMU = [
+    _BADGE_ROW_LEFT_EMU,
+    _BADGE_ROW_LEFT_EMU + _BADGE_COL_WIDTH_EMU + BADGE_COL_GAP_EMU,
+]
+BADGE_COL_RIGHT_LIMIT_EMU = [
+    BADGE_COL_LEFT_EMU[0] + _BADGE_COL_WIDTH_EMU,
+    ROW_RIGHT_LIMIT_EMU,
+]
+# Từ label-left tới badge-left trong CÙNG 1 cột — cũng là mức thụt
+# dòng khi wrap.
+BADGE_INDENT_EMU = Inches(1.0)
 BADGE_HEIGHT_EMU = Inches(0.34)
 BADGE_LINE_GAP_EMU = Inches(0.10)  # khoảng cách dọc giữa 2 dòng badge khi wrap
 BADGE_GAP_EMU = Inches(0.12)  # khoảng cách ngang giữa 2 badge cùng dòng
 BADGE_H_PADDING_EMU = Inches(0.16)  # padding 2 bên trong 1 badge, cộng theo text
+# Sàn tối thiểu CHUNG cho mọi badge — CỐ Ý nhỏ (không dùng chiều rộng
+# badge mẫu trong template làm sàn như trước) để badge LUÔN phản ánh
+# đúng độ dài text thật. Bug thực tế: catalog 種別 (`オフショア`/`SES`/
+# `ラボ`/`新規開発`/`保守`) toàn nhãn ngắn, sàn cũ (theo template,
+# ~1.6in) luôn thắng ước lượng theo text → nhìn như badge 種別 không
+# đổi theo độ dài, dù công thức vẫn tính đúng bên dưới.
+BADGE_MIN_WIDTH_EMU = Inches(0.5)
 # Ước lượng rộng/ký tự — dư cho CJK+Latin trộn (thà badge hơi rộng còn
 # hơn chữ bị cắt).
 CHAR_WIDTH_EMU = Inches(0.11)
@@ -131,17 +152,22 @@ def _duplicate_shape(after_shape):
     return matches[-1]
 
 
-def _estimate_badge_width(text: str, min_width: int) -> int:
+def _estimate_badge_width(text: str) -> int:
     """Ước lượng chiều rộng badge theo SỐ KÝ TỰ THẬT — thay cho việc
     dùng cố định chiều rộng badge mẫu trong template (nguyên nhân badge
-    dài đè lên badge kế tiếp, feedback thực tế)."""
-    return max(min_width, BADGE_H_PADDING_EMU + len(text) * CHAR_WIDTH_EMU)
+    dài đè lên badge kế tiếp, feedback thực tế). Sàn tối thiểu CỐ ĐỊNH
+    nhỏ (`BADGE_MIN_WIDTH_EMU`), KHÔNG dùng chiều rộng badge mẫu làm
+    sàn — nếu không, badge có nhãn ngắn (vd 種別) sẽ luôn bị sàn theo
+    template che mất, trông như không đổi theo độ dài text."""
+    return max(BADGE_MIN_WIDTH_EMU, BADGE_H_PADDING_EMU + len(text) * CHAR_WIDTH_EMU)
 
 
-def _flow_place(shapes_with_widths: list[tuple], start_left: int, start_top: int) -> int:
+def _flow_place(
+    shapes_with_widths: list[tuple], start_left: int, start_top: int, right_limit: int
+) -> int:
     """Đặt tuần tự các shape (đã có text) theo chiều ngang, tự xuống
-    dòng khi vượt `ROW_RIGHT_LIMIT_EMU` — KHÔNG cắt/bỏ shape nào (khác
-    với hướng "+N" đã cân nhắc, feedback thực tế chọn giữ đủ thông tin).
+    dòng khi vượt `right_limit` — KHÔNG cắt/bỏ shape nào (khác với
+    hướng "+N" đã cân nhắc, feedback thực tế chọn giữ đủ thông tin).
     Trả về top NGAY SAU khối này, để phần tử kế tiếp không đè lên dù số
     dòng thay đổi theo từng project."""
     if not shapes_with_widths:
@@ -150,7 +176,7 @@ def _flow_place(shapes_with_widths: list[tuple], start_left: int, start_top: int
     x = start_left
     line = 0
     for shape, width in shapes_with_widths:
-        if x != start_left and x + width > ROW_RIGHT_LIMIT_EMU:
+        if x != start_left and x + width > right_limit:
             line += 1
             x = start_left
         y = start_top + line * (BADGE_HEIGHT_EMU + BADGE_LINE_GAP_EMU)
@@ -178,23 +204,34 @@ def _fill_header_badges(slide, project: ProjectOut, top: int) -> int:
             shape = type_master if index == 0 else _duplicate_shape(last)
             last = shape
             _set_text(shape, label)
-            items.append((shape, _estimate_badge_width(label, type_master.width)))
+            items.append((shape, _estimate_badge_width(label)))
     else:
         _remove_shape(type_master)
 
     status_label = "進行中" if project.is_ongoing else "終了"
     _set_text(status_shape, status_label)
-    items.append((status_shape, _estimate_badge_width(status_label, status_shape.width)))
+    items.append((status_shape, _estimate_badge_width(status_label)))
 
-    return _flow_place(items, HEADER_LEFT_EMU, top)
+    return _flow_place(items, HEADER_LEFT_EMU, top, ROW_RIGHT_LIMIT_EMU)
 
 
 def _fill_badge_row(
-    slide, label_name: str, master_name: str, extra_name: str, values: list[str], top: int
+    slide,
+    label_name: str,
+    master_name: str,
+    extra_name: str,
+    values: list[str],
+    top: int,
+    *,
+    col_left: int,
+    right_limit: int,
 ) -> int:
-    """1 hàng badge có label đứng trước (技術:/開発工程:) — tự xuống
-    dòng, dòng wrap thụt vào ngang mức badge đầu (không thụt theo
-    label). Trả về top NGAY SAU hàng này."""
+    """1 cột badge có label đứng trước (技術:/開発工程:) — tự xuống
+    dòng TRONG PHẠM VI CỘT (`col_left`..`right_limit`), dòng wrap thụt
+    vào ngang mức badge đầu (không thụt theo label). Trả về top NGAY
+    SAU cột này (để caller tính `max()` giữa 2 cột — số dòng của 技術 và
+    開発工程 độc lập nhau, feedback thực tế: đặt 2 cột NGANG NHAU thay
+    vì trên-dưới)."""
     label = _find_shape(slide, label_name)
     master = _find_shape(slide, master_name)
     extra = _find_shape(slide, extra_name)
@@ -207,7 +244,7 @@ def _fill_badge_row(
         _remove_shape(master)
         return top
 
-    label.left = Emu(ROW_LABEL_LEFT_EMU)
+    label.left = Emu(col_left)
     label.top = Emu(top)
 
     items = []
@@ -216,9 +253,10 @@ def _fill_badge_row(
         shape = master if index == 0 else _duplicate_shape(last)
         last = shape
         _set_text(shape, value)
-        items.append((shape, _estimate_badge_width(value, master.width)))
+        items.append((shape, _estimate_badge_width(value)))
 
-    return _flow_place(items, ROW_BADGE_LEFT_EMU, top)
+    badge_left = col_left + BADGE_INDENT_EMU
+    return _flow_place(items, badge_left, top, right_limit)
 
 
 def _format_period(project: ProjectOut) -> str:
@@ -282,8 +320,16 @@ def _fill_slide(slide, project: ProjectOut, s3_keys: list[str]) -> None:
 
     left_col_bottom = two_col_top + DESC_HEIGHT_EMU + META_GAP_EMU + META_HEIGHT_EMU
     right_col_bottom = two_col_top + 2 * IMG_HEIGHT_EMU + IMG_ROW_GAP_EMU
-    badges_top = max(left_col_bottom, right_col_bottom) + GROUP_GAP_EMU
+    # Bug thật phát hiện qua rà toạ độ: divider này trước đó KHÔNG được
+    # đặt lại vị trí (chỉ 2/3 divider được cập nhật) — vẫn nằm ở toạ độ
+    # tĩnh của template, có thể cắt ngang qua hàng badge khi nội dung
+    # cột trên (概要/ảnh) cao/thấp hơn bình thường.
+    divider_before_badges.top = Emu(max(left_col_bottom, right_col_bottom) + GROUP_GAP_EMU)
+    badges_top = divider_before_badges.top + DIVIDER_CONTENT_GAP_EMU
 
+    # 技術/開発工程 nằm NGANG NHAU thành 2 cột (feedback thực tế) — mỗi
+    # cột tự xuống dòng độc lập, dùng max() 2 đáy để tính phần tử kế
+    # tiếp, KHÔNG cộng dồn tuần tự như 2 cột 概要/ảnh phía trên.
     tech_bottom = _fill_badge_row(
         slide,
         "label_tech",
@@ -291,14 +337,22 @@ def _fill_slide(slide, project: ProjectOut, s3_keys: list[str]) -> None:
         "field_tech_badge_2",
         list(project.technologies),
         badges_top,
+        col_left=BADGE_COL_LEFT_EMU[0],
+        right_limit=BADGE_COL_RIGHT_LIMIT_EMU[0],
     )
     phase_labels = [DEV_PROCESS_PHASE_LABELS.get(code, code) for code in project.dev_process_phases]
-    phase_top = tech_bottom + GROUP_GAP_EMU if tech_bottom != badges_top else badges_top
     phase_bottom = _fill_badge_row(
-        slide, "label_phase", "field_phase_badge_1", "field_phase_badge_2", phase_labels, phase_top
+        slide,
+        "label_phase",
+        "field_phase_badge_1",
+        "field_phase_badge_2",
+        phase_labels,
+        badges_top,
+        col_left=BADGE_COL_LEFT_EMU[1],
+        right_limit=BADGE_COL_RIGHT_LIMIT_EMU[1],
     )
 
-    divider_before_outcome.top = Emu(phase_bottom + GROUP_GAP_EMU)
+    divider_before_outcome.top = Emu(max(tech_bottom, phase_bottom) + GROUP_GAP_EMU)
     label_outcome = _find_shape(slide, "label_outcome")
     label_outcome.top = divider_before_outcome.top + DIVIDER_CONTENT_GAP_EMU
 
