@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 from PIL import Image
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.util import Emu, Inches
 
 from app.export import service
 from app.projects.schemas import ProjectOut
@@ -103,6 +104,58 @@ def test_excludes_customer_name_and_internal_notes(monkeypatch):
     # sanity: field ĐƯỢC phép hiển thị vẫn có mặt (không phải test rỗng do lỗi)
     assert project.project_name in text
     assert project.outcome_note in text
+
+
+def test_long_tech_badges_wrap_to_multiple_lines_without_overlapping(monkeypatch):
+    # Feedback thực tế: badge 技術 dài đè lên badge kế tiếp vì code cũ
+    # tính vị trí theo chiều rộng CỐ ĐỊNH của badge mẫu, không theo độ
+    # dài text thật.
+    monkeypatch.setattr(service.s3, "get_object_bytes", MagicMock())
+    long_tags = [f"非常に長い技術タグ名前です{i}" for i in range(10)]
+    project = _make_project(1, technologies=long_tags, dev_process_phases=[])
+
+    data = service.build_presentation([project], {})
+
+    prs = Presentation(io.BytesIO(data))
+    slide = prs.slides[0]
+    tech_badges = [shp for shp in slide.shapes if shp.name == "field_tech_badge_1"]
+    assert len(tech_badges) == 10
+
+    by_line: dict[int, list] = {}
+    for badge in tech_badges:
+        by_line.setdefault(badge.top, []).append(badge)
+    assert len(by_line) > 1, "10 badge tên dài phải tự xuống ít nhất 2 dòng, không dồn 1 dòng"
+
+    for line_badges in by_line.values():
+        line_badges.sort(key=lambda b: b.left)
+        for left_badge, right_badge in zip(line_badges, line_badges[1:]):
+            assert left_badge.left + left_badge.width <= right_badge.left, (
+                "2 badge cùng dòng không được chồng lên nhau theo chiều ngang"
+            )
+
+
+def test_many_long_badges_push_outcome_section_down_but_stays_within_slide(monkeypatch):
+    monkeypatch.setattr(service.s3, "get_object_bytes", MagicMock())
+    long_tags = [f"非常に長い技術タグ{i}" for i in range(8)]
+    long_phases = [f"非常に長い開発工程名{i}" for i in range(6)]
+    project = _make_project(1, technologies=long_tags, dev_process_phases=long_phases)
+
+    data = service.build_presentation([project], {})
+
+    prs = Presentation(io.BytesIO(data))
+    slide = prs.slides[0]
+    outcome = next(shp for shp in slide.shapes if shp.name == "field_outcome_note")
+    label_outcome = next(shp for shp in slide.shapes if shp.name == "label_outcome")
+    dividers = sorted((shp for shp in slide.shapes if shp.name == "divider"), key=lambda s: s.top)
+
+    # divider cuối (trước 成果・課題・解決策) phải bị đẩy xuống thấp hơn
+    # vị trí tĩnh gốc (5.65in) vì có nhiều badge dài phía trên.
+    assert dividers[2].top > Emu(Inches(5.65))
+    assert label_outcome.top > dividers[2].top
+    assert outcome.top > label_outcome.top
+    # vẫn nằm trong slide (7.5in), có chiều cao tối thiểu hợp lý.
+    assert outcome.top + outcome.height <= service.SLIDE_HEIGHT_EMU
+    assert outcome.height >= service.MIN_OUTCOME_HEIGHT_EMU
 
 
 def test_badge_count_matches_actual_values_not_template_sample_count(monkeypatch):

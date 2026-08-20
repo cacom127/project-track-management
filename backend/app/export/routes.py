@@ -12,9 +12,7 @@ from app.projects.repository import get_project, list_attachment_s3_keys
 
 router = APIRouter()
 
-_EXPORT_CONTENT_TYPE = (
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-)
+_EXPORT_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
 
 @router.post("/projects/export", response_model=ExportResponse)

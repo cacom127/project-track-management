@@ -12,14 +12,39 @@ trống trước khi copy, không lo xung đột placeholder.
 Mỗi project được apply lên 1 slide RIÊNG (nhân bản từ slide mẫu gốc,
 CHƯA bị điền dữ liệu) — slide mẫu gốc bị xoá ở cuối cùng, tránh phụ
 thuộc vào thứ tự điền dữ liệu (không có project nào "dùng chung" slide
-mẫu ban đầu)."""
+mẫu ban đầu).
+
+Layout CASCADING (feedback thực tế: badge 技術/開発工程 dài đè lên
+badge khác vì code cũ tính vị trí badge kế tiếp theo CHIỀU RỘNG CỐ ĐỊNH
+của badge mẫu, không theo độ dài text thật):
+  - Mọi hàng badge (種別+trạng thái ở header, 技術, 開発工程) đều tính
+    chiều rộng từng badge theo số ký tự thật (`_estimate_badge_width`)
+    và TỰ XUỐNG DÒNG nếu vượt giới hạn phải của hàng (`_flow_place`).
+  - Vì số dòng badge thay đổi theo từng project, các phần tử tĩnh phía
+    dưới (2 divider còn lại, khối 業種/期間/..., cột ảnh, label các
+    hàng badge, label/khung 成果・課題・解決策) đều được ĐẶT LẠI vị trí
+    (top) theo kiểu "cursor" tuần tự từ trên xuống, KHÔNG dùng toạ độ
+    tĩnh của template nữa — xem `_fill_slide`.
+  - `field_outcome_note` height co lại tương ứng nếu phần trên chiếm
+    nhiều chỗ hơn bình thường, đảm bảo luôn nằm trong slide (trừ
+    trường hợp cực đoan — clamp tối thiểu `MIN_OUTCOME_HEIGHT_EMU`).
+
+Đồng thời sửa 1 bug liên quan phát hiện khi rà lại: `field_project_name`/
+`field_meta`/các label vốn mang `auto_size=SHAPE_TO_FIT_TEXT` (mặc định
+của `python-pptx` khi tạo text box, KHÔNG phải cố ý) — nghĩa là khung
+tự PHÌNH RA theo text dài thay vì co chữ lại, có thể đè xuống phần tử
+bên dưới. Đã patch trực tiếp trong `assets/template.pptx`: `field_meta`
+đổi sang co chữ (`TEXT_TO_FIT_SHAPE`, giống `field_description`/
+`field_outcome_note`); `field_project_name` và label đổi sang `NONE`
+(cố định, không phình không co — giữ đúng yêu cầu "cỡ chữ CỐ ĐỊNH"
+riêng cho title, xem EXPORT-08)."""
 
 import copy
 import io
 from pathlib import Path
 
 from pptx import Presentation
-from pptx.util import Emu
+from pptx.util import Emu, Inches
 
 from app.core import s3
 from app.export.labels import DEV_PROCESS_PHASE_LABELS, PROJECT_TYPE_LABELS
@@ -28,10 +53,32 @@ from app.projects.schemas import ProjectOut
 TEMPLATE_PATH = Path(__file__).parent / "assets" / "template.pptx"
 
 MAX_IMAGES_PER_SLIDE = 4
-# Khoảng cách giữa 2 badge liền nhau trên cùng 1 hàng (~0.12in) — xấp xỉ
-# khoảng cách đã dùng khi thiết kế template (field_type_badge_1 →
-# field_status_badge, field_tech_badge_1 → field_tech_badge_2).
-BADGE_GAP_EMU = 109728
+SLIDE_HEIGHT_EMU = Inches(7.5)
+
+# --- Hằng số layout cascading (đơn vị EMU, 914400 EMU = 1 inch) ---
+HEADER_BADGES_TOP_EMU = Inches(1.05)  # cố định, ngay dưới title (title KHÔNG phình — xem docstring)
+HEADER_LEFT_EMU = Inches(0.4)  # trái của title/badge 種別+trạng thái
+ROW_LABEL_LEFT_EMU = Inches(0.4)  # trái của label "技術:"/"開発工程:"
+ROW_BADGE_LEFT_EMU = Inches(1.3)  # trái badge dòng đầu (sau label) VÀ mọi dòng wrap tiếp theo
+ROW_RIGHT_LIMIT_EMU = Inches(12.93)  # khớp mép phải divider (0.4 + 12.53)
+BADGE_HEIGHT_EMU = Inches(0.34)
+BADGE_LINE_GAP_EMU = Inches(0.10)  # khoảng cách dọc giữa 2 dòng badge khi wrap
+BADGE_GAP_EMU = Inches(0.12)  # khoảng cách ngang giữa 2 badge cùng dòng
+BADGE_H_PADDING_EMU = Inches(0.16)  # padding 2 bên trong 1 badge, cộng theo text
+# Ước lượng rộng/ký tự — dư cho CJK+Latin trộn (thà badge hơi rộng còn
+# hơn chữ bị cắt).
+CHAR_WIDTH_EMU = Inches(0.11)
+# Khoảng cách giữa 2 khối lớn (2 cột -> badge, badge -> badge, badge -> divider).
+GROUP_GAP_EMU = Inches(0.15)
+DIVIDER_CONTENT_GAP_EMU = Inches(0.09)  # khoảng cách từ divider tới nội dung ngay sau nó
+DESC_HEIGHT_EMU = Inches(1.55)
+META_GAP_EMU = Inches(0.15)  # khoảng cách từ dưới field_description tới field_meta
+META_HEIGHT_EMU = Inches(1.0)
+IMG_HEIGHT_EMU = Inches(1.5)
+IMG_ROW_GAP_EMU = Inches(0.12)
+OUTCOME_LABEL_GAP_EMU = Inches(0.05)
+BOTTOM_MARGIN_EMU = Inches(0.3)
+MIN_OUTCOME_HEIGHT_EMU = Inches(0.5)
 
 
 def _find_shape(slide, name: str):
@@ -41,8 +88,13 @@ def _find_shape(slide, name: str):
     return None
 
 
+def _find_shapes(slide, name: str) -> list:
+    return [shape for shape in slide.shapes if shape.name == name]
+
+
 def _remove_shape(shape) -> None:
-    shape._element.getparent().remove(shape._element)
+    if shape is not None:
+        shape._element.getparent().remove(shape._element)
 
 
 def _set_text(shape, text: str) -> None:
@@ -60,50 +112,113 @@ def _set_text(shape, text: str) -> None:
         run.text = text
 
 
-def _duplicate_shape_at(master, left: int):
-    """Deepcopy XML element của `master`, append vào cùng slide, trả về
-    Shape wrapper của bản copy (đã set lại `left`). `master` giữ
-    nguyên, không bị ảnh hưởng."""
-    clone_el = copy.deepcopy(master._element)
-    master._element.addnext(clone_el)
-    # Sau khi append, bản copy là shape CUỐI CÙNG trong slide có cùng
-    # `name` với master — python-pptx không có API "wrap 1 element vừa
-    # thêm" trực tiếp nên phải tìm lại qua iterate (đã verify hành vi
-    # này ổn định khi build template draft).
-    slide_shapes = master._parent
-    matches = [shp for shp in slide_shapes if shp.name == master.name]
-    clone = matches[-1]
-    clone.left = Emu(left)
-    return clone
+def _duplicate_shape(after_shape):
+    """Deepcopy XML element của `after_shape`, append ngay sau nó trong
+    cùng slide, trả về Shape wrapper của bản copy. Vị trí/kích thước
+    của bản copy do caller set sau (`_flow_place`) — không set ở đây.
+
+    QUAN TRỌNG: khi cần nhân bản NHIỀU lần cho cùng 1 tên shape (N
+    badge), phải gọi nối chuỗi — `_duplicate_shape(clone_truoc)`, KHÔNG
+    lặp lại `_duplicate_shape(master)` — nếu không, `addnext` luôn chèn
+    ngay sau `master` nên các lần gọi sau sẽ chèn NGƯỢC thứ tự, khiến
+    việc tìm "bản clone vừa tạo" (`matches[-1]`) lấy nhầm shape cũ, bỏ
+    sót 1 clone không bao giờ được set lại vị trí (bug thật đã phát
+    hiện qua test `test_long_tech_badges_wrap_to_multiple_lines_...`)."""
+    clone_el = copy.deepcopy(after_shape._element)
+    after_shape._element.addnext(clone_el)
+    slide_shapes = after_shape._parent
+    matches = [shp for shp in slide_shapes if shp.name == after_shape.name]
+    return matches[-1]
 
 
-def _render_badge_row(
-    slide, master_name: str, values: list[str], gap_emu: int = BADGE_GAP_EMU
+def _estimate_badge_width(text: str, min_width: int) -> int:
+    """Ước lượng chiều rộng badge theo SỐ KÝ TỰ THẬT — thay cho việc
+    dùng cố định chiều rộng badge mẫu trong template (nguyên nhân badge
+    dài đè lên badge kế tiếp, feedback thực tế)."""
+    return max(min_width, BADGE_H_PADDING_EMU + len(text) * CHAR_WIDTH_EMU)
+
+
+def _flow_place(shapes_with_widths: list[tuple], start_left: int, start_top: int) -> int:
+    """Đặt tuần tự các shape (đã có text) theo chiều ngang, tự xuống
+    dòng khi vượt `ROW_RIGHT_LIMIT_EMU` — KHÔNG cắt/bỏ shape nào (khác
+    với hướng "+N" đã cân nhắc, feedback thực tế chọn giữ đủ thông tin).
+    Trả về top NGAY SAU khối này, để phần tử kế tiếp không đè lên dù số
+    dòng thay đổi theo từng project."""
+    if not shapes_with_widths:
+        return start_top
+
+    x = start_left
+    line = 0
+    for shape, width in shapes_with_widths:
+        if x != start_left and x + width > ROW_RIGHT_LIMIT_EMU:
+            line += 1
+            x = start_left
+        y = start_top + line * (BADGE_HEIGHT_EMU + BADGE_LINE_GAP_EMU)
+        shape.left = Emu(x)
+        shape.top = Emu(y)
+        shape.width = Emu(width)
+        x += width + BADGE_GAP_EMU
+
+    total_lines = line + 1
+    return start_top + total_lines * BADGE_HEIGHT_EMU + (total_lines - 1) * BADGE_LINE_GAP_EMU
+
+
+def _fill_header_badges(slide, project: ProjectOut, top: int) -> int:
+    """種別 (N badge, N thay đổi theo project) + trạng thái (1 badge cố
+    định) — CÙNG 1 luồng wrap, không có label đứng trước (khác hàng
+    技術/開発工程)."""
+    type_master = _find_shape(slide, "field_type_badge_1")
+    status_shape = _find_shape(slide, "field_status_badge")
+
+    type_labels = [PROJECT_TYPE_LABELS.get(code, code) for code in project.project_types]
+    items: list[tuple] = []
+    if type_labels:
+        last = type_master
+        for index, label in enumerate(type_labels):
+            shape = type_master if index == 0 else _duplicate_shape(last)
+            last = shape
+            _set_text(shape, label)
+            items.append((shape, _estimate_badge_width(label, type_master.width)))
+    else:
+        _remove_shape(type_master)
+
+    status_label = "進行中" if project.is_ongoing else "終了"
+    _set_text(status_shape, status_label)
+    items.append((status_shape, _estimate_badge_width(status_label, status_shape.width)))
+
+    return _flow_place(items, HEADER_LEFT_EMU, top)
+
+
+def _fill_badge_row(
+    slide, label_name: str, master_name: str, extra_name: str, values: list[str], top: int
 ) -> int:
-    """Điền `values` (0..N phần tử, N có thể khác số badge mẫu có sẵn
-    trong template — chỉ có 1-2 mẫu) vào hàng badge bắt đầu từ vị trí
-    của `master_name`. Trả về vị trí `left` (EMU) NGAY SAU badge cuối
-    cùng đã render — dùng để đặt tiếp phần tử liền sau (ví dụ
-    field_status_badge nối sau các type badge) mà không đè lên nhau dù
-    số lượng badge thay đổi theo từng project."""
+    """1 hàng badge có label đứng trước (技術:/開発工程:) — tự xuống
+    dòng, dòng wrap thụt vào ngang mức badge đầu (không thụt theo
+    label). Trả về top NGAY SAU hàng này."""
+    label = _find_shape(slide, label_name)
     master = _find_shape(slide, master_name)
-    if master is None:
-        raise ValueError(f"Không tìm thấy shape mẫu '{master_name}' trong template")
+    extra = _find_shape(slide, extra_name)
+    # Template chỉ có 2 badge mẫu (field_*_badge_1/2) — không cần mẫu
+    # thứ 2 nữa vì số badge thật được clone động từ mẫu 1 (PROJ-30 style).
+    _remove_shape(extra)
 
-    left = master.left
-    width = master.width
     if not values:
+        _remove_shape(label)
         _remove_shape(master)
-        return left
+        return top
 
+    label.left = Emu(ROW_LABEL_LEFT_EMU)
+    label.top = Emu(top)
+
+    items = []
+    last = master
     for index, value in enumerate(values):
-        shape = master if index == 0 else _duplicate_shape_at(master, left)
-        if index == 0:
-            shape.left = Emu(left)
+        shape = master if index == 0 else _duplicate_shape(last)
+        last = shape
         _set_text(shape, value)
-        left = left + width + gap_emu
+        items.append((shape, _estimate_badge_width(value, master.width)))
 
-    return left
+    return _flow_place(items, ROW_BADGE_LEFT_EMU, top)
 
 
 def _format_period(project: ProjectOut) -> str:
@@ -115,8 +230,9 @@ def _format_period(project: ProjectOut) -> str:
     return start
 
 
-def _fill_meta(slide, project: ProjectOut) -> None:
+def _fill_meta(slide, project: ProjectOut, top: int) -> None:
     shape = _find_shape(slide, "field_meta")
+    shape.top = Emu(top)
     industry = project.industry or "—"
     period = _format_period(project)
     team_size = f"{project.team_size}名" if project.team_size is not None else "—"
@@ -127,43 +243,72 @@ def _fill_meta(slide, project: ProjectOut) -> None:
     )
 
 
-def _fill_images(slide, s3_keys: list[str]) -> None:
+def _fill_images(slide, s3_keys: list[str], top: int) -> None:
     # EXPORT-07 — tối đa 4 ảnh đầu; slot thừa (project ít ảnh hơn 4) giữ
     # nguyên placeholder xám của template, không lỗi.
+    row_tops = [top, top + IMG_HEIGHT_EMU + IMG_ROW_GAP_EMU]
     for index in range(MAX_IMAGES_PER_SLIDE):
         slot_name = f"img_slot_{index + 1}"
         slot = _find_shape(slide, slot_name)
-        if slot is None or index >= len(s3_keys):
+        if slot is None:
             continue
-        left, top, width, height = slot.left, slot.top, slot.width, slot.height
+        slot.top = Emu(row_tops[index // 2])
+        if index >= len(s3_keys):
+            continue
+        left, slot_top, width, height = slot.left, slot.top, slot.width, slot.height
         image_bytes = s3.get_object_bytes(s3_keys[index])
         _remove_shape(slot)
-        slide.shapes.add_picture(io.BytesIO(image_bytes), left, top, width, height)
+        slide.shapes.add_picture(io.BytesIO(image_bytes), left, slot_top, width, height)
 
 
 def _fill_slide(slide, project: ProjectOut, s3_keys: list[str]) -> None:
+    # 3 divider tĩnh trong template, LẤY THỨ TỰ theo vị trí gốc (top)
+    # TRƯỚC khi bất kỳ shape nào bị di chuyển — dividers[1]/[2] sẽ được
+    # đặt lại top ở dưới theo nội dung thực tế của slide này.
+    dividers = sorted(_find_shapes(slide, "divider"), key=lambda shape: shape.top)
+    divider_after_header, divider_before_badges, divider_before_outcome = dividers
+
     _set_text(_find_shape(slide, "field_project_name"), project.project_name)
+    header_bottom = _fill_header_badges(slide, project, HEADER_BADGES_TOP_EMU)
 
-    type_labels = [PROJECT_TYPE_LABELS.get(code, code) for code in project.project_types]
-    status_label = "進行中" if project.is_ongoing else "終了"
-    next_left = _render_badge_row(slide, "field_type_badge_1", type_labels)
-    status_shape = _find_shape(slide, "field_status_badge")
-    status_shape.left = Emu(next_left)
-    _set_text(status_shape, status_label)
+    divider_after_header.top = Emu(header_bottom + GROUP_GAP_EMU)
+    two_col_top = divider_after_header.top + DIVIDER_CONTENT_GAP_EMU
 
-    _set_text(_find_shape(slide, "field_description"), project.description or "—")
-    _fill_meta(slide, project)
+    desc_shape = _find_shape(slide, "field_description")
+    desc_shape.top = Emu(two_col_top)
+    _set_text(desc_shape, project.description or "—")
+    _fill_meta(slide, project, two_col_top + DESC_HEIGHT_EMU + META_GAP_EMU)
+    _fill_images(slide, s3_keys[:MAX_IMAGES_PER_SLIDE], two_col_top)
 
-    _fill_images(slide, s3_keys[:MAX_IMAGES_PER_SLIDE])
+    left_col_bottom = two_col_top + DESC_HEIGHT_EMU + META_GAP_EMU + META_HEIGHT_EMU
+    right_col_bottom = two_col_top + 2 * IMG_HEIGHT_EMU + IMG_ROW_GAP_EMU
+    badges_top = max(left_col_bottom, right_col_bottom) + GROUP_GAP_EMU
 
-    _render_badge_row(slide, "field_tech_badge_1", list(project.technologies))
-    _remove_shape(_find_shape(slide, "field_tech_badge_2"))
-
+    tech_bottom = _fill_badge_row(
+        slide,
+        "label_tech",
+        "field_tech_badge_1",
+        "field_tech_badge_2",
+        list(project.technologies),
+        badges_top,
+    )
     phase_labels = [DEV_PROCESS_PHASE_LABELS.get(code, code) for code in project.dev_process_phases]
-    _render_badge_row(slide, "field_phase_badge_1", phase_labels)
-    _remove_shape(_find_shape(slide, "field_phase_badge_2"))
+    phase_top = tech_bottom + GROUP_GAP_EMU if tech_bottom != badges_top else badges_top
+    phase_bottom = _fill_badge_row(
+        slide, "label_phase", "field_phase_badge_1", "field_phase_badge_2", phase_labels, phase_top
+    )
 
-    _set_text(_find_shape(slide, "field_outcome_note"), project.outcome_note or "—")
+    divider_before_outcome.top = Emu(phase_bottom + GROUP_GAP_EMU)
+    label_outcome = _find_shape(slide, "label_outcome")
+    label_outcome.top = divider_before_outcome.top + DIVIDER_CONTENT_GAP_EMU
+
+    outcome_shape = _find_shape(slide, "field_outcome_note")
+    outcome_top = label_outcome.top + label_outcome.height + OUTCOME_LABEL_GAP_EMU
+    outcome_shape.top = Emu(outcome_top)
+    outcome_shape.height = Emu(
+        max(MIN_OUTCOME_HEIGHT_EMU, SLIDE_HEIGHT_EMU - BOTTOM_MARGIN_EMU - outcome_top)
+    )
+    _set_text(outcome_shape, project.outcome_note or "—")
     # EXPORT-06 — customer_name/source_note/team_composition_note KHÔNG
     # có shape tương ứng trong template nên không cần code loại trừ
     # riêng, chỉ cần không bao giờ đọc field này ở trên.
