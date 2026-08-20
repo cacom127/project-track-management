@@ -271,6 +271,11 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
 - **Destructive:** nền đặc `error` (`#ba1a1a`), border cùng màu, text
   `on-error` (`#ffffff`). Dùng cho hành động không thể hoàn tác (vd xác
   nhận xoá trong Modal).
+- **Tertiary (CHANGE-017):** nền đặc `tertiary` (`#002715`), text
+  `on-tertiary` (`#ffffff`). Dùng cho hành động phụ cần phân biệt trực
+  quan rõ với Primary nhưng KHÔNG phải hành động phá hoại (vd nút 出力
+  export ở màn List) — cùng hệ xanh lá đã dùng cho badge 技術, tách hẳn
+  khỏi dải xanh dương của Primary.
 - **Kích thước:** chiều cao chuẩn 32px cho layout mật độ cao; 40px cho
   action chính của trang.
 

@@ -181,6 +181,34 @@ h1 {
   cursor: not-allowed;
 }
 
+/* Action Button > Tertiary (DESIGN.md) — dùng cho hành động phụ cần
+   phân biệt rõ với Primary (vd nút 出力/export ở List, CHANGE-017) mà
+   không phải hành động phá hoại (không dùng Destructive). Cùng hệ màu
+   xanh lá đã dùng cho badge 技術, khác hẳn dải xanh dương của Primary. */
+.button-tertiary {
+  width: auto;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: none;
+  border-radius: var(--radius-default);
+  background: var(--color-tertiary);
+  color: var(--color-on-tertiary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-tertiary:disabled {
+  background: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
 .toast-error {
   background: var(--color-error-container);
   color: var(--color-on-error-container);
@@ -396,6 +424,14 @@ h1 {
 .page-header-row .button-primary {
   width: auto;
   white-space: nowrap;
+}
+
+/* Nhóm nút hành động bên phải header-row (CHANGE-017: 出力 đứng TRƯỚC
+   +新規プロジェクト trong cùng nhóm, cả 2 vẫn nằm bên phải h1). */
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 /* Toolbar List (chỉ search + filter — nút tạo mới đã chuyển sang
@@ -657,10 +693,20 @@ h1 {
 .project-list-count {
   font-size: 13px;
   color: var(--color-on-surface-variant);
+}
+
+/* CHANGE-017 (UI-PROJ-01-19..21) — chọn nhiều dự án để export. Đặt
+   trong `.project-list-selection-bar` (KHÔNG nằm trong
+   `.project-list-toolbar` — feedback: checkbox chọn tất cả không nên ở
+   vùng tìm kiếm/filter), cùng hàng với số lượng kết quả. */
+.project-list-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
   margin: var(--space-sm) 0 0;
 }
 
-/* CHANGE-017 (UI-PROJ-01-19..21) — chọn nhiều dự án để export */
 .select-all-on-page {
   display: flex;
   align-items: center;
@@ -673,7 +719,6 @@ h1 {
 .project-list-limit-message {
   font-size: 13px;
   color: var(--color-on-surface-variant);
-  margin: var(--space-sm) 0 0;
 }
 
 /* Icon "詳細" thay cho link chữ trên List row (feedback CHANGE-010) —

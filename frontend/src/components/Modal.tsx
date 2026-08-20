@@ -8,6 +8,10 @@ interface ModalProps {
   confirmLabel: string;
   onConfirm: () => void;
   confirmDisabled?: boolean;
+  /** CHANGE-017: mặc định "destructive" (giữ hành vi cũ — xoá dự án).
+   * "tertiary" dùng cho xác nhận không phá hoại (vd xuất file) — cùng
+   * màu với nút 出力 ở List, tránh gợi ý sai "hành động nguy hiểm". */
+  confirmVariant?: "destructive" | "tertiary";
 }
 
 /** UI-PROJ-03-4/5: modal xác nhận dùng chung (không riêng cho xoá). */
@@ -19,6 +23,7 @@ export function Modal({
   confirmLabel,
   onConfirm,
   confirmDisabled = false,
+  confirmVariant = "destructive",
 }: ModalProps) {
   if (!open) {
     return null;
@@ -40,7 +45,7 @@ export function Modal({
           </button>
           <button
             type="button"
-            className="button-destructive"
+            className={confirmVariant === "tertiary" ? "button-tertiary" : "button-destructive"}
             onClick={onConfirm}
             disabled={confirmDisabled}
           >

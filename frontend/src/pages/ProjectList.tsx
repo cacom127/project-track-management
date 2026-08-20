@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Badge from "../components/Badge";
 import FilterDropdown from "../components/FilterDropdown";
+import Modal from "../components/Modal";
 import { exportProjects, listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
 import { DEV_PROCESS_PHASE_LABELS, DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
@@ -47,6 +48,8 @@ export function ProjectList() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  // CHANGE-017 (feedback): xác nhận trước khi export, không export ngay khi bấm 出力.
+  const [exportConfirmOpen, setExportConfirmOpen] = useState(false);
 
   function changeViewMode(mode: ViewMode) {
     setViewMode(mode);
@@ -207,14 +210,31 @@ export function ProjectList() {
     }
   }
 
+  function handleConfirmExport() {
+    setExportConfirmOpen(false);
+    void handleExport();
+  }
+
   return (
     <main className="app-page">
       {/* UI-PROJ-01-6: title + nút hành động chính tách riêng khỏi toolbar */}
       <div className="page-header-row">
         <h1>プロジェクト</h1>
-        <Link to="/projects/new" className="button-primary">
-          + 新規プロジェクト
-        </Link>
+        <div className="page-header-actions">
+          {/* UI-PROJ-01-20 (CHANGE-017): 出力 đứng bên trái +新規プロジェクト,
+              màu button-tertiary để phân biệt với hành động chính. */}
+          <button
+            type="button"
+            className="button-tertiary"
+            disabled={selectedIds.size === 0 || exporting}
+            onClick={() => setExportConfirmOpen(true)}
+          >
+            {exporting ? "出力中..." : "出力"}
+          </button>
+          <Link to="/projects/new" className="button-primary">
+            + 新規プロジェクト
+          </Link>
+        </div>
       </div>
 
       <div className="project-list-toolbar">
@@ -252,26 +272,6 @@ export function ProjectList() {
           value={devProcessPhase}
           onChange={handleDevProcessPhaseChange}
         />
-        {/* UI-PROJ-01-19/22: chọn tất cả dự án trên trang hiện tại */}
-        <label className="select-all-on-page">
-          <input
-            type="checkbox"
-            checked={allOnPageSelected}
-            disabled={selectAllDisabled}
-            onChange={toggleSelectAllOnPage}
-            aria-label="このページのすべてを選択"
-          />
-          このページを選択
-        </label>
-        {/* UI-PROJ-01-20: export dự án đã chọn ra .pptx (CHANGE-017) */}
-        <button
-          type="button"
-          className="button-primary"
-          disabled={selectedIds.size === 0 || exporting}
-          onClick={handleExport}
-        >
-          {exporting ? "エクスポート中..." : `エクスポート (${selectedIds.size})`}
-        </button>
         {/* UI-PROJ-01-15: toggle hiển thị list/card */}
         <div className="view-mode-toggle">
           <button
@@ -311,11 +311,28 @@ export function ProjectList() {
         </div>
       )}
 
-      {status === "loaded" && total > 0 && <p className="project-list-count">{total}件</p>}
-
-      {/* UI-PROJ-01-21: thông báo khi đã chọn đủ 10 dự án */}
-      {selectedIds.size >= MAX_EXPORT_PROJECTS && (
-        <p className="project-list-limit-message">最大{MAX_EXPORT_PROJECTS}件まで選択できます</p>
+      {/* UI-PROJ-01-13/19/21/22: số lượng kết quả + chọn tất cả trang này
+          + thông báo giới hạn — gộp 1 hàng, tách khỏi vùng tìm kiếm/filter
+          (feedback: checkbox chọn tất cả không nên nằm trong toolbar tìm kiếm). */}
+      {status === "loaded" && total > 0 && (
+        <div className="project-list-selection-bar">
+          <span className="project-list-count">{total}件</span>
+          <label className="select-all-on-page">
+            <input
+              type="checkbox"
+              checked={allOnPageSelected}
+              disabled={selectAllDisabled}
+              onChange={toggleSelectAllOnPage}
+              aria-label="このページのすべてを選択"
+            />
+            このページを選択
+          </label>
+          {selectedIds.size >= MAX_EXPORT_PROJECTS && (
+            <span className="project-list-limit-message">
+              最大{MAX_EXPORT_PROJECTS}件まで選択できます
+            </span>
+          )}
+        </div>
       )}
 
       {exportError && (
@@ -448,6 +465,18 @@ export function ProjectList() {
           </button>
         </div>
       )}
+
+      {/* CHANGE-017 (feedback): xác nhận trước khi export */}
+      <Modal
+        open={exportConfirmOpen}
+        title={`選択した${selectedIds.size}件のプロジェクトを出力しますか？`}
+        onClose={() => setExportConfirmOpen(false)}
+        confirmLabel="出力する"
+        confirmVariant="tertiary"
+        onConfirm={handleConfirmExport}
+      >
+        <p>選択したプロジェクトの情報を1つの .pptx ファイルとして出力します。</p>
+      </Modal>
     </main>
   );
 }

@@ -388,15 +388,38 @@ describe("ProjectList", () => {
     renderList();
     await screen.findByText("基幹システム刷新");
 
-    const exportButton = screen.getByRole("button", { name: /エクスポート/ });
+    const exportButton = screen.getByRole("button", { name: "出力" });
     expect(exportButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
     expect(exportButton).not.toBeDisabled();
 
     fireEvent.click(exportButton);
+    fireEvent.click(screen.getByRole("button", { name: "出力する" }));
 
     await waitFor(() => expect(exportProjectsMock).toHaveBeenCalledWith([1]));
+  });
+
+  it("shows a confirmation dialog before export and does not call exportProjects when cancelled", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
+    fireEvent.click(screen.getByRole("button", { name: "出力" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "キャンセル" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(exportProjectsMock).not.toHaveBeenCalled();
   });
 
   it("shows an error toast when exportProjects fails", async () => {
@@ -413,7 +436,8 @@ describe("ProjectList", () => {
     await screen.findByText("基幹システム刷新");
 
     fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
-    fireEvent.click(screen.getByRole("button", { name: /エクスポート/ }));
+    fireEvent.click(screen.getByRole("button", { name: "出力" }));
+    fireEvent.click(screen.getByRole("button", { name: "出力する" }));
 
     expect(await screen.findByText("プロジェクトのエクスポートに失敗しました")).toBeInTheDocument();
   });
@@ -438,7 +462,7 @@ describe("ProjectList", () => {
     );
 
     expect(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" })).toBeChecked();
-    expect(screen.getByRole("button", { name: /エクスポート/ })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "出力" })).not.toBeDisabled();
   });
 
   it("disables unselected checkboxes once 10 are selected, and re-enables after deselecting one (UI-PROJ-01-21)", async () => {
