@@ -55,51 +55,51 @@ colors:
   surface-variant: '#d9e3f9'
 typography:
   headline-lg:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 32px
     fontWeight: '700'
     lineHeight: 40px
     letterSpacing: -0.02em
   headline-md:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 24px
     fontWeight: '700'
     lineHeight: 32px
     letterSpacing: -0.01em
   headline-sm:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 18px
     fontWeight: '700'
     lineHeight: 24px
   body-lg:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 16px
     fontWeight: '400'
     lineHeight: 24px
   body-md:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 14px
     fontWeight: '400'
     lineHeight: 20px
   body-sm:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 13px
     fontWeight: '400'
     lineHeight: 18px
   label-md:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 12px
     fontWeight: '600'
     lineHeight: 16px
     letterSpacing: 0.05em
   label-sm:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 11px
     fontWeight: '700'
     lineHeight: 14px
     letterSpacing: 0.05em
   headline-lg-mobile:
-    fontFamily: Noto Sans
+    fontFamily: Noto Sans JP
     fontSize: 24px
     fontWeight: '700'
     lineHeight: 32px
@@ -160,19 +160,23 @@ phần tương tác.
 - **Error (`#ba1a1a`, container `#ffdad6`):** Dùng cho lỗi/validation
   fail — không dùng cho mục đích nhấn mạnh thông thường.
 
-## Badge & Filter Chip (CHANGE-014)
+## Badge & Filter Chip (CHANGE-014, SỬA màu ở CHANGE-016)
 
-Badge (giá trị dữ liệu, hiển thị đậm — List/Detail) và filter chip
-(điều kiện đang lọc, hiển thị nhạt — List) dùng CÙNG hệ màu theo
-category nhưng KHÁC độ đậm, để phân biệt 2 ngữ cảnh (dữ liệu vs.
-điều kiện tìm kiếm đang bật):
+Badge (giá trị dữ liệu — List/Detail) và filter chip (điều kiện đang
+lọc — List) dùng CÙNG hệ màu theo category VÀ CÙNG độ đậm nhạt
+(`*-fixed`, tông nhạt). Trước đây (CHANGE-014) badge dùng tông
+`*-container` đậm để phân biệt với filter chip, nhưng thực tế khiến
+badge nổi bật quá mức so với phần còn lại của màn hình — CHANGE-016
+đổi badge sang cùng tông nhạt với filter chip, chấp nhận 2 ngữ cảnh
+(dữ liệu vs. điều kiện tìm kiếm) không còn phân biệt bằng độ đậm nhạt
+nữa (đã phân biệt đủ rõ qua vị trí/ngữ cảnh hiển thị):
 
-| Category | Badge (đậm) | Filter chip (nhạt) |
-|---|---|---|
-| 技術 | `tertiary-container` `#003f25` / `on-tertiary-container` `#5caf81` | `tertiary-fixed` `#9ff5c1` / `on-tertiary-fixed-variant` `#005231` |
-| 種別 | `secondary-container` `#7db6ff` / `on-secondary-container` `#00477f` | `secondary-fixed` `#d3e4ff` / `on-secondary-fixed-variant` `#004881` |
-| 開発工程 | `phase-container` `#6b4a00` / `on-phase-container` `#ffcf6b` (variant `phase`, mới) | `phase-fixed` `#ffe4a8` / `on-phase-fixed-variant` `#6b4a00` |
-| 検索 (search, không thuộc category) | — (không có badge) | `surface-container-high` `#dee8ff` / `on-surface` `#121c2c` |
+| Category | Badge & Filter chip (cùng tông nhạt) |
+|---|---|
+| 技術 | `tertiary-fixed` `#9ff5c1` / `on-tertiary-fixed-variant` `#005231` |
+| 種別 | `secondary-fixed` `#d3e4ff` / `on-secondary-fixed-variant` `#004881` |
+| 開発工程 | `phase-fixed` `#ffe4a8` / `on-phase-fixed-variant` `#6b4a00` (variant `phase`) |
+| 検索 (search, không thuộc category) | `surface-container-high` `#dee8ff` / `on-surface` `#121c2c` |
 
 Badge variant `phase` (開発工程) dùng cùng công thức với `type`/`tech`
 đã có (container đậm + on-container). Dùng hệ màu **hổ phách/vàng nâu**
@@ -184,8 +188,11 @@ phách tách biệt hẳn khỏi cả xanh dương (種別) và xanh lá (技術
 
 ## Typography
 
-Hệ thống dùng duy nhất **Noto Sans** (đảm bảo hiển thị tốt ký tự tiếng
-Nhật song song với chuỗi kỹ thuật Latin/số).
+Hệ thống dùng duy nhất **Noto Sans JP** (SỬA ở CHANGE-016, trước đó là
+`Noto Sans` bản Latin-only) — đảm bảo Latin/số và ký tự tiếng Nhật cùng
+render từ 1 web font, tránh trộn lẫn với font hệ thống (Hiragino
+Sans/Yu Gothic vẫn giữ làm fallback) gây hiển thị mờ/không nhất quán
+khi Latin và tiếng Nhật xuất hiện cạnh nhau.
 
 - **Phân cấp:** dùng `headline-sm` (18px) cho tiêu đề card và section,
   giữ mật độ thông tin cao.
@@ -350,7 +357,7 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   trên — không tự ý thêm giá trị mới ngoài palette đã định nghĩa.
 - ✅ Chỉ dùng `error` cho thông báo lỗi thật, không dùng cho nhấn mạnh
   thông thường.
-- ❌ Không dùng font khác ngoài `Noto Sans` cho nội dung chính (đảm bảo
+- ❌ Không dùng font khác ngoài `Noto Sans JP` cho nội dung chính (đảm bảo
   hiển thị đúng ký tự Nhật).
 - ❌ Không thêm drop-shadow/gradient trang trí — mọi độ sâu thể hiện qua
   tông màu nền (Tonal Layering) hoặc border phẳng (xem mục Elevation & Depth).
