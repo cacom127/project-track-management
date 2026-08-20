@@ -72,3 +72,16 @@
     vệ logic disable (`selectionDisabled && !selected`) để checkbox đã
     chọn không bị khoá nhầm khi đạt giới hạn 10.
   - CHƯA deploy — chờ T17-T19 sau khi user xác nhận test production OK.
+- **T20 (feedback vòng 2, 2026-08-20)** — trước khi deploy, user góp ý
+  thêm về UI đã implement ở T12-T15:
+  - Nút "出力" (đổi text từ "エクスポート (N)") chuyển từ toolbar sang
+    `page-header-row`, đứng bên trái "+新規プロジェクト"; đổi style sang
+    `button-tertiary` (biến thể mới trong DESIGN.md, màu `tertiary`) để
+    phân biệt với `button-primary`.
+  - Checkbox "このページを選択" chuyển từ toolbar tìm kiếm sang hàng
+    riêng `.project-list-selection-bar` (cùng hàng với `{total}件`).
+  - Thêm modal xác nhận (`Modal` component, `confirmVariant="tertiary"`)
+    trước khi thực sự gọi API export (UI-PROJ-01-23, mới).
+  - Đã cập nhật `delta-spec.md` (UI-PROJ-01-19/20 sửa, UI-PROJ-01-23
+    mới), `DESIGN.md` (Action Button > Tertiary), test (172/172 pass,
+    build sạch, prettier sạch). Commit `f1d78fd`.

@@ -21,6 +21,10 @@
   --color-on-error-container: #93000a;
   --color-secondary-container: #7db6ff;
   --color-on-secondary-container: #00477f;
+  /* CHANGE-017 — thiếu từ trước tới giờ, chỉ có -container/on-tertiary
+     (không component nào cần nền tertiary ĐẶC cho tới `.button-tertiary`
+     — thiếu khai báo khiến nút render trong suốt, chữ trắng biến mất). */
+  --color-tertiary: #002715;
   --color-tertiary-container: #003f25;
   --color-on-tertiary-container: #5caf81;
   --color-on-tertiary: #ffffff;

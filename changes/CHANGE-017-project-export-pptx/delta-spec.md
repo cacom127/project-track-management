@@ -62,15 +62,35 @@
 
 ### `specs/projects-ui.md` (bổ sung nhỏ, tiếp UI-PROJ-01-18)
 
-- **[UI-PROJ-01-19] (MỚI)** The List screen shall render a checkbox per
-  row/card, plus a "select all on this page" checkbox in the toolbar;
-  selection state shall persist while paginating/filtering within the
-  same session (không cần lưu `localStorage`).
+- **[UI-PROJ-01-19] (MỚI, SỬA vị trí sau feedback thực tế)** The List
+  screen shall render a checkbox per row/card, plus a "select all on
+  this page" checkbox; selection state shall persist while
+  paginating/filtering within the same session (không cần lưu
+  `localStorage`). Vị trí "select all on this page": ban đầu đặt trong
+  `.project-list-toolbar` (cùng vùng tìm kiếm/filter) — feedback thực tế
+  cho rằng vị trí này KHÔNG hợp lý, đã chuyển sang hàng riêng
+  `.project-list-selection-bar` (cùng hàng với số lượng kết quả `{total}
+  件`, đặt NGOÀI toolbar tìm kiếm, ngay trên bảng/grid dự án).
 
-- **[UI-PROJ-01-20] (MỚI)** The List toolbar shall show an "Export"
-  button, disabled when no project is selected; while an export request
-  is in flight, the button shall show a loading state and be disabled
-  to prevent duplicate requests.
+- **[UI-PROJ-01-20] (MỚI, SỬA sau feedback thực tế)**
+  - Ban đầu: nút "Export" (text "エクスポート (N)") nằm trong
+    `.project-list-toolbar` (cùng vùng tìm kiếm/filter), style
+    `button-primary` (giống nút "+新規プロジェクト").
+  - Sau feedback: nút chuyển sang **`page-header-row`** (cùng hàng title,
+    nhóm với nút "+新規プロジェクト" qua `.page-header-actions`), đứng
+    **BÊN TRÁI** "+新規プロジェクト". Text đổi thành cố định **"出力"**
+    (loading: "出力中...", KHÔNG hiện số lượng đã chọn trong text nữa).
+    Style đổi sang **`button-tertiary`** (màu `tertiary`/`on-tertiary` —
+    xem `DESIGN.md` mục Action Button, biến thể mới) để phân biệt trực
+    quan với `button-primary` của "+新規プロジェクト". Disabled khi chưa
+    chọn gì; khi đang export, disabled + text "出力中...".
+
+- **[UI-PROJ-01-23] (MỚI, sau feedback thực tế)** Clicking "出力" shall
+  NOT export immediately — the system shall show a confirmation dialog
+  (component `Modal` dùng chung, biến thể `confirmVariant="tertiary"`)
+  with the number of selected projects and a cancel option; the actual
+  `POST /projects/export` call only happens after the user confirms
+  (nút "出力する" trong dialog). Cancel đóng dialog, không gọi API.
 
 - **[UI-PROJ-01-21] (MỚI)** When exactly 10 projects are selected, the
   system shall disable every currently-unchecked checkbox (row/card and
@@ -120,6 +140,7 @@
 | UI-PROJ-01-20 | `test_project_list_export_button_disabled_states` |
 | UI-PROJ-01-21 | `test_project_list_disables_checkboxes_at_10_selected` |
 | UI-PROJ-01-22 | `test_project_list_select_all_disabled_when_page_would_exceed_10` |
+| UI-PROJ-01-23 | `"shows a confirmation dialog before export and does not call exportProjects when cancelled"` |
 
 ## 4. Ghi chú cho AI agent khi implement
 
