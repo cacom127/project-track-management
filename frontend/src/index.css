@@ -660,6 +660,22 @@ h1 {
   margin: var(--space-sm) 0 0;
 }
 
+/* CHANGE-017 (UI-PROJ-01-19..21) — chọn nhiều dự án để export */
+.select-all-on-page {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.project-list-limit-message {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  margin: var(--space-sm) 0 0;
+}
+
 /* Icon "詳細" thay cho link chữ trên List row (feedback CHANGE-010) —
    accessible name giữ nguyên "詳細" qua aria-label. */
 .row-action-link {
@@ -1152,6 +1168,14 @@ fieldset label {
   align-items: flex-start;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+}
+
+.project-card-select {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--color-secondary);
 }
 
 .project-card-avatar {

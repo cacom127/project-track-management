@@ -128,6 +128,24 @@ export async function deleteProject(id: number): Promise<void> {
   }
 }
 
+export type ExportProjectsResponse = {
+  download_url: string;
+  expires_in: number;
+};
+
+/** UI-PROJ-01-20/EXPORT-02..04: export nhiều dự án ra .pptx (CHANGE-017). */
+export async function exportProjects(projectIds: number[]): Promise<ExportProjectsResponse> {
+  const response = await apiFetch("/projects/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project_ids: projectIds }),
+  });
+  if (!response.ok) {
+    throw new Error("プロジェクトのエクスポートに失敗しました");
+  }
+  return response.json();
+}
+
 /** UI-PROJ-02-3: autocomplete tag công nghệ. */
 export async function listTechTags(q?: string): Promise<string[]> {
   const query = q ? `?${new URLSearchParams({ q }).toString()}` : "";

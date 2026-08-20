@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import ProjectCard from "./ProjectCard";
 import type { Project } from "../lib/projectsApi";
 
@@ -26,10 +26,21 @@ const BASE_PROJECT: Project = {
   team_composition_note: null,
 };
 
-function renderCard(overrides: Partial<Project> = {}) {
+type RenderCardOptions = {
+  selected?: boolean;
+  selectionDisabled?: boolean;
+  onToggleSelect?: (id: number) => void;
+};
+
+function renderCard(overrides: Partial<Project> = {}, options: RenderCardOptions = {}) {
   return render(
     <MemoryRouter>
-      <ProjectCard project={{ ...BASE_PROJECT, ...overrides }} />
+      <ProjectCard
+        project={{ ...BASE_PROJECT, ...overrides }}
+        selected={options.selected ?? false}
+        selectionDisabled={options.selectionDisabled ?? false}
+        onToggleSelect={options.onToggleSelect ?? vi.fn()}
+      />
     </MemoryRouter>,
   );
 }
@@ -86,5 +97,32 @@ describe("ProjectCard", () => {
     renderCard({ team_size: null, total_man_month: null });
     expect(screen.getByText("—名")).toBeInTheDocument();
     expect(screen.getByText("—人月")).toBeInTheDocument();
+  });
+
+  it("renders an unchecked select checkbox by default (UI-PROJ-01-19)", () => {
+    renderCard();
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+  });
+
+  it("renders the checkbox checked when selected=true", () => {
+    renderCard({}, { selected: true });
+    expect(screen.getByRole("checkbox")).toBeChecked();
+  });
+
+  it("calls onToggleSelect with the project id when the checkbox is clicked, without navigating", () => {
+    const onToggleSelect = vi.fn();
+    renderCard({ id: 99 }, { onToggleSelect });
+    fireEvent.click(screen.getByRole("checkbox"));
+    expect(onToggleSelect).toHaveBeenCalledWith(99);
+  });
+
+  it("disables the checkbox when selectionDisabled=true and not selected (UI-PROJ-01-21)", () => {
+    renderCard({}, { selectionDisabled: true, selected: false });
+    expect(screen.getByRole("checkbox")).toBeDisabled();
+  });
+
+  it("keeps the checkbox enabled when selectionDisabled=true but already selected", () => {
+    renderCard({}, { selectionDisabled: true, selected: true });
+    expect(screen.getByRole("checkbox")).not.toBeDisabled();
   });
 });

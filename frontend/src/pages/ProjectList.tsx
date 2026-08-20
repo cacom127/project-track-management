@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Badge from "../components/Badge";
 import FilterDropdown from "../components/FilterDropdown";
-import { listProjects, listTechTags, type Project } from "../lib/projectsApi";
+import { exportProjects, listProjects, listTechTags, type Project } from "../lib/projectsApi";
 import { PROJECT_TYPE_LABELS, PROJECT_TYPE_OPTIONS } from "../lib/projectTypes";
 import { DEV_PROCESS_PHASE_LABELS, DEV_PROCESS_PHASE_OPTIONS } from "../lib/devProcessPhases";
 import { formatPeriod } from "../lib/formatPeriod";
@@ -11,6 +11,9 @@ import ProjectCard from "../components/ProjectCard";
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 const VIEW_MODE_STORAGE_KEY = "projectListViewMode";
+// EXPORT-03/UI-PROJ-01-21/22 (CHANGE-017) — trần cứng phía BE, UI chặn
+// trước để tránh gọi API rồi nhận 400.
+const MAX_EXPORT_PROJECTS = 10;
 
 type Status = "loading" | "loaded" | "error";
 type ViewMode = "list" | "card";
@@ -38,6 +41,12 @@ export function ProjectList() {
   const [status, setStatus] = useState<Status>("loading");
   const [techOptions, setTechOptions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(readStoredViewMode);
+  // UI-PROJ-01-19..22 (CHANGE-017) — chọn nhiều dự án để export, giữ
+  // nguyên khi đổi trang/filter (state React sống theo component, không
+  // cần localStorage — chỉ mất khi rời màn hình).
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   function changeViewMode(mode: ViewMode) {
     setViewMode(mode);
@@ -152,6 +161,52 @@ export function ProjectList() {
     setPage(1);
   }
 
+  // UI-PROJ-01-19: toggle chọn/bỏ chọn 1 dự án.
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  const unselectedOnPage = items.filter((project) => !selectedIds.has(project.id)).length;
+  const allOnPageSelected = items.length > 0 && unselectedOnPage === 0;
+  // UI-PROJ-01-22: chặn TRƯỚC khi click nếu chọn hết trang này sẽ vượt
+  // giới hạn — không tự động chỉ chọn 10 dòng đầu.
+  const selectAllDisabled =
+    !allOnPageSelected && unselectedOnPage + selectedIds.size > MAX_EXPORT_PROJECTS;
+
+  function toggleSelectAllOnPage() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) {
+        items.forEach((project) => next.delete(project.id));
+      } else {
+        items.forEach((project) => next.add(project.id));
+      }
+      return next;
+    });
+  }
+
+  // UI-PROJ-01-20: gọi API export, trigger download qua presigned URL.
+  async function handleExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const { download_url } = await exportProjects([...selectedIds]);
+      window.location.href = download_url;
+    } catch {
+      setExportError("プロジェクトのエクスポートに失敗しました");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <main className="app-page">
       {/* UI-PROJ-01-6: title + nút hành động chính tách riêng khỏi toolbar */}
@@ -197,6 +252,26 @@ export function ProjectList() {
           value={devProcessPhase}
           onChange={handleDevProcessPhaseChange}
         />
+        {/* UI-PROJ-01-19/22: chọn tất cả dự án trên trang hiện tại */}
+        <label className="select-all-on-page">
+          <input
+            type="checkbox"
+            checked={allOnPageSelected}
+            disabled={selectAllDisabled}
+            onChange={toggleSelectAllOnPage}
+            aria-label="このページのすべてを選択"
+          />
+          このページを選択
+        </label>
+        {/* UI-PROJ-01-20: export dự án đã chọn ra .pptx (CHANGE-017) */}
+        <button
+          type="button"
+          className="button-primary"
+          disabled={selectedIds.size === 0 || exporting}
+          onClick={handleExport}
+        >
+          {exporting ? "エクスポート中..." : `エクスポート (${selectedIds.size})`}
+        </button>
         {/* UI-PROJ-01-15: toggle hiển thị list/card */}
         <div className="view-mode-toggle">
           <button
@@ -238,6 +313,17 @@ export function ProjectList() {
 
       {status === "loaded" && total > 0 && <p className="project-list-count">{total}件</p>}
 
+      {/* UI-PROJ-01-21: thông báo khi đã chọn đủ 10 dự án */}
+      {selectedIds.size >= MAX_EXPORT_PROJECTS && (
+        <p className="project-list-limit-message">最大{MAX_EXPORT_PROJECTS}件まで選択できます</p>
+      )}
+
+      {exportError && (
+        <p className="toast-error" role="alert">
+          {exportError}
+        </p>
+      )}
+
       {status === "error" && (
         <p className="toast-error" role="alert">
           プロジェクト一覧の取得に失敗しました
@@ -251,7 +337,15 @@ export function ProjectList() {
       {status === "loaded" && total > 0 && viewMode === "card" && (
         <div className="project-card-grid">
           {items.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              selected={selectedIds.has(project.id)}
+              selectionDisabled={
+                !selectedIds.has(project.id) && selectedIds.size >= MAX_EXPORT_PROJECTS
+              }
+              onToggleSelect={toggleSelect}
+            />
           ))}
         </div>
       )}
@@ -261,6 +355,7 @@ export function ProjectList() {
           <table>
             <thead>
               <tr>
+                <th></th>
                 <th>顧客名</th>
                 <th>プロジェクト名</th>
                 <th>概要</th>
@@ -275,6 +370,17 @@ export function ProjectList() {
             <tbody>
               {items.map((project) => (
                 <tr key={project.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(project.id)}
+                      disabled={
+                        !selectedIds.has(project.id) && selectedIds.size >= MAX_EXPORT_PROJECTS
+                      }
+                      onChange={() => toggleSelect(project.id)}
+                      aria-label={`${project.project_name}を選択`}
+                    />
+                  </td>
                   <td>{project.customer_name}</td>
                   <td>{project.project_name}</td>
                   <td className="project-list-description">{project.description}</td>

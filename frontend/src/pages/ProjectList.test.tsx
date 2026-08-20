@@ -4,10 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const listProjectsMock = vi.fn();
 const listTechTagsMock = vi.fn();
+const exportProjectsMock = vi.fn();
 
 vi.mock("../lib/projectsApi", () => ({
   listProjects: (...args: unknown[]) => listProjectsMock(...args),
   listTechTags: (...args: unknown[]) => listTechTagsMock(...args),
+  exportProjects: (...args: unknown[]) => exportProjectsMock(...args),
 }));
 
 import ProjectList from "./ProjectList";
@@ -42,10 +44,19 @@ const SAMPLE_PROJECT = {
   dev_process_phases: [],
 };
 
+function buildProjects(n: number) {
+  return Array.from({ length: n }, (_, i) => ({
+    ...SAMPLE_PROJECT,
+    id: i + 1,
+    project_name: `プロジェクト${i + 1}`,
+  }));
+}
+
 describe("ProjectList", () => {
   beforeEach(() => {
     listProjectsMock.mockReset();
     listTechTagsMock.mockReset();
+    exportProjectsMock.mockReset();
     listTechTagsMock.mockResolvedValue(["React", "AWS"]);
   });
 
@@ -84,7 +95,7 @@ describe("ProjectList", () => {
     expect(await screen.findByText("プロジェクト一覧の取得に失敗しました")).toBeInTheDocument();
   });
 
-  it("renders 8 data columns + 詳細 link column, showing — for null team_size/total_man_month (UI-PROJ-01-5)", async () => {
+  it("renders a select checkbox + 8 data columns + 詳細 link column, showing — for null team_size/total_man_month (UI-PROJ-01-5)", async () => {
     listProjectsMock.mockResolvedValue({
       items: [SAMPLE_PROJECT],
       total: 1,
@@ -99,7 +110,7 @@ describe("ProjectList", () => {
     const row = screen.getByText("基幹システム刷新").closest("tr");
     expect(row).not.toBeNull();
     const cells = row!.querySelectorAll("td");
-    expect(cells).toHaveLength(9);
+    expect(cells).toHaveLength(10);
     expect(row!.textContent).toContain("—");
   });
 
@@ -359,5 +370,126 @@ describe("ProjectList", () => {
 
     expect(screen.getByRole("heading", { name: "プロジェクト" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "+ 新規プロジェクト" })).toBeInTheDocument();
+  });
+
+  it("selects a project via checkbox and calls exportProjects with its id when Export is clicked (UI-PROJ-01-19/20)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+    exportProjectsMock.mockResolvedValue({
+      download_url: "https://example.com/export.pptx",
+      expires_in: 900,
+    });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    const exportButton = screen.getByRole("button", { name: /エクスポート/ });
+    expect(exportButton).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
+    expect(exportButton).not.toBeDisabled();
+
+    fireEvent.click(exportButton);
+
+    await waitFor(() => expect(exportProjectsMock).toHaveBeenCalledWith([1]));
+  });
+
+  it("shows an error toast when exportProjects fails", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    });
+    exportProjectsMock.mockRejectedValue(new Error("boom"));
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
+    fireEvent.click(screen.getByRole("button", { name: /エクスポート/ }));
+
+    expect(
+      await screen.findByText("プロジェクトのエクスポートに失敗しました"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps selection when changing page (UI-PROJ-01-19)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 30,
+      page: 1,
+      page_size: 20,
+    });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })),
+    );
+
+    expect(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" })).toBeChecked();
+    expect(screen.getByRole("button", { name: /エクスポート/ })).not.toBeDisabled();
+  });
+
+  it("disables unselected checkboxes once 10 are selected, and re-enables after deselecting one (UI-PROJ-01-21)", async () => {
+    const projects = buildProjects(11);
+    listProjectsMock.mockResolvedValue({ items: projects, total: 11, page: 1, page_size: 20 });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("プロジェクト1");
+
+    for (let i = 1; i <= 10; i++) {
+      fireEvent.click(screen.getByRole("checkbox", { name: `プロジェクト${i}を選択` }));
+    }
+
+    expect(screen.getByText("最大10件まで選択できます")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "プロジェクト11を選択" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "プロジェクト1を選択" }));
+
+    expect(screen.getByRole("checkbox", { name: "プロジェクト11を選択" })).not.toBeDisabled();
+    expect(screen.queryByText("最大10件まで選択できます")).not.toBeInTheDocument();
+  });
+
+  it('disables "このページを選択" when selecting the whole page would exceed 10 (UI-PROJ-01-22)', async () => {
+    const projects = buildProjects(15);
+    listProjectsMock.mockResolvedValue({ items: projects, total: 15, page: 1, page_size: 20 });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("プロジェクト1");
+
+    expect(screen.getByRole("checkbox", { name: "このページのすべてを選択" })).toBeDisabled();
+  });
+
+  it('enables "このページを選択" when the page fits within the limit and selects every row', async () => {
+    const projects = buildProjects(5);
+    listProjectsMock.mockResolvedValue({ items: projects, total: 5, page: 1, page_size: 20 });
+    window.localStorage.setItem("projectListViewMode", "list");
+
+    renderList();
+    await screen.findByText("プロジェクト1");
+
+    const selectAll = screen.getByRole("checkbox", { name: "このページのすべてを選択" });
+    expect(selectAll).not.toBeDisabled();
+
+    fireEvent.click(selectAll);
+
+    for (let i = 1; i <= 5; i++) {
+      expect(screen.getByRole("checkbox", { name: `プロジェクト${i}を選択` })).toBeChecked();
+    }
   });
 });
