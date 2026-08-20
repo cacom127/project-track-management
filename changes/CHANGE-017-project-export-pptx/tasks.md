@@ -5,7 +5,7 @@
 | # | Task | Trạng thái |
 |---|------|------------|
 | T1 | Thêm `python-pptx` vào `backend/pyproject.toml` | [ ] |
-| T2 | Tạo `backend/app/export/assets/template.pptx` (layout đã chốt ở `proposal.md` mục 3) — đặt tên placeholder/shape rõ ràng theo bảng field mapping (`delta-spec.md` mục 2) | [ ] |
+| T2 | Tạo `backend/app/export/assets/template.pptx` (layout đã chốt ở `proposal.md` mục 3) — đặt tên placeholder/shape rõ ràng theo bảng field mapping (`delta-spec.md` mục 2) | [x] |
 | T3 | `app/core/s3.py`: thêm `get_object_bytes(s3_key) -> bytes` | [ ] |
 | T4 | `app/core/s3.py` (hoặc module export riêng): hàm upload object với `ContentDisposition` (EXPORT-10) | [ ] |
 | T5 | `backend/app/export/service.py`: `build_presentation(projects, attachments_by_project) -> bytes` — mở template, add_slide per project, điền field theo mapping, auto-shrink cho 概要/成果, chèn tối đa 4 ảnh (EXPORT-05..08) | [ ] |
@@ -45,5 +45,14 @@
   T9-T10 (infra) → T11-T16 (frontend) → T8 (test backend, có thể làm
   song song ngay sau T5-T6) → T17-T19 (fold, chỉ làm sau khi deploy +
   test OK).
-- T2 (thiết kế file `.pptx` mẫu) cần review trực quan với bạn trước khi
-  dùng làm chuẩn cho T5 — sẽ xin xác nhận riêng khi có bản nháp.
+- T2 đã chốt (2026-08-20) — `backend/app/export/assets/template.pptx`,
+  16:9, dùng blank layout + text box/shape đặt tên thủ công (không dùng
+  Slide Layout placeholder chuẩn). Tên shape để T5 map field:
+  `field_project_name`, `field_type_badge_1`, `field_status_badge`,
+  `field_description` (auto-shrink), `field_meta` (業種/期間/人数/総人月
+  gộp 1 textbox, xuống dòng bằng `\n`), `img_slot_1..4`, `field_tech_badge_1..2`,
+  `field_phase_badge_1..2`, `field_outcome_note` (auto-shrink). Số lượng
+  badge 技術/開発工程 trong template chỉ là VÍ DỤ (2 badge mỗi loại) — T5
+  cần tự tạo thêm/xoá bớt shape badge tại runtime theo số lượng thực tế
+  của `technologies`/`dev_process_phases` (copy style từ badge mẫu đầu
+  tiên), không giới hạn cứng 2.
