@@ -85,3 +85,42 @@
   - Đã cập nhật `delta-spec.md` (UI-PROJ-01-19/20 sửa, UI-PROJ-01-23
     mới), `DESIGN.md` (Action Button > Tertiary), test (172/172 pass,
     build sạch, prettier sạch). Commit `f1d78fd`.
+- **T21 (bug thật, phát hiện qua export thử nghiệm thực tế, 2026-08-20)**
+  — 技術/開発工程 dài đè lên badge kế tiếp trên slide export, gây mất
+  thông tin. Root cause + fix (đã rà soát TOÀN BỘ các field khác theo
+  yêu cầu, không chỉ 2 field bị báo):
+  - `_render_badge_row` (cũ) tính vị trí badge kế tiếp theo CHIỀU RỘNG
+    CỐ ĐỊNH của badge mẫu, không theo độ dài text thật → viết lại toàn
+    bộ layout badge thành cơ chế "flow" (`_flow_place`): tính rộng theo
+    số ký tự (`_estimate_badge_width`), tự xuống dòng khi vượt giới
+    hạn phải của hàng — áp dụng cho CẢ 3 hàng badge (種別+trạng thái ở
+    header, 技術, 開発工程), không chỉ 2 hàng bị báo.
+  - Vì số dòng badge thay đổi theo project, mọi phần tử tĩnh phía dưới
+    (2 divider còn lại, label, `field_outcome_note` cùng chiều cao của
+    nó) giờ được đặt lại vị trí theo "cursor" tuần tự thay vì toạ độ
+    tĩnh — xem docstring `app/export/service.py`.
+  - **Bug liên quan phát hiện khi rà soát**: `field_project_name` và
+    `field_meta` (+ các label) mang `auto_size=SHAPE_TO_FIT_TEXT` (mặc
+    định của `python-pptx` khi tạo text box, KHÔNG phải cố ý) — khung
+    tự PHÌNH RA theo text dài (thay vì co chữ lại), có thể đè xuống
+    phần tử bên dưới. Đã patch trực tiếp `template.pptx`: `field_meta`
+    → co chữ (`TEXT_TO_FIT_SHAPE`, giống `field_description`/
+    `field_outcome_note`); `field_project_name` + label → `NONE` (cố
+    định, giữ đúng yêu cầu gốc "cỡ chữ CỐ ĐỊNH" cho riêng title,
+    EXPORT-08).
+  - **Bug thứ 2 phát hiện qua test tự viết**: hàm nhân bản shape cũ
+    luôn `addnext` ngay sau **master** (không phải sau clone gần
+    nhất) — khi có ≥3 badge, thứ tự trong XML bị đảo, khiến 1 clone
+    không bao giờ được set lại vị trí (bug ẩn, chỉ lộ ra khi có ≥3 giá
+    trị). Sửa: nhân bản nối chuỗi từ clone gần nhất.
+  - Đã rà các field còn lại: `field_description`/`field_outcome_note`
+    đã co chữ đúng từ trước (an toàn); ảnh (`img_slot_*`) kích thước cố
+    định, không phụ thuộc text (an toàn); `field_project_name` sau khi
+    sửa auto_size không còn PHÌNH nhưng vẫn giữ nguyên rủi ro tồn dư đã
+    biết trước (tên dự án cực dài có thể tràn hình ảnh xuống dưới —
+    đây là đánh đổi CỐ Ý đã chốt ở EXPORT-08 "cỡ chữ cố định, không
+    auto-shrink", KHÔNG tự đổi lại ở đây).
+  - Test mới: `test_long_tech_badges_wrap_to_multiple_lines_without_overlapping`,
+    `test_many_long_badges_push_outcome_section_down_but_stays_within_slide`.
+    Toàn bộ `tests/export` 11/11 pass, ruff check + format sạch. Commit
+    `dc0902c`.

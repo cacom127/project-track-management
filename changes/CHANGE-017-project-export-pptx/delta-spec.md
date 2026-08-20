@@ -25,10 +25,17 @@
   the missing ids) if any `project_id` in the request does not exist or
   is soft-deleted.
 
-- **[EXPORT-05] (MỚI)** For each valid project, the system shall render
-  exactly 1 slide into the export presentation, using the pre-designed
-  template (`backend/app/export/assets/template.pptx`) and the field
-  mapping in mục 2 dưới đây.
+- **[EXPORT-05] (MỚI, bổ sung sau bug thật)** For each valid project,
+  the system shall render exactly 1 slide into the export presentation,
+  using the pre-designed template (`backend/app/export/assets/
+  template.pptx`) and the field mapping in mục 2 dưới đây. Badge rows
+  (種別+trạng thái, 技術, 開発工程) shall size each badge by its actual
+  text length and wrap onto additional lines when a row exceeds the
+  slide's horizontal content width — KHÔNG dùng chiều rộng cố định của
+  badge mẫu (bug thật: badge dài đè lên badge kế tiếp, phát hiện qua
+  export thử nghiệm thực tế). Static elements below a badge group
+  (dividers, labels, `field_outcome_note`) shall reposition dynamically
+  based on how many lines each badge group actually used.
 
 - **[EXPORT-06] (MỚI)** The system shall NOT include `customer_name`,
   `source_note`, or `team_composition_note` anywhere in the exported
@@ -40,11 +47,16 @@
   project has 0 attachments, the image region shall render empty
   (không lỗi).
 
-- **[EXPORT-08] (MỚI)** For the `概要`/`成果・課題・解決策` text
-  regions, the system shall enable PowerPoint's "shrink text on
-  overflow" behavior so long text reduces font size instead of
-  overflowing the frame; the `project_name` title region shall NOT have
-  this behavior (cỡ chữ cố định).
+- **[EXPORT-08] (MỚI, SỬA sau bug thật)** For the `概要`/
+  `成果・課題・解決策`/`業種・期間・人数・総人月` text regions, the
+  system shall enable PowerPoint's "shrink text on overflow" behavior
+  so long text reduces font size instead of overflowing the frame (bổ
+  sung `業種・...` — phát hiện qua rà soát: mặc định `python-pptx` khi
+  tạo text box là "PHÌNH KHUNG theo text" chứ không phải giữ khung/co
+  chữ, khiến field dài đẩy lệch phần tử bên dưới); the `project_name`
+  title region shall NOT have this behavior (cỡ chữ cố định — nhưng
+  PHẢI dùng chế độ "không phình không co" (`NONE`), KHÔNG để mặc định
+  "phình khung", để tránh đẩy lệch badge/phần tử bên dưới).
 
 - **[EXPORT-09] (MỚI)** On success, the system shall respond
   `200 OK` with `{download_url: string, expires_in: 900}` — `download_url`
