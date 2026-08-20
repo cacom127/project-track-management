@@ -11,7 +11,7 @@
 | T7 | Test backend (sanity — ticket này không đổi backend): `pytest` | [x] |
 | T8 | `prettier --check` trong git worktree sạch (không CRLF) | [x] |
 | T9 | Verify local: bỏ `.env` 1 lần, chắc test không phụ thuộc CognitoUserPool import-time | [x] |
-| T10 | Báo user deploy + test production OK, rồi mới fold spec vào `specs/projects-ui.md` và archive ticket | [ ] |
+| T10 | Báo user deploy + test production OK, rồi mới fold spec vào `specs/projects-ui.md` và archive ticket | [x] |
 | T11 | Feedback: 開発工程 hiện dạng text nối "・" → đổi sang badge (`variant="phase"`) | [x] |
 | T12 | Feedback: 人数/総人月 chưa cân đối → `text-align:center` + `align-items:center` trong stat box | [x] |
 | T13 | Feedback: thêm đường kẻ phân cách giữa プロジェクト名↔stat box, giữa 技術↔種別 (`.project-card-divider`) | [x] |
@@ -29,4 +29,8 @@
 - Prettier: sạch, verify trong git worktree `core.autocrlf=false` sau
   commit cuối cùng.
 - Commit: `d058c34` (implement + toàn bộ feedback), `fe8c3e1` (prettier
-  fix).
+  fix), `79e197a` (docs), `214c628` (fix build lỗi `tsc -b`).
+
+| Trạng thái | Ngày | Ghi chú |
+|---|---|---|
+| Hoàn tất | 2026-08-20 | T1-T18 xong, đã deploy + test production OK (workaround `--app` override do `uv.exe` bị Device Guard chặn cục bộ, không phải lỗi code), đã fold vào `specs/projects-ui.md` |
