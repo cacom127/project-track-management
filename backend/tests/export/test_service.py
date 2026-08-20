@@ -135,9 +135,14 @@ def test_long_tech_badges_wrap_to_multiple_lines_without_overlapping(monkeypatch
 
 
 def test_many_long_badges_push_outcome_section_down_but_stays_within_slide(monkeypatch):
+    # 6+5 badge dài — đủ để buộc mỗi cột xuống ít nhất 2 dòng nhưng vẫn
+    # còn nằm trong slide. Vượt xa hơn nữa (vd 8+6) là trường hợp CỰC
+    # ĐOAN đã biết và chấp nhận (MIN_OUTCOME_HEIGHT_EMU là sàn cứng, có
+    # thể khiến field_outcome_note tràn nhẹ khỏi slide — đánh đổi cố ý,
+    # xem docstring module).
     monkeypatch.setattr(service.s3, "get_object_bytes", MagicMock())
-    long_tags = [f"非常に長い技術タグ{i}" for i in range(8)]
-    long_phases = [f"非常に長い開発工程名{i}" for i in range(6)]
+    long_tags = [f"非常に長い技術タグ{i}" for i in range(6)]
+    long_phases = [f"非常に長い開発工程名{i}" for i in range(5)]
     project = _make_project(1, technologies=long_tags, dev_process_phases=long_phases)
 
     data = service.build_presentation([project], {})

@@ -78,7 +78,9 @@ BADGE_INDENT_EMU = Inches(1.0)
 BADGE_HEIGHT_EMU = Inches(0.34)
 BADGE_LINE_GAP_EMU = Inches(0.10)  # khoảng cách dọc giữa 2 dòng badge khi wrap
 BADGE_GAP_EMU = Inches(0.12)  # khoảng cách ngang giữa 2 badge cùng dòng
-BADGE_H_PADDING_EMU = Inches(0.16)  # padding 2 bên trong 1 badge, cộng theo text
+# Padding 2 bên trong 1 badge, cộng theo text — feedback thực tế: chữ
+# sát viền quá dễ tràn ra ngoài, tăng từ 0.16in lên 0.4in.
+BADGE_H_PADDING_EMU = Inches(0.4)
 # Sàn tối thiểu CHUNG cho mọi badge — CỐ Ý nhỏ (không dùng chiều rộng
 # badge mẫu trong template làm sàn như trước) để badge LUÔN phản ánh
 # đúng độ dài text thật. Bug thực tế: catalog 種別 (`オフショア`/`SES`/
@@ -86,9 +88,11 @@ BADGE_H_PADDING_EMU = Inches(0.16)  # padding 2 bên trong 1 badge, cộng theo 
 # ~1.6in) luôn thắng ước lượng theo text → nhìn như badge 種別 không
 # đổi theo độ dài, dù công thức vẫn tính đúng bên dưới.
 BADGE_MIN_WIDTH_EMU = Inches(0.5)
-# Ước lượng rộng/ký tự — dư cho CJK+Latin trộn (thà badge hơi rộng còn
-# hơn chữ bị cắt).
-CHAR_WIDTH_EMU = Inches(0.11)
+# Ước lượng rộng/ký tự — TÁCH RIÊNG theo loại ký tự (feedback thực tế:
+# dùng 1 mức chung ước lượng THIẾU cho chữ toàn CJK như `新規開発`, vì
+# ký tự CJK (kanji/kana/fullwidth) thực tế rộng hơn hẳn ký tự Latin).
+CJK_CHAR_WIDTH_EMU = Inches(0.17)
+LATIN_CHAR_WIDTH_EMU = Inches(0.09)
 # Khoảng cách giữa 2 khối lớn (2 cột -> badge, badge -> badge, badge -> divider).
 GROUP_GAP_EMU = Inches(0.15)
 DIVIDER_CONTENT_GAP_EMU = Inches(0.09)  # khoảng cách từ divider tới nội dung ngay sau nó
@@ -152,14 +156,31 @@ def _duplicate_shape(after_shape):
     return matches[-1]
 
 
+def _is_wide_char(ch: str) -> bool:
+    """Ký tự CJK (kanji/kana) hoặc fullwidth — rộng hơn hẳn ký tự Latin
+    ở cùng cỡ chữ, cần cộng riêng thay vì dùng 1 mức rộng chung (feedback
+    thực tế: chữ toàn CJK như `新規開発` bị ước lượng thiếu khi dùng
+    chung 1 mức trung bình với Latin)."""
+    code = ord(ch)
+    return (
+        0x3000 <= code <= 0x30FF  # CJK symbols/punctuation, hiragana, katakana
+        or 0x3400 <= code <= 0x9FFF  # CJK unified ideographs (kanji)
+        or 0xFF00 <= code <= 0xFFEF  # fullwidth forms
+    )
+
+
 def _estimate_badge_width(text: str) -> int:
-    """Ước lượng chiều rộng badge theo SỐ KÝ TỰ THẬT — thay cho việc
-    dùng cố định chiều rộng badge mẫu trong template (nguyên nhân badge
-    dài đè lên badge kế tiếp, feedback thực tế). Sàn tối thiểu CỐ ĐỊNH
-    nhỏ (`BADGE_MIN_WIDTH_EMU`), KHÔNG dùng chiều rộng badge mẫu làm
-    sàn — nếu không, badge có nhãn ngắn (vd 種別) sẽ luôn bị sàn theo
-    template che mất, trông như không đổi theo độ dài text."""
-    return max(BADGE_MIN_WIDTH_EMU, BADGE_H_PADDING_EMU + len(text) * CHAR_WIDTH_EMU)
+    """Ước lượng chiều rộng badge theo SỐ KÝ TỰ THẬT, tính riêng theo
+    loại ký tự (CJK rộng hơn Latin) — thay cho việc dùng cố định chiều
+    rộng badge mẫu trong template (nguyên nhân badge dài đè lên badge
+    kế tiếp, feedback thực tế). Sàn tối thiểu CỐ ĐỊNH nhỏ
+    (`BADGE_MIN_WIDTH_EMU`), KHÔNG dùng chiều rộng badge mẫu làm sàn —
+    nếu không, badge có nhãn ngắn (vd 種別) sẽ luôn bị sàn theo template
+    che mất, trông như không đổi theo độ dài text."""
+    char_total = sum(
+        CJK_CHAR_WIDTH_EMU if _is_wide_char(ch) else LATIN_CHAR_WIDTH_EMU for ch in text
+    )
+    return max(BADGE_MIN_WIDTH_EMU, BADGE_H_PADDING_EMU + char_total)
 
 
 def _flow_place(
