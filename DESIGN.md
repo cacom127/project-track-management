@@ -276,6 +276,12 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   quan rõ với Primary nhưng KHÔNG phải hành động phá hoại (vd nút 出力
   export ở màn List) — cùng hệ xanh lá đã dùng cho badge 技術, tách hẳn
   khỏi dải xanh dương của Primary.
+- **Count badge (CHANGE-017):** khi Action Button cần hiện số lượng đang
+  chọn (vd nút 出力 khi đã chọn N dự án), dùng 1 badge tròn nhỏ đè lên
+  góc trên-phải nút — màu ĐẢO NGƯỢC so với nút nền (vd nút Tertiary →
+  badge nền `on-tertiary`/chữ `tertiary`) để tự nổi bật mà không cần
+  thêm token màu mới. KHÔNG viết số lượng lẫn vào text chính của nút
+  (giữ text nút cố định, dễ đọc).
 - **Kích thước:** chiều cao chuẩn 32px cho layout mật độ cao; 40px cho
   action chính của trang.
 

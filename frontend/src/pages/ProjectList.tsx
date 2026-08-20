@@ -230,6 +230,11 @@ export function ProjectList() {
             onClick={() => setExportConfirmOpen(true)}
           >
             {exporting ? "出力中..." : "出力"}
+            {selectedIds.size > 0 && (
+              <span className="export-count-badge" aria-hidden="true">
+                {selectedIds.size}
+              </span>
+            )}
           </button>
           <Link to="/projects/new" className="button-primary">
             + 新規プロジェクト

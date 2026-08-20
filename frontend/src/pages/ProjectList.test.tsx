@@ -390,9 +390,11 @@ describe("ProjectList", () => {
 
     const exportButton = screen.getByRole("button", { name: "出力" });
     expect(exportButton).toBeDisabled();
+    expect(exportButton.querySelector(".export-count-badge")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
     expect(exportButton).not.toBeDisabled();
+    expect(exportButton.querySelector(".export-count-badge")).toHaveTextContent("1");
 
     fireEvent.click(exportButton);
     fireEvent.click(screen.getByRole("button", { name: "出力する" }));

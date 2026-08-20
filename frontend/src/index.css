@@ -190,6 +190,7 @@ h1 {
    không phải hành động phá hoại (không dùng Destructive). Cùng hệ màu
    xanh lá đã dùng cho badge 技術, khác hẳn dải xanh dương của Primary. */
 .button-tertiary {
+  position: relative;
   width: auto;
   height: 40px;
   padding: 0 var(--space-md);
@@ -211,6 +212,26 @@ h1 {
   background: var(--color-outline-variant);
   color: var(--color-on-surface-variant);
   cursor: not-allowed;
+}
+
+/* CHANGE-017 (feedback) — badge số lượng đã chọn, đè góc trên-phải nút
+   出力. Đảo màu (nền on-tertiary/chữ tertiary) so với nút để nổi bật rõ
+   trên nền tertiary đặc, không cần thêm token màu mới. */
+.export-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: var(--color-on-tertiary);
+  color: var(--color-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toast-error {
