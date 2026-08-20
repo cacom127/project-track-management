@@ -415,9 +415,7 @@ describe("ProjectList", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: "基幹システム刷新を選択" }));
     fireEvent.click(screen.getByRole("button", { name: /エクスポート/ }));
 
-    expect(
-      await screen.findByText("プロジェクトのエクスポートに失敗しました"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("プロジェクトのエクスポートに失敗しました")).toBeInTheDocument();
   });
 
   it("keeps selection when changing page (UI-PROJ-01-19)", async () => {
@@ -444,6 +442,8 @@ describe("ProjectList", () => {
   });
 
   it("disables unselected checkboxes once 10 are selected, and re-enables after deselecting one (UI-PROJ-01-21)", async () => {
+    // Timeout dài hơn mặc định — test này bấm 11 checkbox tuần tự, mỗi
+    // click là 1 lần re-render; máy chậm/tải cao dễ vượt 5000ms mặc định.
     const projects = buildProjects(11);
     listProjectsMock.mockResolvedValue({ items: projects, total: 11, page: 1, page_size: 20 });
     window.localStorage.setItem("projectListViewMode", "list");
@@ -462,7 +462,7 @@ describe("ProjectList", () => {
 
     expect(screen.getByRole("checkbox", { name: "プロジェクト11を選択" })).not.toBeDisabled();
     expect(screen.queryByText("最大10件まで選択できます")).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it('disables "このページを選択" when selecting the whole page would exceed 10 (UI-PROJ-01-22)', async () => {
     const projects = buildProjects(15);

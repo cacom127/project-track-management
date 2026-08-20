@@ -21,7 +21,12 @@ type ProjectCardProps = {
  * icon hành động riêng (Sửa/Xoá chỉ có ở Detail, giữ nguyên từ
  * CHANGE-010). Checkbox chọn export (UI-PROJ-01-19, CHANGE-017) chặn
  * `click` lan lên `<Link>` để không bị điều hướng khi tick chọn. */
-export function ProjectCard({ project, selected, selectionDisabled, onToggleSelect }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  selected,
+  selectionDisabled,
+  onToggleSelect,
+}: ProjectCardProps) {
   const visibleTechnologies = project.technologies.slice(0, MAX_VISIBLE_TECHNOLOGIES);
   const hiddenTechnologyCount = project.technologies.length - visibleTechnologies.length;
 
