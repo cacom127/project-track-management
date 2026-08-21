@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import Badge from "../components/Badge";
 import FilterDropdown from "../components/FilterDropdown";
 import Modal from "../components/Modal";
@@ -30,15 +30,32 @@ function readStoredViewMode(): ViewMode {
   }
 }
 
+// UI-PROJ-01-24 (CHANGE-019): join bằng dấu phẩy khi ghi lên URL, tách
+// lại khi đọc — bỏ param khi rỗng để URL gọn (khớp UI-PROJ-01-26).
+function parseListParam(value: string | null): string[] {
+  return value ? value.split(",").filter(Boolean) : [];
+}
+
 export function ProjectList() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [items, setItems] = useState<Project[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [q, setQ] = useState("");
-  const [debouncedQ, setDebouncedQ] = useState("");
-  const [technology, setTechnology] = useState<string[]>([]);
-  const [projectType, setProjectType] = useState<string[]>([]);
-  const [devProcessPhase, setDevProcessPhase] = useState<string[]>([]);
+  const [page, setPage] = useState(() => {
+    const fromUrl = Number(searchParams.get("page"));
+    return Number.isInteger(fromUrl) && fromUrl > 0 ? fromUrl : 1;
+  });
+  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
+  const [debouncedQ, setDebouncedQ] = useState(() => searchParams.get("q") ?? "");
+  const [technology, setTechnology] = useState<string[]>(() =>
+    parseListParam(searchParams.get("technology")),
+  );
+  const [projectType, setProjectType] = useState<string[]>(() =>
+    parseListParam(searchParams.get("type")),
+  );
+  const [devProcessPhase, setDevProcessPhase] = useState<string[]>(() =>
+    parseListParam(searchParams.get("phase")),
+  );
   const [status, setStatus] = useState<Status>("loading");
   const [techOptions, setTechOptions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>(readStoredViewMode);
@@ -62,13 +79,37 @@ export function ProjectList() {
   }
 
   // UI-PROJ-01-2: debounce 300ms trước khi cập nhật query search thật.
+  // UI-PROJ-01-25 (CHANGE-019): bỏ qua reset `page` ở lần chạy đầu tiên
+  // (mount) — nếu không, giá trị `page` vừa khôi phục từ URL (back từ
+  // Detail) sẽ bị ghi đè về 1 ngay sau khi mount.
+  const isFirstQEffectRef = useRef(true);
   useEffect(() => {
+    if (isFirstQEffectRef.current) {
+      isFirstQEffectRef.current = false;
+      setDebouncedQ(q);
+      return;
+    }
     const timer = setTimeout(() => {
       setDebouncedQ(q);
       setPage(1);
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [q]);
+
+  // UI-PROJ-01-24 (CHANGE-019): đồng bộ điều kiện tìm kiếm lên URL query
+  // (replace — không tạo history entry mới mỗi lần gõ/lọc). Back từ
+  // Detail (browser back) trả về đúng URL này → khôi phục đúng trạng
+  // thái (UI-PROJ-01-25). Bấm menu sidebar (URL /projects trơn) không
+  // đụng tới các param này → reset về mặc định (UI-PROJ-01-26).
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (page > 1) next.set("page", String(page));
+    if (technology.length) next.set("technology", technology.join(","));
+    if (projectType.length) next.set("type", projectType.join(","));
+    if (devProcessPhase.length) next.set("phase", devProcessPhase.join(","));
+    setSearchParams(next, { replace: true });
+  }, [q, page, technology, projectType, devProcessPhase, setSearchParams]);
 
   useEffect(() => {
     listTechTags()

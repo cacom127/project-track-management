@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, useLocation } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const listProjectsMock = vi.fn();
@@ -14,10 +14,18 @@ vi.mock("../lib/projectsApi", () => ({
 
 import ProjectList from "./ProjectList";
 
-function renderList() {
+// UI-PROJ-01-24 (CHANGE-019): expose the router's current URL search
+// string so tests can assert it's kept in sync with List's filter state.
+function LocationSearchProbe() {
+  const location = useLocation();
+  return <div data-testid="location-search">{location.search}</div>;
+}
+
+function renderList(initialEntries: string[] = ["/projects"]) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <ProjectList />
+      <LocationSearchProbe />
     </MemoryRouter>,
   );
 }
@@ -157,6 +165,67 @@ describe("ProjectList", () => {
     });
 
     expect(listProjectsMock).toHaveBeenCalledWith(expect.objectContaining({ q: "Sony", page: 1 }));
+  });
+
+  it("syncs q/page/filters to the URL query string (UI-PROJ-01-24)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 30,
+      page: 1,
+      page_size: 20,
+    });
+
+    renderList();
+    await screen.findByText("基幹システム刷新");
+
+    fireEvent.click(screen.getByRole("button", { name: "技術" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "React" }));
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ technology: ["React"] }),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+    await waitFor(() =>
+      expect(listProjectsMock).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })),
+    );
+
+    const search = screen.getByTestId("location-search").textContent ?? "";
+    expect(search).toContain("technology=React");
+    expect(search).toContain("page=2");
+  });
+
+  it("restores state from the URL on mount, as when the browser back button returns from Detail (UI-PROJ-01-25)", async () => {
+    listProjectsMock.mockResolvedValue({
+      items: [SAMPLE_PROJECT],
+      total: 30,
+      page: 2,
+      page_size: 20,
+    });
+
+    renderList(["/projects?q=Sony&page=2&technology=React"]);
+    await screen.findByText("基幹システム刷新");
+
+    expect(screen.getByRole("searchbox")).toHaveValue("Sony");
+    expect(screen.getByText("2 / 2")).toBeInTheDocument();
+    expect(listProjectsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ q: "Sony", page: 2, technology: ["React"] }),
+    );
+  });
+
+  it("resets to the default state when navigating via a bare URL with no query, as from the Sidebar menu (UI-PROJ-01-26)", async () => {
+    listProjectsMock.mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20 });
+
+    renderList(["/projects"]);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole("searchbox")).toHaveValue("");
+    expect(listProjectsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ q: undefined, page: 1, technology: undefined }),
+    );
   });
 
   it("resets to page 1 when technology filter changes (UI-PROJ-01-3)", async () => {
