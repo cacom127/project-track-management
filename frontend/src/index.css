@@ -21,6 +21,10 @@
   --color-on-error-container: #93000a;
   --color-secondary-container: #7db6ff;
   --color-on-secondary-container: #00477f;
+  /* CHANGE-017 — thiếu từ trước tới giờ, chỉ có -container/on-tertiary
+     (không component nào cần nền tertiary ĐẶC cho tới `.button-tertiary`
+     — thiếu khai báo khiến nút render trong suốt, chữ trắng biến mất). */
+  --color-tertiary: #002715;
   --color-tertiary-container: #003f25;
   --color-on-tertiary-container: #5caf81;
   --color-on-tertiary: #ffffff;
@@ -179,6 +183,55 @@ h1 {
   background: var(--color-outline-variant);
   color: var(--color-on-surface-variant);
   cursor: not-allowed;
+}
+
+/* Action Button > Tertiary (DESIGN.md) — dùng cho hành động phụ cần
+   phân biệt rõ với Primary (vd nút 出力/export ở List, CHANGE-017) mà
+   không phải hành động phá hoại (không dùng Destructive). Cùng hệ màu
+   xanh lá đã dùng cho badge 技術, khác hẳn dải xanh dương của Primary. */
+.button-tertiary {
+  position: relative;
+  width: auto;
+  height: 40px;
+  padding: 0 var(--space-md);
+  border: none;
+  border-radius: var(--radius-default);
+  background: var(--color-tertiary);
+  color: var(--color-on-tertiary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-tertiary:disabled {
+  background: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  cursor: not-allowed;
+}
+
+/* CHANGE-017 (feedback) — badge số lượng đã chọn, đè góc trên-phải nút
+   出力. Đảo màu (nền on-tertiary/chữ tertiary) so với nút để nổi bật rõ
+   trên nền tertiary đặc, không cần thêm token màu mới. */
+.export-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: var(--color-on-tertiary);
+  color: var(--color-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toast-error {
@@ -396,6 +449,14 @@ h1 {
 .page-header-row .button-primary {
   width: auto;
   white-space: nowrap;
+}
+
+/* Nhóm nút hành động bên phải header-row (CHANGE-017: 出力 đứng TRƯỚC
+   +新規プロジェクト trong cùng nhóm, cả 2 vẫn nằm bên phải h1). */
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 /* Toolbar List (chỉ search + filter — nút tạo mới đã chuyển sang
@@ -657,7 +718,47 @@ h1 {
 .project-list-count {
   font-size: 13px;
   color: var(--color-on-surface-variant);
+  /* Feedback thực tế: căn phải trong `.project-list-selection-bar`
+     (đứng cuối cùng bên phải, các phần tử chọn/thông báo còn lại giữ
+     bên trái). */
+  margin-left: auto;
+}
+
+/* CHANGE-017 (UI-PROJ-01-19..21) — chọn nhiều dự án để export. Đặt
+   trong `.project-list-selection-bar` (KHÔNG nằm trong
+   `.project-list-toolbar` — feedback: checkbox chọn tất cả không nên ở
+   vùng tìm kiếm/filter), cùng hàng với số lượng kết quả. */
+.project-list-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
   margin: var(--space-sm) 0 0;
+}
+
+.select-all-on-page {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+/* Feedback thực tế: checkbox chọn dự án (chọn tất cả trang này/từng
+   dòng/từng card) mặc định trình duyệt quá nhỏ, khó bấm — tăng kích
+   thước rõ ràng hơn (24px, theo feedback thực tế — lớn hơn hẳn mặc
+   định ~13px). */
+.select-checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: var(--color-secondary);
+}
+
+.project-list-limit-message {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
 }
 
 /* Icon "詳細" thay cho link chữ trên List row (feedback CHANGE-010) —
@@ -1125,8 +1226,12 @@ fieldset label {
 }
 
 .project-card {
+  position: relative;
   display: block;
   padding: var(--space-md);
+  /* Chỗ trống cho checkbox góc dưới-phải (absolute), tránh đè lên
+     hàng badge 種別 cuối card. */
+  padding-bottom: calc(var(--space-md) + 24px + var(--space-xs));
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-lg);
   background: var(--color-surface-container-lowest);
@@ -1152,6 +1257,14 @@ fieldset label {
   align-items: flex-start;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+}
+
+/* Feedback thực tế: chuyển từ header (cạnh avatar) xuống góc dưới-phải
+   card. Kích thước/màu do `.select-checkbox` đảm nhiệm. */
+.project-card-select {
+  position: absolute;
+  right: var(--space-md);
+  bottom: var(--space-md);
 }
 
 .project-card-avatar {

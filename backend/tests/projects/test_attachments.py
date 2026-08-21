@@ -232,3 +232,28 @@ def test_delete_attachment_404_when_project_not_found(client):
     response = client.delete("/projects/999999/attachments/1", headers=AUTH_HEADER)
 
     assert response.status_code == 404
+
+
+# ---- list_attachment_s3_keys (CHANGE-017, EXPORT-07) ---------------------
+
+
+def test_list_attachment_s3_keys_returns_upload_order(client, db_session, _mock_s3):
+    project = _create_project(client)
+    _confirm_attachment(client, project["id"], s3_key="projects/1/a.jpg")
+    _confirm_attachment(client, project["id"], s3_key="projects/1/b.jpg")
+    _confirm_attachment(client, project["id"], s3_key="projects/1/c.jpg")
+
+    keys = repository.list_attachment_s3_keys(db_session, project["id"])
+
+    assert keys == ["projects/1/a.jpg", "projects/1/b.jpg", "projects/1/c.jpg"]
+
+
+def test_list_attachment_s3_keys_respects_limit(client, db_session, _mock_s3):
+    project = _create_project(client)
+    _confirm_attachment(client, project["id"], s3_key="projects/1/a.jpg")
+    _confirm_attachment(client, project["id"], s3_key="projects/1/b.jpg")
+    _confirm_attachment(client, project["id"], s3_key="projects/1/c.jpg")
+
+    keys = repository.list_attachment_s3_keys(db_session, project["id"], limit=2)
+
+    assert keys == ["projects/1/a.jpg", "projects/1/b.jpg"]
