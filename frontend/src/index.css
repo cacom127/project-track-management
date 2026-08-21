@@ -718,6 +718,10 @@ h1 {
 .project-list-count {
   font-size: 13px;
   color: var(--color-on-surface-variant);
+  /* Feedback thực tế: căn phải trong `.project-list-selection-bar`
+     (đứng cuối cùng bên phải, các phần tử chọn/thông báo còn lại giữ
+     bên trái). */
+  margin-left: auto;
 }
 
 /* CHANGE-017 (UI-PROJ-01-19..21) — chọn nhiều dự án để export. Đặt
@@ -739,6 +743,17 @@ h1 {
   font-size: 13px;
   color: var(--color-on-surface-variant);
   white-space: nowrap;
+}
+
+/* Feedback thực tế: checkbox chọn dự án (chọn tất cả trang này/từng
+   dòng/từng card) mặc định trình duyệt quá nhỏ, khó bấm — tăng kích
+   thước rõ ràng hơn (chuẩn 40px touch target tối thiểu không khả thi
+   với checkbox gốc, nhưng 18px đã lớn hơn hẳn mặc định ~13px). */
+.select-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-secondary);
 }
 
 .project-list-limit-message {
@@ -1211,8 +1226,12 @@ fieldset label {
 }
 
 .project-card {
+  position: relative;
   display: block;
   padding: var(--space-md);
+  /* Chỗ trống cho checkbox góc dưới-phải (absolute), tránh đè lên
+     hàng badge 種別 cuối card. */
+  padding-bottom: calc(var(--space-md) + 18px + var(--space-xs));
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-lg);
   background: var(--color-surface-container-lowest);
@@ -1240,12 +1259,12 @@ fieldset label {
   margin-bottom: var(--space-sm);
 }
 
+/* Feedback thực tế: chuyển từ header (cạnh avatar) xuống góc dưới-phải
+   card. Kích thước/màu do `.select-checkbox` đảm nhiệm. */
 .project-card-select {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  margin: 2px 0 0;
-  accent-color: var(--color-secondary);
+  position: absolute;
+  right: var(--space-md);
+  bottom: var(--space-md);
 }
 
 .project-card-avatar {

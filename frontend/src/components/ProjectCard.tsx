@@ -33,15 +33,6 @@ export function ProjectCard({
   return (
     <Link to={`/projects/${project.id}`} className="project-card">
       <div className="project-card-header">
-        <input
-          type="checkbox"
-          className="project-card-select"
-          checked={selected}
-          disabled={selectionDisabled && !selected}
-          onClick={(event) => event.stopPropagation()}
-          onChange={() => onToggleSelect(project.id)}
-          aria-label={`${project.project_name}を選択`}
-        />
         <div className="project-card-avatar" aria-hidden="true">
           {project.customer_name.charAt(0)}
         </div>
@@ -107,6 +98,18 @@ export function ProjectCard({
           </span>
         ))}
       </div>
+
+      {/* UI-PROJ-01-19 (CHANGE-017) — feedback thực tế: đặt ở góc
+          dưới-phải card (trước đó ở header, cạnh avatar). */}
+      <input
+        type="checkbox"
+        className="project-card-select select-checkbox"
+        checked={selected}
+        disabled={selectionDisabled && !selected}
+        onClick={(event) => event.stopPropagation()}
+        onChange={() => onToggleSelect(project.id)}
+        aria-label={`${project.project_name}を選択`}
+      />
     </Link>
   );
 }

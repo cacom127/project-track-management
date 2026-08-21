@@ -321,10 +321,10 @@ export function ProjectList() {
           (feedback: checkbox chọn tất cả không nên nằm trong toolbar tìm kiếm). */}
       {status === "loaded" && total > 0 && (
         <div className="project-list-selection-bar">
-          <span className="project-list-count">{total}件</span>
           <label className="select-all-on-page">
             <input
               type="checkbox"
+              className="select-checkbox"
               checked={allOnPageSelected}
               disabled={selectAllDisabled}
               onChange={toggleSelectAllOnPage}
@@ -337,6 +337,8 @@ export function ProjectList() {
               最大{MAX_EXPORT_PROJECTS}件まで選択できます
             </span>
           )}
+          {/* UI-PROJ-01-13: căn phải trong hàng (feedback thực tế) */}
+          <span className="project-list-count">{total}件</span>
         </div>
       )}
 
@@ -395,6 +397,7 @@ export function ProjectList() {
                   <td>
                     <input
                       type="checkbox"
+                      className="select-checkbox"
                       checked={selectedIds.has(project.id)}
                       disabled={
                         !selectedIds.has(project.id) && selectedIds.size >= MAX_EXPORT_PROJECTS
