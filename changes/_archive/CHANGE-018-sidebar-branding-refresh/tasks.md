@@ -29,13 +29,14 @@
       - Liên quan: ARCH-SHELL-02, ARCH-SHELL-03
 - [x] **T7** — Build + prettier verify (theo pattern worktree đã dùng
       các change trước)
-- [ ] **T8** — Review chéo + cập nhật `specs/architecture.md` mục "App
+- [x] **T8** — Review chéo + cập nhật `specs/architecture.md` mục "App
       Shell" khi merge
-- [ ] **T9** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge
+- [x] **T9** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge
 
 ## Trạng thái
 
 | Trạng thái      | Ngày cập nhật | Ghi chú                                                        |
 |-----------------|----------------|-----------------------------------------------------------------|
 | Đang làm        | 2026-08-21     |                                                                   |
-| Code xong (T1-T7) | 2026-08-21   | Đã commit trên branch `feature/change-018-sidebar-branding-refresh`. Chờ user deploy + test OK rồi mới fold (T8) + archive (T9), theo đúng quy trình đã áp dụng cho các CHANGE trước. |
+| Code xong (T1-T7) | 2026-08-21   | Đã commit trên branch `feature/change-018-sidebar-branding-refresh`. |
+| Hoàn tất         | 2026-08-21    | User deploy + test OK. Đã fold vào `specs/architecture.md`, archive ticket. |
