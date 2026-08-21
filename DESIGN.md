@@ -301,10 +301,16 @@ Ngôn ngữ hình khối mang tính bảo thủ và hình học.
   cao viewport (không cuộn theo nội dung, đè lên vùng header phía trên
   cùng bên trái). Nền `surface-container-lowest`, border-right 1px
   `outline-variant`.
-- **Item:** padding dọc theo `spacing.sm`, ngang theo `spacing.lg`.
-  Item active dùng nền `secondary-container`, text
-  `on-secondary-container`, in đậm; hover (không active) dùng nền
-  `surface-container-low`.
+- **Header (logo):** khu vực trên cùng, chỉ hiển thị logo VPM
+  (`40×40px`, bo góc `rounded.DEFAULT`), không kèm text, căn giữa
+  ngang; ngăn cách với nav bằng `border-bottom` 1px `outline-variant`.
+- **Item:** layout flex (icon 18×18px + label, cách nhau
+  `spacing.sm`), margin ngang `spacing.sm`, padding dọc `spacing.sm`
+  ngang `spacing.md`, bo góc `rounded.DEFAULT` (không full-bleed sát
+  viền sidebar). Icon dùng SVG inline tự vẽ (không dùng icon library
+  ngoài), màu `on-surface-variant` ở trạng thái thường. Item active
+  dùng nền `secondary-container`, text + icon `on-secondary-container`,
+  in đậm; hover (không active) dùng nền `surface-container-low`.
 
 ### Dropdown / Filter
 - **Button:** border 1px `outline-variant`, nền

@@ -34,4 +34,18 @@ describe("Sidebar", () => {
     expect(link.className).toContain("sidebar-item");
     expect(link.className).not.toContain("sidebar-item-active");
   });
+
+  it("renders the VPM logo header, text-free (ARCH-SHELL-02)", () => {
+    renderSidebar("/");
+
+    const logo = screen.getByRole("img", { name: "VPM" });
+    expect(logo.getAttribute("src")).toBe("/logo.png");
+  });
+
+  it("renders an icon next to the nav item label (ARCH-SHELL-03)", () => {
+    renderSidebar("/");
+
+    const link = screen.getByRole("link", { name: "プロジェクト一覧" });
+    expect(link.querySelector("svg.sidebar-item-icon")).not.toBeNull();
+  });
 });

@@ -23,7 +23,7 @@
     cách với icon inline sẵn có trong `ProjectList.tsx` — KHÔNG thêm
     icon library mới, xem CLAUDE.md mục 2 về runtime dependency) bên
     trái text, cách nhau theo `spacing.sm`; nền active/hover bo góc
-    (`rounded.md`) và có margin ngang, không còn full-bleed.
+    (`rounded.DEFAULT`) và có margin ngang, không còn full-bleed.
 
 ## 1b. Thay đổi Data Model (nếu có)
 
