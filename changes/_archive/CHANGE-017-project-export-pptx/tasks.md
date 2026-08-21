@@ -35,9 +35,13 @@
 
 | # | Task | Trạng thái |
 |---|------|------------|
-| T17 | Sau khi deploy + user xác nhận: tạo `specs/export.md` từ `delta-spec.md` mục 1 (EXPORT-01..11) | [ ] |
-| T18 | Fold UI-PROJ-01-19..22 vào `specs/projects-ui.md` (mục layout + changelog) | [ ] |
-| T19 | Archive ticket vào `changes/_archive/` | [ ] |
+| T17 | Sau khi deploy + user xác nhận: tạo `specs/export.md` từ `delta-spec.md` mục 1 (EXPORT-01..12) | [x] |
+| T18 | Fold UI-PROJ-01-19..23 vào `specs/projects-ui.md` (mục layout + changelog) | [x] |
+| T19 | Archive ticket vào `changes/_archive/` | [x] |
+
+| Trạng thái chung | Ngày | Ghi chú |
+|---|---|---|
+| Hoàn tất | 2026-08-21 | T1-T19 xong, đã deploy + test production OK. Sau T16 còn 3 vòng feedback chỉnh sửa export/UI (badge đè nhau, layout 2 cột, size checkbox, vị trí căn lề) — xem lịch sử commit branch. Đã fold vào `specs/export.md` (mới) + `specs/projects-ui.md`, archive ticket. |
 
 ## Ghi chú
 

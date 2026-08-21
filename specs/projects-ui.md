@@ -21,16 +21,16 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ プロジェクト                      [+ 新規プロジェクト] │  ← hàng tiêu đề
+│ プロジェクト         [出力(N)] [+ 新規プロジェクト]    │  ← hàng tiêu đề, 出力 bên trái nút tạo mới (CHANGE-017)
 ├─────────────────────────────────────────────────────┤
 │┌───────────────────────────────────────────────────┐│
 ││ [🔍 検索..] [技術 ▾(2)] [種別 ▾] [開発工程 ▾]  [☰][⊞]││  ← toolbar + toggle list/card căn phải (CHANGE-015)
 │└───────────────────────────────────────────────────┘│
 │["React" ✕] [ラボ ✕] [要件定義 ✕]      すべてクリア    │  ← filter chip row, chỉ hiện khi có filter (CHANGE-014)
-│24件                                                   │  ← số kết quả (CHANGE-014)
+│[☑]このページを選択              最大10件まで   24件   │  ← selection bar: chọn tất cả + thông báo giới hạn (trái), số kết quả (phải) (CHANGE-017)
 ├─────────────────────────────────────────────────────┤
-│顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|   ← mode "list" (table, như cũ)
-│ ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | .. |👁|
+│☑|顧客名|ﾌﾟﾛｼﾞｪｸﾄ名|概要|期間|種別        |技術      |人数|総人月|👁|   ← mode "list", cột ☑ đầu tiên (CHANGE-017)
+│☐| ...  | ...      | .. | .. |[オフショア][新規開発]|[React][AWS]| .. | .. |👁|
 ├─────────────────────────────────────────────────────┤
 │              ‹ 1 2 3 4 ›  (pagination — dùng chung cả 2 mode) │
 └─────────────────────────────────────────────────────┘
@@ -50,6 +50,7 @@ Mode `card` (mặc định — CHANGE-015) thay bảng bằng grid `ProjectCard`
 │ [React][AWS][TS][Node]+1    │  ← 技術, tối đa 4 + "+n"
 │ ─────────────────────────── │  ← đường kẻ phân cách
 │ ● オフショア  ● ラボ         │  ← 種別 dạng chấm tròn, cùng màu badge-type
+│                          [☐]│  ← checkbox chọn export, góc dưới-phải (CHANGE-017)
 └─────────────────────────────┘
 ```
 Grid `repeat(auto-fill, minmax(280px, 1fr))`, click bất kỳ đâu trên card
@@ -84,9 +85,24 @@ vẫn chỉ ở Detail).
   技術 xanh lá, 種別 xanh dương, 開発工程 hổ phách, search trung tính
   (`surface-container-high`) — KHÁC tông đậm của badge trong bảng, để
   phân biệt "điều kiện đang lọc" với "dữ liệu hiển thị".
-- Số kết quả (`{total}件`) hiện ngay dưới chip row (hoặc ngay dưới
-  toolbar nếu không có chip nào) khi đã load xong và `total > 0`
-  (`CHANGE-014`).
+- Số kết quả (`{total}件`) hiện trong `.project-list-selection-bar`
+  (SỬA `CHANGE-017` — trước đó là 1 đoạn riêng ngay dưới chip row), CĂN
+  PHẢI trong hàng đó, khi đã load xong và `total > 0` (`CHANGE-014`,
+  `CHANGE-017`).
+- **Chọn nhiều dự án để export** (`CHANGE-017`): checkbox 24px (class
+  `select-checkbox`, lớn hơn mặc định trình duyệt ~13px cho dễ bấm)
+  trên mỗi dòng/card + checkbox "このページを選択" trong
+  `.project-list-selection-bar` (KHÔNG đặt trong toolbar tìm kiếm/filter
+  — feedback thực tế: vị trí đó không hợp lý). Tối đa **10** dự án/lần
+  — khi đủ 10, mọi checkbox chưa chọn tự khoá + hiện thông báo; "chọn
+  tất cả trang này" tự khoá TRƯỚC nếu trang hiện tại sẽ vượt 10 khi
+  chọn hết (không tự động chỉ chọn 10 dòng đầu). Xem EARS UI-PROJ-01-19
+  đến 22 (mục 2.3) cho chi tiết.
+- **Nút "出力"** (`CHANGE-017`): đặt ở `page-header-row`, bên trái nút
+  "+ 新規プロジェクト", style `button-tertiary` (phân biệt với
+  `button-primary`) — hiện badge số tròn nhỏ (đảo màu) đè góc trên-phải
+  khi có dự án đã chọn. Disabled khi chưa chọn gì. Click mở modal xác
+  nhận (nút "出力する") trước khi thực sự gọi API — xem UI-PROJ-01-23.
 - **種別/技術**: mỗi giá trị 1 badge riêng (không nối chuỗi bằng dấu
   phẩy) — 種別 dùng tông `secondary-container`, 技術 dùng tông
   `tertiary-container` (phân biệt theo NHÓM, không theo từng giá trị).
@@ -117,7 +133,11 @@ vẫn chỉ ở Detail).
   theo category trong toàn app). Có đường kẻ phân cách
   (`outline-variant`) giữa `project_name`↔khung số liệu, và giữa
   `技術`↔`種別`. Card border `outline-variant` + `box-shadow` nhẹ để
-  nổi khối rõ hơn so với nền trang (`CHANGE-015`).
+  nổi khối rõ hơn so với nền trang (`CHANGE-015`). Checkbox chọn export
+  (`select-checkbox`, 24px) đặt tuyệt đối ở **góc dưới-phải** card
+  (SỬA `CHANGE-017` — ban đầu đặt ở header cạnh avatar), chặn `click`
+  lan lên link để không điều hướng khi tick chọn; card có thêm
+  padding-bottom để không đè lên hàng badge 種別 cuối.
 
 ### 2.2 Trạng thái màn hình (state matrix)
 
@@ -196,9 +216,48 @@ vẫn chỉ ở Detail).
   status badge (`進行中`/`終了` based on `is_ongoing`), `dev_process_phases`
   badges, `project_name` (max 2 lines), a centered 2-column
   `team_size`/`total_man_month` stat box, formatted period, up to 4
-  `technologies` badges (`+n` overflow), and `project_types` as
-  dot-style badges using the same color as `badge-type`. The entire
-  card shall be a single link to `/projects/:id` (`CHANGE-015`).
+  `technologies` badges (`+n` overflow), `project_types` as dot-style
+  badges using the same color as `badge-type`, and a selection checkbox
+  positioned absolute at the card's bottom-right corner (`CHANGE-017`,
+  SỬA vị trí — ban đầu ở header cạnh avatar). The entire card shall be
+  a single link to `/projects/:id` (`CHANGE-015`).
+
+- **[UI-PROJ-01-19]** The List screen shall render a checkbox (class
+  `select-checkbox`, kích thước 24px) per row/card, plus a "select all
+  on this page" checkbox in `.project-list-selection-bar` (KHÔNG trong
+  toolbar tìm kiếm/filter); selection state shall persist while
+  paginating/filtering within the same session (không cần lưu
+  `localStorage`, mất khi rời màn hình) (`CHANGE-017`).
+
+- **[UI-PROJ-01-20]** The header row (`page-header-row`) shall show a
+  "出力" button (`.page-header-actions`, đứng bên trái "+ 新規プロジェクト",
+  style `button-tertiary`), disabled khi `selectedIds.size === 0`;
+  while an export request is in flight, the button shall show loading
+  text "出力中..." and stay disabled. A badge tròn nhỏ (đảo màu so với
+  nút) hiện số dự án đã chọn, đè góc trên-phải nút, ẩn khi chưa chọn gì
+  (`CHANGE-017`).
+
+- **[UI-PROJ-01-21]** When exactly 10 projects are selected, every
+  currently-unchecked checkbox (row/card and "select all on this page")
+  shall be disabled, with a message shown in the selection bar
+  indicating the 10-project limit — chặn ở UI trước, backend (module
+  `export`, EXPORT-03) vẫn giữ nguyên validate lại. Deselecting 1
+  project shall immediately re-enable the other checkboxes
+  (`CHANGE-017`).
+
+- **[UI-PROJ-01-22]** The "select all on this page" checkbox shall be
+  disabled BEFORE it is clicked (not after) whenever checking it would
+  push the total selection above 10 — cụ thể: disabled khi (số dòng
+  CHƯA chọn trên trang hiện tại) + (số đã chọn) > 10. The system shall
+  NOT auto-select only the first 10 rows of the page when this limit
+  would be exceeded (`CHANGE-017`).
+
+- **[UI-PROJ-01-23]** Clicking "出力" shall show a confirmation dialog
+  (component `Modal`, `confirmVariant="tertiary"`) stating the number
+  of selected projects, before actually calling `POST /projects/export`
+  — confirming ("出力する") triggers the API call and closes the
+  dialog; cancelling closes the dialog without calling the API
+  (`CHANGE-017`).
 
 ---
 
@@ -591,5 +650,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-013-team-composition-note | Thêm `チーム体制の詳細` vào Create/Edit/Detail (UI-PROJ-02-14, UI-PROJ-03-7) |
 | 2026-08-19 | CHANGE-014-project-list-detail-ui-improvements | List: search box trong dropdown 技術 + scroll (UI-PROJ-01-12), hiện số kết quả (UI-PROJ-01-13), filter chip xoá riêng từng giá trị (UI-PROJ-01-14); Create/Edit: chặn Enter submit ngoài ý muốn (UI-PROJ-02-15); Detail: bỏ bullet list cho multiline (UI-PROJ-03-8 sửa), gộp その他 (UI-PROJ-03-9), badge 開発工程 đổi màu riêng (UI-PROJ-03-10 sửa), tách field bằng `DetailField` (UI-PROJ-03-11) |
 | 2026-08-20 | CHANGE-015-project-list-card-view | List: thêm chế độ hiển thị card (`ProjectCard`), toggle list/card căn phải, mặc định card, nhớ lựa chọn qua `localStorage` (UI-PROJ-01-15..18) |
+| 2026-08-21 | CHANGE-017-project-export-pptx | List: chọn nhiều dự án (checkbox 24px, tối đa 10) để export ra `.pptx` — checkbox/số kết quả chuyển ra `.project-list-selection-bar` (UI-PROJ-01-13 sửa, 19, 21, 22), nút "出力" ở header row (UI-PROJ-01-20), modal xác nhận trước khi export (UI-PROJ-01-23); `ProjectCard` thêm checkbox góc dưới-phải (UI-PROJ-01-18 sửa). Xem `specs/export.md` cho phần backend/layout slide |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->

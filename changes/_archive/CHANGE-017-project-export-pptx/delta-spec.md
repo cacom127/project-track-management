@@ -74,15 +74,23 @@
 
 ### `specs/projects-ui.md` (bổ sung nhỏ, tiếp UI-PROJ-01-18)
 
-- **[UI-PROJ-01-19] (MỚI, SỬA vị trí sau feedback thực tế)** The List
-  screen shall render a checkbox per row/card, plus a "select all on
-  this page" checkbox; selection state shall persist while
-  paginating/filtering within the same session (không cần lưu
-  `localStorage`). Vị trí "select all on this page": ban đầu đặt trong
-  `.project-list-toolbar` (cùng vùng tìm kiếm/filter) — feedback thực tế
-  cho rằng vị trí này KHÔNG hợp lý, đã chuyển sang hàng riêng
-  `.project-list-selection-bar` (cùng hàng với số lượng kết quả `{total}
-  件`, đặt NGOÀI toolbar tìm kiếm, ngay trên bảng/grid dự án).
+- **[UI-PROJ-01-19] (MỚI, SỬA vị trí/kích thước sau feedback thực tế)**
+  The List screen shall render a checkbox per row/card (class chung
+  `select-checkbox`, kích thước **24px** — SỬA từ mặc định trình duyệt
+  ~13px, quá nhỏ khó bấm), plus a "select all on this page" checkbox;
+  selection state shall persist while paginating/filtering within the
+  same session (không cần lưu `localStorage`).
+  - Vị trí "select all on this page": ban đầu đặt trong
+    `.project-list-toolbar` (cùng vùng tìm kiếm/filter) — feedback thực
+    tế cho rằng vị trí này KHÔNG hợp lý, đã chuyển sang hàng riêng
+    `.project-list-selection-bar`, cùng hàng với số lượng kết quả
+    `{total}件` (`{total}件` căn PHẢI trong hàng này — SỬA, ban đầu
+    không căn lề), đặt NGOÀI toolbar tìm kiếm, ngay trên bảng/grid dự
+    án.
+  - Vị trí checkbox trên `ProjectCard`: ban đầu ở header (cạnh avatar)
+    — feedback thực tế chuyển sang **góc dưới-phải** của card
+    (absolute, cần thêm padding-bottom để không đè lên hàng badge 種別
+    cuối card).
 
 - **[UI-PROJ-01-20] (MỚI, SỬA sau feedback thực tế)**
   - Ban đầu: nút "Export" (text "エクスポート (N)") nằm trong
@@ -135,7 +143,7 @@
 | 概要 | `description` | Auto-shrink nếu dài |
 | 業種 / 期間 / 人数 / 総人月 | `industry`, `formatPeriod()`, `team_size`, `total_man_month` | "—" nếu null, dùng chung `formatPeriod` đã có ở FE (BE tự format lại tương đương) |
 | Ảnh (2×2) | 4 attachment đầu tiên | Trống nếu không có ảnh |
-| 技術 / 開発工程 | `technologies`, `dev_process_phases` | Badge ngang |
+| 技術 / 開発工程 | `technologies`, `dev_process_phases` | 2 cột song song nằm ngang nhau (SỬA sau feedback — ban đầu xếp trên-dưới), mỗi cột tự xuống dòng độc lập theo độ dài text thật (tính riêng CJK/Latin) |
 | 成果・課題・解決策 | `outcome_note` | Auto-shrink nếu dài |
 | **KHÔNG hiển thị** | `customer_name`, `source_note`, `team_composition_note` | Bảo mật / không cần thiết cho slide tóm tắt |
 
