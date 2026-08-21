@@ -747,11 +747,11 @@ h1 {
 
 /* Feedback thực tế: checkbox chọn dự án (chọn tất cả trang này/từng
    dòng/từng card) mặc định trình duyệt quá nhỏ, khó bấm — tăng kích
-   thước rõ ràng hơn (chuẩn 40px touch target tối thiểu không khả thi
-   với checkbox gốc, nhưng 18px đã lớn hơn hẳn mặc định ~13px). */
+   thước rõ ràng hơn (24px, theo feedback thực tế — lớn hơn hẳn mặc
+   định ~13px). */
 .select-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   accent-color: var(--color-secondary);
 }
@@ -1231,7 +1231,7 @@ fieldset label {
   padding: var(--space-md);
   /* Chỗ trống cho checkbox góc dưới-phải (absolute), tránh đè lên
      hàng badge 種別 cuối card. */
-  padding-bottom: calc(var(--space-md) + 18px + var(--space-xs));
+  padding-bottom: calc(var(--space-md) + 24px + var(--space-xs));
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-lg);
   background: var(--color-surface-container-lowest);
