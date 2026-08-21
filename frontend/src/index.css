@@ -403,12 +403,39 @@ h1 {
   padding: var(--space-md) 0;
 }
 
+/* ARCH-SHELL-02 (CHANGE-018) — logo VPM, chỉ ảnh không text (yêu cầu
+   user). Ngăn cách với nav bằng border-bottom. */
+.sidebar-header {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-lg) var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-default);
+}
+
 .sidebar-item {
-  display: block;
-  padding: var(--space-sm) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-default);
   color: var(--color-on-surface);
   text-decoration: none;
   font-size: 14px;
+}
+
+.sidebar-item-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant);
 }
 
 .sidebar-item:hover {
@@ -419,6 +446,10 @@ h1 {
   background: var(--color-secondary-container);
   color: var(--color-on-secondary-container);
   font-weight: 600;
+}
+
+.sidebar-item-active .sidebar-item-icon {
+  color: var(--color-on-secondary-container);
 }
 
 .app-main {

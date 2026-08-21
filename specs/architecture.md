@@ -52,6 +52,11 @@
   Tạo/Sửa/Xoá — xem `specs/projects-ui.md` mục 6) — mọi module dùng
   chung component này, không tự implement riêng. Xem
   `CHANGE-010-project-detail-edit-delete`.
+  Sidebar có khu vực header hiển thị logo VPM (`frontend/public/
+  logo.png`, chỉ ảnh không kèm text) và mỗi nav item có icon SVG inline
+  (tự vẽ, không dùng icon library ngoài) cạnh trái label; favicon dùng
+  cùng ảnh logo (`frontend/public/favicon.png`, thay placeholder Vite
+  mặc định). Xem `CHANGE-018-sidebar-branding-refresh`.
 
 ## 2. Danh sách module/domain
 
@@ -182,5 +187,6 @@
 | 2026-08-19 | CHANGE-009-app-shell-and-projects-ui-refresh | Thêm App Shell (Sidebar dọc 240px, dùng chung mọi route); cập nhật `DESIGN.md` (component Navigation Sidebar, Dropdown/Filter) |
 | 2026-08-19 | CHANGE-010-project-detail-edit-delete | Module `projects`: thêm Detail/Edit/Delete (soft delete); thêm `ToastHost` dùng chung trong App Shell; cập nhật `DESIGN.md` (Modal, Toast, Action Button destructive) |
 | 2026-08-19 | CHANGE-011-project-attachments | Hiện thực hoá ảnh đính kèm (S3 presigned URL, CORS + env var `ATTACHMENTS_BUCKET_NAME` cho Lambda); cập nhật `DESIGN.md` (Thumbnail Grid, Paste Zone) |
+| 2026-08-21 | CHANGE-018-sidebar-branding-refresh | Sidebar: logo VPM (header + favicon), icon SVG inline cạnh nav item, active/hover bo góc + margin ngang; cập nhật `DESIGN.md` (component Navigation Sidebar) |
 
 <!-- Mỗi dòng ở đây trỏ về changes/_archive/CHANGE-XXX/ để xem đầy đủ lý do -->
