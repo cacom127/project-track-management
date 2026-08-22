@@ -259,6 +259,23 @@ vẫn chỉ ở Detail).
   dialog; cancelling closes the dialog without calling the API
   (`CHANGE-017`).
 
+- **[UI-PROJ-01-24]** The List screen shall sync its search/filter state
+  (`q`, `page`, `technology`, `project_type`, `dev_process_phase`) to the
+  URL query string (`useSearchParams`, replace — không tạo history entry
+  mới mỗi lần gõ/lọc) and initialize its state from the URL on mount
+  (`CHANGE-019`).
+
+- **[UI-PROJ-01-25]** When the user navigates back (browser back button)
+  from the Detail screen to the List screen, the system shall restore
+  the exact search/filter state and page that was active before
+  navigating away — hệ quả tự nhiên của UI-PROJ-01-24, không cần code
+  riêng ở Detail (`CHANGE-019`).
+
+- **[UI-PROJ-01-26]** When the user navigates to the List screen via the
+  Sidebar nav item (đường dẫn `/projects` không kèm query), the system
+  shall reset to the default (empty) search/filter state — phân biệt rõ
+  với hành vi "back" ở UI-PROJ-01-25 (bấm menu = bắt đầu lại) (`CHANGE-019`).
+
 ---
 
 ## 3. Màn hình: Tạo dự án
@@ -651,5 +668,6 @@ Component dùng chung, đặt trong `ProjectForm` (Tạo/Sửa) và `ProjectDeta
 | 2026-08-19 | CHANGE-014-project-list-detail-ui-improvements | List: search box trong dropdown 技術 + scroll (UI-PROJ-01-12), hiện số kết quả (UI-PROJ-01-13), filter chip xoá riêng từng giá trị (UI-PROJ-01-14); Create/Edit: chặn Enter submit ngoài ý muốn (UI-PROJ-02-15); Detail: bỏ bullet list cho multiline (UI-PROJ-03-8 sửa), gộp その他 (UI-PROJ-03-9), badge 開発工程 đổi màu riêng (UI-PROJ-03-10 sửa), tách field bằng `DetailField` (UI-PROJ-03-11) |
 | 2026-08-20 | CHANGE-015-project-list-card-view | List: thêm chế độ hiển thị card (`ProjectCard`), toggle list/card căn phải, mặc định card, nhớ lựa chọn qua `localStorage` (UI-PROJ-01-15..18) |
 | 2026-08-21 | CHANGE-017-project-export-pptx | List: chọn nhiều dự án (checkbox 24px, tối đa 10) để export ra `.pptx` — checkbox/số kết quả chuyển ra `.project-list-selection-bar` (UI-PROJ-01-13 sửa, 19, 21, 22), nút "出力" ở header row (UI-PROJ-01-20), modal xác nhận trước khi export (UI-PROJ-01-23); `ProjectCard` thêm checkbox góc dưới-phải (UI-PROJ-01-18 sửa). Xem `specs/export.md` cho phần backend/layout slide |
+| 2026-08-22 | CHANGE-019-preserve-list-search-state | List: đồng bộ điều kiện tìm kiếm/trang lên URL query — back từ Detail khôi phục đúng trạng thái, bấm menu sidebar reset về mặc định (UI-PROJ-01-24..26) |
 
 <!-- Trỏ về changes/_archive/CHANGE-00X-.../ để xem đầy đủ ui-delta-spec gốc -->
