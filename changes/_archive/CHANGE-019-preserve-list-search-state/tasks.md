@@ -26,12 +26,13 @@
 - [x] **T5** — Build + prettier verify — chạy `prettier --check` trực
       tiếp trên file đã sửa (KHÔNG qua worktree tạm — lần CHANGE-018 đã
       bị false-pass do thứ tự stash/pop, để tránh lặp lại)
-- [ ] **T6** — Review chéo + cập nhật `specs/projects-ui.md` (thêm
+- [x] **T6** — Review chéo + cập nhật `specs/projects-ui.md` (thêm
       UI-PROJ-01-24..26) khi merge
-- [ ] **T7** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge
+- [x] **T7** — Di chuyển thư mục này vào `changes/_archive/` sau khi merge
 
 ## Trạng thái
 
 | Trạng thái  | Ngày cập nhật | Ghi chú |
 |-------------|----------------|----------|
 | Đang làm    | 2026-08-21     |          |
+| Hoàn tất    | 2026-08-22     | User deploy + test OK. Đã fold vào `specs/projects-ui.md`, archive ticket. |
